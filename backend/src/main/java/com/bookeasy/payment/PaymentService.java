@@ -36,6 +36,7 @@ import com.bookeasy.appointment.PaymentGate;
 import com.bookeasy.appointment.SlotLocks;
 import com.bookeasy.common.exception.ApiException;
 import com.bookeasy.common.exception.ErrorCode;
+import com.bookeasy.common.ratelimit.RateLimiter;
 import com.bookeasy.organization.entity.ConfirmationMode;
 import com.bookeasy.organization.repository.OrganizationRepository;
 import com.bookeasy.user.entity.User;
@@ -65,12 +66,13 @@ public class PaymentService implements PaymentGate {
     private final ObjectMapper json;
     private final ApplicationEventPublisher events;
     private final TransactionTemplate tx;
+    private final RateLimiter rateLimiter;
     private final Clock clock;
 
     public PaymentService(PaymentProperties properties, RazorpayClient razorpay, PaymentRepository payments,
                           AppointmentRepository appointments, OrganizationRepository organizations, UserRepository users,
                           SlotLocks locks, JdbcTemplate jdbc, ObjectMapper json, ApplicationEventPublisher events,
-                          TransactionTemplate tx, Clock clock) {
+                          TransactionTemplate tx, RateLimiter rateLimiter, Clock clock) {
         this.properties = properties;
         this.razorpay = razorpay;
         this.payments = payments;
@@ -82,6 +84,7 @@ public class PaymentService implements PaymentGate {
         this.json = json;
         this.events = events;
         this.tx = tx;
+        this.rateLimiter = rateLimiter;
         this.clock = clock;
     }
 
@@ -100,6 +103,7 @@ public class PaymentService implements PaymentGate {
     @Transactional
     public CheckoutOrder createOrder(long customerId, long appointmentId) {
         requireEnabled();
+        rateLimiter.hit("payorder:user:" + customerId, 30, Duration.ofHours(1));
         Appointment a = appointments.findByIdForUpdate(appointmentId).filter(x -> x.getCustomerId() == customerId)
                 .orElseThrow(() -> ApiException.notFound("Booking"));
         if (a.getStatus() != Appointment.Status.PENDING_PAYMENT) {

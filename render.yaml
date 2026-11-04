@@ -61,3 +61,13 @@ services:
         sync: false
       - key: SMS_OTP_TEMPLATE_ID
         sync: false
+      - key: RAZORPAY_KEY_ID
+        sync: false
+      - key: RAZORPAY_KEY_SECRET
+        sync: false
+      - key: RAZORPAY_WEBHOOK_SECRET
+        sync: false
+      - key: RAZORPAY_ROUTE_ENABLED
+        value: "false"
+      - key: PAYMENT_HOLD_MINUTES
+        value: "15"

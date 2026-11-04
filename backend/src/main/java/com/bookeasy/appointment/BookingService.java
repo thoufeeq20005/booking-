@@ -27,6 +27,7 @@ import com.bookeasy.catalog.ServiceRepository;
 import com.bookeasy.common.crypto.CryptoService;
 import com.bookeasy.common.exception.ApiException;
 import com.bookeasy.common.exception.ErrorCode;
+import com.bookeasy.common.ratelimit.RateLimiter;
 import com.bookeasy.organization.entity.Branch;
 import com.bookeasy.organization.entity.ConfirmationMode;
 import com.bookeasy.organization.entity.Organization;
@@ -57,13 +58,14 @@ public class BookingService {
     private final PaymentGate paymentGate;
     private final CryptoService crypto;
     private final ApplicationEventPublisher events;
+    private final RateLimiter rateLimiter;
     private final org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate jdbc;
     private final Clock clock;
 
     public BookingService(AppointmentRepository appointments, SlotService slots, SlotLocks locks, QrCodes qr,
                           OrganizationRepository organizations, BranchRepository branches, ServiceRepository services,
                           StaffProfileRepository staff, UserRepository users, PlatformConfigService settings,
-                          PaymentGate paymentGate, CryptoService crypto, ApplicationEventPublisher events,
+                          PaymentGate paymentGate, CryptoService crypto, ApplicationEventPublisher events, RateLimiter rateLimiter,
                           org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate jdbc, Clock clock) {
         this.appointments = appointments;
         this.slots = slots;
@@ -78,6 +80,7 @@ public class BookingService {
         this.paymentGate = paymentGate;
         this.crypto = crypto;
         this.events = events;
+        this.rateLimiter = rateLimiter;
         this.jdbc = jdbc;
         this.clock = clock;
     }
@@ -90,6 +93,7 @@ public class BookingService {
 
     @Transactional
     public AppointmentView book(long customerId, BookRequest req) {
+        rateLimiter.hit("book:user:" + customerId, 20, Duration.ofHours(1));
         User customer = users.findById(customerId).orElseThrow(() -> new ApiException(ErrorCode.UNAUTHENTICATED));
         if (customer.getEmailVerifiedAt() == null && customer.getPhoneVerifiedAt() == null) {
             throw new ApiException(ErrorCode.VERIFICATION_REQUIRED);

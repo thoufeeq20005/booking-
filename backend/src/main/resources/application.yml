@@ -150,6 +150,10 @@ spring:
   config:
     activate:
       on-profile: prod
+  lifecycle:
+    timeout-per-shutdown-phase: 25s
+server:
+  shutdown: graceful
   datasource:
     url: jdbc:mysql://${DB_HOST}:${DB_PORT:3306}/${DB_NAME}?useUnicode=true&characterEncoding=utf8&connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true&sslMode=${DB_SSL_MODE:REQUIRED}
 springdoc:

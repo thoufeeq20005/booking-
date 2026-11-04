@@ -17,6 +17,7 @@ import com.bookeasy.appointment.AppointmentRepository;
 import com.bookeasy.audit.AuditService;
 import com.bookeasy.common.exception.ApiException;
 import com.bookeasy.common.exception.ErrorCode;
+import com.bookeasy.common.ratelimit.RateLimiter;
 import com.bookeasy.common.security.AuthenticatedUser;
 import com.bookeasy.organization.service.OrganizationAccess;
 
@@ -31,14 +32,16 @@ public class ReviewService {
     private final AppointmentRepository appointments;
     private final OrganizationAccess access;
     private final AuditService audit;
+    private final RateLimiter rateLimiter;
     private final Clock clock;
 
     public ReviewService(JdbcTemplate jdbc, AppointmentRepository appointments, OrganizationAccess access, AuditService audit,
-                         Clock clock) {
+                         RateLimiter rateLimiter, Clock clock) {
         this.jdbc = jdbc;
         this.appointments = appointments;
         this.access = access;
         this.audit = audit;
+        this.rateLimiter = rateLimiter;
         this.clock = clock;
     }
 
@@ -121,6 +124,7 @@ public class ReviewService {
 
     @Transactional
     public void report(long userId, long reviewId, String reason) {
+        rateLimiter.hit("report:user:" + userId, 20, java.time.Duration.ofDays(1));
         String why = blank(reason);
         if (why == null) {
             throw ApiException.invalidField("reason", "NotBlank", "Tell us what's wrong");

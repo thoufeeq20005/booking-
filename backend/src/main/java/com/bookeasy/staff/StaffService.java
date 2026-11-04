@@ -30,6 +30,7 @@ import com.bookeasy.common.config.BookEasyProperties;
 import com.bookeasy.common.crypto.CryptoService;
 import com.bookeasy.common.exception.ApiException;
 import com.bookeasy.common.exception.ErrorCode;
+import com.bookeasy.common.ratelimit.RateLimiter;
 import com.bookeasy.notification.channel.EmailSender;
 import com.bookeasy.notification.channel.EmailSender.EmailMessage;
 import com.bookeasy.organization.entity.Branch;
@@ -78,13 +79,14 @@ public class StaffService {
     private final EmailSender emailSender;
     private final MessageSource messages;
     private final BookEasyProperties properties;
+    private final RateLimiter rateLimiter;
     private final Clock clock;
 
     public StaffService(StaffProfileRepository profiles, StaffAvailabilityRepository availability,
                         StaffLeaveRepository leaves, StaffInvitationRepository invitations, BranchRepository branches,
                         ServiceRepository services, OrganizationRepository organizations, UserRepository users,
                         OrganizationAccess access, AuditService audit, CryptoService crypto, EmailSender emailSender,
-                        MessageSource messages, BookEasyProperties properties, Clock clock) {
+                        MessageSource messages, BookEasyProperties properties, RateLimiter rateLimiter, Clock clock) {
         this.profiles = profiles;
         this.availability = availability;
         this.leaves = leaves;
@@ -99,6 +101,7 @@ public class StaffService {
         this.emailSender = emailSender;
         this.messages = messages;
         this.properties = properties;
+        this.rateLimiter = rateLimiter;
         this.clock = clock;
     }
 
@@ -115,6 +118,7 @@ public class StaffService {
     @Transactional
     public StaffView invite(long ownerId, long organizationId, InviteRequest req, String ip) {
         Organization org = access.ownedForOperationsEdit(ownerId, organizationId);
+        rateLimiter.hit("invite:org:" + org.getId(), 50, Duration.ofDays(1));
         String email = Identifiers.normalizeEmail(req.email());
         requireRoom(org);
         for (StaffProfile p : profiles.findByOrganizationIdOrderByDisplayNameAsc(org.getId())) {

@@ -125,5 +125,12 @@ Legend: `[x]` done and tested · `[ ]` not started · `[~]` in progress
 - [x] Tests: backend 138, frontend 85
 - [ ] Separate delivery addresses (home visits) are not modelled yet
 
-## Phase 11 – Production readiness
-- [ ] Security review, integration/performance tests, deployment guides, production checklist
+## Phase 11 – Production readiness ✅
+- [x] Security review → [security.md](security.md): rate limits added (bookings, payment orders, staff invitations, review reports), multi-instance safety of every job verified, known gaps listed
+- [x] Frontend CSP without inline scripts (theme bootstrap moved to `/theme-init.js`), HSTS, COOP, permissions policy for Razorpay/geolocation
+- [x] Flyway V10: indexes for payment expiry, reminders and refund dispatch
+- [x] Graceful shutdown in prod; render.yaml includes payment settings
+- [x] Deployment guide ([deployment.md](deployment.md)), [production checklist](production-checklist.md), README rewritten
+- [x] Concurrency test for double booking (Phase 7); full suites: backend 138, frontend 85; 0 npm vulnerabilities
+- [x] Live smoke run: dev database migrated V1→V10, health, search, auth gate, webhook guard through the Vite proxy
+- [ ] Before launch: walk through the production checklist with real provider accounts (Razorpay KYC, DLT SMS, SMTP domain, Google OAuth origin); add Google Maps keys for the embedded map; move uploads to S3-compatible storage before running more than one API instance
