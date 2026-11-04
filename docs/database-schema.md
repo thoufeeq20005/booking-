@@ -67,18 +67,21 @@ erDiagram
 | `support_settings` | single row (`CHECK id=1`); email/phone `NULL` until admin sets real values |
 | `audit_logs` | append-only; actor, action, entity, JSON details, IP; indexes on entity, actor+time, time |
 
-## Phase 2 — Authentication ⏳
+## Phase 2 — Authentication ✅ (`V2__authentication.sql`)
 
 | Table | Key columns / constraints |
 |---|---|
-| `users` | `email UNIQUE NULL`, `phone_e164 UNIQUE NULL` (at least one required — `CHECK`), `password_hash NULL` (OAuth/OTP-only users), `status` (`ACTIVE/SUSPENDED/PENDING_VERIFICATION/DELETED`), `email_verified_at`, `phone_verified_at`, `two_factor_enabled`, `two_factor_secret_enc`, `preferred_language`, `failed_login_count`, `locked_until`, `token_version` (bump = revoke all tokens) |
-| `user_roles` | PK(`user_id`,`role_id`) |
-| `user_profiles` | 1:1 users; full name, gender, DOB, photo `uploaded_file_id` |
-| `refresh_tokens` | `token_hash CHAR(64) UNIQUE`, `family_id` (rotation/reuse detection), `expires_at`, `revoked_at`, `replaced_by_id` |
-| `email_verifications` · `password_reset_tokens` | `token_hash UNIQUE`, `expires_at`, `used_at` — tokens stored hashed only |
-| `otp_verifications` | `phone_e164`, `purpose` (LOGIN/VERIFY/2FA), `code_hash`, `attempts`, `expires_at`, `consumed_at`, `last_sent_at`, index (`phone_e164`,`purpose`,`created_at`) for resend throttling |
-| `oauth_accounts` | `UNIQUE(provider, provider_subject)`, FK users |
-| `login_attempts` | per identifier + IP sliding-window rate limiting |
+| `users` | `email UNIQUE NULL`, `phone_e164 UNIQUE NULL`, `CHECK (email OR phone)`, `password_hash NULL` (OTP/Google-only users), `status` (`ACTIVE/SUSPENDED/DELETED`), `email_verified_at`, `phone_verified_at`, `preferred_language CHECK in 6 codes`, `two_factor_enabled`, `two_factor_secret_enc` (AES-GCM), `two_factor_last_step` (replay guard), `failed_login_count`, `locked_until`, `token_version` (bump = revoke all access tokens) |
+| `user_roles` | PK(`user_id`,`role_id`), cascade on user delete |
+| `refresh_tokens` | `token_hash CHAR(64) UNIQUE`, `family_id`, `expires_at`, `revoked_at`, `replaced_by_id`, user agent, IP |
+| `email_verifications` | `token_hash UNIQUE`, `email` (token dies if the address changes), `expires_at`, `used_at` |
+| `password_reset_tokens` | `token_hash UNIQUE`, `expires_at`, `used_at` |
+| `otp_verifications` | `phone_e164`, `purpose` (`LOGIN/VERIFY_PHONE`), `code_hash` (HMAC), `attempts`, `expires_at`, `consumed_at`; index (`phone_e164`,`purpose`,`created_at`) |
+| `oauth_accounts` | `UNIQUE(provider, provider_subject)` |
+| `rate_limit_counters` | PK(`bucket_key`,`window_start`), `hits` — shared fixed-window limiter |
+
+Also adds FKs `platform_settings.updated_by` / `support_settings.updated_by` → `users` (SET NULL).
+Extended profile data (photo, gender, DOB) lands in `user_profiles` with Phase 10 customer features.
 
 ## Phase 3 — Organizations, categories, verification ⏳
 

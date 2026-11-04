@@ -5,6 +5,8 @@ import kn from './locales/kn.json';
 import ml from './locales/ml.json';
 import ta from './locales/ta.json';
 import te from './locales/te.json';
+// The backend's ErrorCode enum is the source of truth for API error codes.
+import errorCodeSource from '../../../backend/src/main/java/com/bookeasy/common/exception/ErrorCode.java?raw';
 
 type Tree = { [key: string]: string | Tree };
 
@@ -17,7 +19,16 @@ function flatten(tree: Tree, prefix = ''): Record<string, string> {
   }, {});
 }
 
-const placeholders = (s: string) => (s.match(/{{\s*\w+\s*}}/g) ?? []).sort();
+describe('API error codes', () => {
+  it('every backend ErrorCode has an English message', () => {
+    const codes = [...errorCodeSource.matchAll(/^\s{4}([A-Z][A-Z0-9_]+)\(HttpStatus\./gm)].map((m) => m[1]!);
+    expect(codes.length).toBeGreaterThan(30);
+    const errors = (en as unknown as { errors: Record<string, string> }).errors;
+    expect(codes.filter((c) => !errors[c])).toEqual([]);
+  });
+});
+
+const placeholders =(s: string) => (s.match(/{{\s*\w+\s*}}/g) ?? []).sort();
 
 const reference = flatten(en);
 const locales = { ta, hi, ml, te, kn } as Record<string, Tree>;

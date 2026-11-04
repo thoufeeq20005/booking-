@@ -1,9 +1,12 @@
-import { useState } from 'react';
-import { Link, NavLink, Outlet } from 'react-router';
+import { Suspense, useState } from 'react';
+import { Link, NavLink, Outlet, useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { Mail, Menu, Phone, Clock, X } from 'lucide-react';
+import { CircleUser, Clock, LogOut, Mail, Menu, Phone, X } from 'lucide-react';
 import clsx from 'clsx';
 import { Logo } from '@/components/brand/Logo';
+import { Button, buttonClasses } from '@/components/ui/Button';
+import { LoadingState } from '@/components/ui/StateMessage';
+import { useAuth } from '@/contexts/AuthContext';
 import { LanguageSelector } from '@/components/common/LanguageSelector';
 import { ThemeToggle } from '@/components/common/ThemeToggle';
 import { usePublicConfig } from '@/services/platformApi';
@@ -15,6 +18,49 @@ const navLinkClass = ({ isActive }: { isActive: boolean }) =>
     'rounded-lg px-3 py-2 text-sm font-medium transition',
     isActive ? 'text-brand-700' : 'text-fg-muted hover:text-fg',
   );
+
+function AuthControls({ onNavigate }: { onNavigate?: () => void }) {
+  const { t } = useTranslation();
+  const { status, user, signOut } = useAuth();
+  const navigate = useNavigate();
+
+  if (status === 'loading') return null;
+  if (status === 'authenticated' && user) {
+    return (
+      <div className="flex items-center gap-2">
+        <Link
+          to="/account"
+          onClick={onNavigate}
+          className="inline-flex h-10 items-center gap-2 rounded-xl px-3 text-sm font-medium text-fg hover:bg-surface-muted"
+        >
+          <CircleUser className="h-5 w-5 text-brand-600" aria-hidden="true" />
+          <span className="max-w-[10rem] truncate">{user.fullName}</span>
+        </Link>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => {
+            onNavigate?.();
+            void signOut().finally(() => navigate('/'));
+          }}
+        >
+          <LogOut className="h-4 w-4" aria-hidden="true" />
+          {t('nav.signOut')}
+        </Button>
+      </div>
+    );
+  }
+  return (
+    <div className="flex items-center gap-2">
+      <Link to="/signin" onClick={onNavigate} className={buttonClasses('ghost', 'sm')}>
+        {t('nav.signIn')}
+      </Link>
+      <Link to="/register" onClick={onNavigate} className={buttonClasses('primary', 'sm')}>
+        {t('nav.register')}
+      </Link>
+    </div>
+  );
+}
 
 function SiteHeader() {
   const { t } = useTranslation();
@@ -36,6 +82,8 @@ function SiteHeader() {
         <div className="ml-auto hidden items-center gap-2 md:flex">
           <LanguageSelector />
           <ThemeToggle />
+          <span className="mx-1 h-6 w-px bg-border" aria-hidden="true" />
+          <AuthControls />
         </div>
         <button
           type="button"
@@ -61,6 +109,9 @@ function SiteHeader() {
           <div className="mt-3 flex items-center gap-2">
             <LanguageSelector />
             <ThemeToggle />
+          </div>
+          <div className="mt-3 border-t border-border pt-3">
+            <AuthControls onNavigate={() => setOpen(false)} />
           </div>
         </div>
       )}
@@ -136,7 +187,10 @@ export function PublicLayout() {
       </a>
       <SiteHeader />
       <main id="main" className="flex-1">
-        <Outlet />
+        {/* Lazy pages load inside the layout, so the header and footer stay put. */}
+        <Suspense fallback={<LoadingState />}>
+          <Outlet />
+        </Suspense>
       </main>
       <SiteFooter />
     </div>

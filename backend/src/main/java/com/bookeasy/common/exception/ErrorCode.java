@@ -2,6 +2,10 @@ package com.bookeasy.common.exception;
 
 import org.springframework.http.HttpStatus;
 
+/**
+ * Stable error codes returned to clients. The frontend translates them (see i18n `errors.*`),
+ * so renaming a constant is a breaking API change.
+ */
 public enum ErrorCode {
     VALIDATION_FAILED(HttpStatus.BAD_REQUEST, "Some fields are invalid"),
     MALFORMED_REQUEST(HttpStatus.BAD_REQUEST, "The request could not be read"),
@@ -12,7 +16,31 @@ public enum ErrorCode {
     CONFLICT(HttpStatus.CONFLICT, "The request conflicts with the current state"),
     PAYLOAD_TOO_LARGE(HttpStatus.PAYLOAD_TOO_LARGE, "The uploaded file is too large"),
     RATE_LIMITED(HttpStatus.TOO_MANY_REQUESTS, "Too many requests, please try again later"),
-    INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Something went wrong on our side");
+    PROVIDER_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, "A required external service is not available"),
+    INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Something went wrong on our side"),
+
+    // Authentication
+    INVALID_CREDENTIALS(HttpStatus.UNAUTHORIZED, "Email or password is incorrect"),
+    ACCOUNT_LOCKED(HttpStatus.LOCKED, "Too many failed attempts. The account is temporarily locked"),
+    ACCOUNT_SUSPENDED(HttpStatus.FORBIDDEN, "This account has been suspended"),
+    EMAIL_ALREADY_REGISTERED(HttpStatus.CONFLICT, "An account with this email already exists"),
+    PHONE_ALREADY_REGISTERED(HttpStatus.CONFLICT, "An account with this mobile number already exists"),
+    INVALID_TOKEN(HttpStatus.BAD_REQUEST, "This link is invalid or has already been used"),
+    TOKEN_EXPIRED(HttpStatus.BAD_REQUEST, "This link has expired"),
+    SESSION_EXPIRED(HttpStatus.UNAUTHORIZED, "Your session has expired. Please sign in again"),
+    CSRF_HEADER_MISSING(HttpStatus.FORBIDDEN, "Request rejected"),
+    OTP_INVALID(HttpStatus.BAD_REQUEST, "The code is incorrect"),
+    OTP_EXPIRED(HttpStatus.BAD_REQUEST, "The code has expired. Request a new one"),
+    OTP_RESEND_TOO_SOON(HttpStatus.TOO_MANY_REQUESTS, "Please wait before requesting another code"),
+    FULL_NAME_REQUIRED(HttpStatus.BAD_REQUEST, "Enter your name to create an account"),
+    TWO_FACTOR_INVALID(HttpStatus.UNAUTHORIZED, "The authentication code is incorrect"),
+    TWO_FACTOR_ALREADY_ENABLED(HttpStatus.CONFLICT, "Two-factor authentication is already enabled"),
+    TWO_FACTOR_NOT_ENABLED(HttpStatus.CONFLICT, "Two-factor authentication is not enabled"),
+    TWO_FACTOR_SETUP_REQUIRED(HttpStatus.CONFLICT, "Start two-factor setup first"),
+    GOOGLE_TOKEN_INVALID(HttpStatus.UNAUTHORIZED, "Google sign-in could not be verified"),
+    GOOGLE_NOT_CONFIGURED(HttpStatus.SERVICE_UNAVAILABLE, "Google sign-in is not available"),
+    BOOTSTRAP_UNAVAILABLE(HttpStatus.NOT_FOUND, "Not found"),
+    BOOTSTRAP_ALREADY_DONE(HttpStatus.CONFLICT, "A Super Admin already exists");
 
     private final HttpStatus status;
     private final String defaultMessage;

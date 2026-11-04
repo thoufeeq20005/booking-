@@ -19,8 +19,12 @@ Maven is not required – use the wrapper (`./mvnw` / `mvnw.cmd`).
 ## 1. Configure
 
 ```bash
-cp .env.example .env      # then fill in DB_USERNAME / DB_PASSWORD at minimum
+cp .env.example .env
 ```
+
+Minimum to fill in: `DB_USERNAME`, `DB_PASSWORD`, `JWT_SECRET` (`openssl rand -base64 64`) and
+`DATA_ENCRYPTION_KEY` (`openssl rand -base64 32`). With no email/SMS provider configured, the dev profile writes
+verification links and OTP codes to the backend log (`[DEV EMAIL]`, `[DEV SMS]`), so every sign-in flow works offline.
 
 Recommended: a dedicated MySQL user rather than `root`:
 
@@ -41,6 +45,7 @@ cd backend
 ./mvnw test                   # unit + MySQL integration tests
 ```
 
+- Open the app at http://localhost:5173. Vite proxies `/api` to the backend, so cookies are same-origin.
 - Health: http://localhost:8080/api/v1/health
 - Swagger UI: http://localhost:8080/swagger-ui.html
 - Flyway applies migrations from `src/main/resources/db/migration` at startup.

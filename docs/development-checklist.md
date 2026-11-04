@@ -24,18 +24,24 @@ Legend: `[x]` done and tested · `[ ]` not started · `[~]` in progress
 - [x] Tests: backend 12 (unit + MySQL integration), frontend 32
 - [x] 0 npm audit vulnerabilities
 
-## Phase 2 – Authentication
-- [ ] Users/roles/profile schema (V2)
-- [ ] Email + password registration, BCrypt, email verification
-- [ ] Login with lockout + rate limiting
-- [ ] Access JWT + rotating refresh cookie, logout, revoke-all
-- [ ] Mobile OTP (provider adapter, expiry, resend throttle)
-- [ ] Google Sign-In (ID token verification)
-- [ ] Forgot/reset password
-- [ ] TOTP 2FA
-- [ ] Secure Super Admin bootstrap (one-time token, no default password)
-- [ ] Frontend: auth context, sign in/up/OTP/reset pages, protected role routes
-- [ ] Tests: each role, unauthorised access, token rotation/reuse
+## Phase 2 – Authentication ✅
+- [x] Flyway V2: users, user_roles, refresh_tokens, email_verifications, password_reset_tokens, otp_verifications, oauth_accounts, rate_limit_counters
+- [x] Email + password registration (BCrypt 12, password policy), email verification (24 h, single use)
+- [x] Login with per-IP/per-email rate limits and 5-strike / 15-min lockout, no account enumeration
+- [x] Access JWT (HS512, 15 min, revocable via token_version) + rotating HttpOnly refresh cookie with reuse detection and multi-tab grace
+- [x] CSRF defence for cookie endpoints (SameSite=Strict + required header); same-origin API via Vite proxy / Vercel rewrite
+- [x] Mobile OTP sign-in/sign-up (HMAC-hashed codes, expiry, attempts, cooldown, hourly cap); verify phone on account
+- [x] Google Sign-In (ID-token verification, safe account linking)
+- [x] Forgot/reset password (30 min, signs out everywhere); signed-in password change/set
+- [x] TOTP 2FA (RFC 6238, AES-GCM encrypted secrets, replay protection, challenge flow for every sign-in method)
+- [x] Logout, logout-all; suspension takes effect immediately
+- [x] RBAC URL gates for all four roles; admin user search + suspend/reactivate (audited)
+- [x] Secure Super Admin bootstrap (one-time token, no default password)
+- [x] Email (SMTP) and SMS (MSG91) adapters; dev log delivery; honest failure in prod
+- [x] Localised emails in 6 languages; 123 new UI strings in 6 languages
+- [x] Frontend: auth context, sign in (email / OTP / Google / 2FA), register, verify email, forgot/reset, account security page, route guard, open-redirect protection
+- [x] Tests: backend 78 (all four roles, unauthorised access, token rotation/reuse, lockout, OTP limits, Google forgery, 2FA replay, RFC vectors), frontend 46; real-browser check of HttpOnly cookie
+- [ ] Not yet: 2FA recovery codes; admin action to reset a user's 2FA (Phase 4)
 
 ## Phase 3 – Organizations & verification
 - [ ] Dynamic categories/subcategories + document requirements (admin CRUD)

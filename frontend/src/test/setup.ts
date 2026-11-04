@@ -1,7 +1,9 @@
 import '@testing-library/jest-dom/vitest';
-import { afterEach } from 'vitest';
+import { afterEach, beforeEach } from 'vitest';
 import { cleanup } from '@testing-library/react';
 import i18n from '@/i18n';
+import { session } from '@/services/apiClient';
+import { installFakeApi } from './fakeApi';
 
 void i18n.changeLanguage('en');
 
@@ -19,7 +21,13 @@ if (!window.matchMedia) {
     }) as MediaQueryList;
 }
 
+// No test talks to a real server: unscripted requests get a 404 envelope (so session restore finds no session).
+beforeEach(() => {
+  installFakeApi(() => undefined);
+});
+
 afterEach(() => {
   cleanup();
   localStorage.clear();
+  session.clear();
 });

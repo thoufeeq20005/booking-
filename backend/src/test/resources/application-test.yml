@@ -7,5 +7,25 @@ spring:
     clean-disabled: false
 
 bookeasy:
+  frontend-url: http://localhost:5173
   cors:
     allowed-origins: http://localhost:5173
+  security:
+    # Test-only keys. Real keys come from the environment.
+    data-encryption-key: dGVzdC1vbmx5LWRhdGEtZW5jcnlwdGlvbi1rZXktMzJieXRlcyEhIQ==
+    client-ip-xff-index-from-right: 0
+  auth:
+    jwt-secret: test-only-jwt-secret-that-is-long-enough-for-hs512-signing-0123456789abcdef
+    refresh-cookie:
+      secure: true
+    google:
+      client-id: test-client-id.apps.googleusercontent.com
+    bootstrap:
+      email: founder@bookeasy.test
+      token: test-bootstrap-token-0123456789abcdef
+  notifications:
+    dev-log-delivery: false
+    email:
+      provider: ""
+    sms:
+      provider: ""

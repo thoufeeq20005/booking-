@@ -23,9 +23,13 @@ Full instructions: [docs/local-setup.md](docs/local-setup.md)
 
 - [Architecture](docs/architecture.md)
 - [Database design](docs/database-schema.md)
+- [Authentication & roles](docs/authentication.md)
+- [First Super Admin](docs/admin-setup.md)
+- Integrations: [email](docs/integrations/email.md) · [SMS/OTP](docs/integrations/sms-otp.md) · [Google sign-in](docs/integrations/google-sign-in.md)
+- [Deployment notes](docs/deployment.md)
 - [Development checklist](docs/development-checklist.md)
 - API reference: Swagger UI at `/swagger-ui.html` (dev)
 
 ## Status
 
-Phase 1 (foundation) complete. See the [checklist](docs/development-checklist.md) for what is built and what is next.
+Phases 1 (foundation) and 2 (authentication) complete. See the [checklist](docs/development-checklist.md) for what is built and what is next.

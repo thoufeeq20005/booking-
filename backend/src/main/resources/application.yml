@@ -34,6 +34,9 @@ spring:
     default-property-inclusion: non_null
     serialization:
       write-dates-as-timestamps: false
+  messages:
+    basename: i18n/messages
+    fallback-to-system-locale: false
   servlet:
     multipart:
       max-file-size: ${UPLOAD_MAX_FILE_SIZE:10MB}
@@ -41,7 +44,8 @@ spring:
 
 server:
   port: ${PORT:8080}
-  forward-headers-strategy: framework
+  # Client IPs are resolved by ClientIpResolver from trusted proxy hops only (see CLIENT_IP_XFF_INDEX).
+  forward-headers-strategy: none
   error:
     include-message: never
     include-stacktrace: never
@@ -74,8 +78,60 @@ bookeasy:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173}
   storage:
     root-path: ${FILE_STORAGE_PATH:./data/uploads}
+  security:
+    data-encryption-key: ${DATA_ENCRYPTION_KEY:}
+    client-ip-xff-index-from-right: ${CLIENT_IP_XFF_INDEX:0}
+  auth:
+    jwt-secret: ${JWT_SECRET:}
+    issuer: bookeasy
+    access-token-ttl: ${JWT_ACCESS_TOKEN_TTL_MINUTES:15}m
+    refresh-token-ttl: ${JWT_REFRESH_TOKEN_TTL_DAYS:14}d
+    two-factor-challenge-ttl: 5m
+    email-verification-ttl: 24h
+    password-reset-ttl: 30m
+    refresh-cookie:
+      name: be_rt
+      path: /api/v1/auth
+      secure: ${AUTH_COOKIE_SECURE:false}
+      same-site: Strict
+    otp:
+      length: 6
+      ttl: 5m
+      max-attempts: 5
+      resend-cooldown: 60s
+      max-sends-per-hour: 5
+    lockout:
+      max-failures: 5
+      duration: 15m
+    google:
+      client-id: ${GOOGLE_OAUTH_CLIENT_ID:}
+    bootstrap:
+      email: ${BOOTSTRAP_ADMIN_EMAIL:}
+      token: ${BOOTSTRAP_ADMIN_TOKEN:}
+  notifications:
+    # Dev only: with no provider configured, log emails/OTPs instead of failing. Always false in prod.
+    dev-log-delivery: ${NOTIFICATIONS_DEV_LOG:true}
+    email:
+      provider: ${EMAIL_PROVIDER:}
+      smtp-host: ${SMTP_HOST:}
+      smtp-port: ${SMTP_PORT:587}
+      smtp-username: ${SMTP_USERNAME:}
+      smtp-password: ${SMTP_PASSWORD:}
+      smtp-starttls: ${SMTP_STARTTLS:true}
+      from-address: ${EMAIL_FROM_ADDRESS:}
+      from-name: ${EMAIL_FROM_NAME:BookEasy}
+    sms:
+      provider: ${SMS_PROVIDER:}
+      api-key: ${SMS_API_KEY:}
+      base-url: ${SMS_BASE_URL:https://control.msg91.com}
+      otp-template-id: ${SMS_OTP_TEMPLATE_ID:}
+      otp-variable: ${SMS_OTP_VARIABLE:otp}
 
 logging:
+  # Regional-language text must survive in logs regardless of the host's default code page.
+  charset:
+    console: UTF-8
+    file: UTF-8
   level:
     root: INFO
     com.bookeasy: ${LOG_LEVEL:INFO}
@@ -92,3 +148,9 @@ springdoc:
     enabled: ${API_DOCS_ENABLED:false}
   swagger-ui:
     enabled: ${API_DOCS_ENABLED:false}
+bookeasy:
+  auth:
+    refresh-cookie:
+      secure: true
+  notifications:
+    dev-log-delivery: false
