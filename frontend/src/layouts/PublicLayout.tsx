@@ -7,6 +7,7 @@ import { Logo } from '@/components/brand/Logo';
 import { Button, buttonClasses } from '@/components/ui/Button';
 import { LoadingState } from '@/components/ui/StateMessage';
 import { useAuth } from '@/contexts/AuthContext';
+import { NotificationBell } from '@/features/engagement/NotificationBell';
 import { LanguageSelector } from '@/components/common/LanguageSelector';
 import { ThemeToggle } from '@/components/common/ThemeToggle';
 import { usePublicConfig } from '@/services/platformApi';
@@ -28,6 +29,7 @@ function AuthControls({ onNavigate }: { onNavigate?: () => void }) {
   if (status === 'authenticated' && user) {
     return (
       <div className="flex items-center gap-2">
+        <NotificationBell onNavigate={onNavigate} />
         <Link
           to="/account"
           onClick={onNavigate}

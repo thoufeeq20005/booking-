@@ -39,6 +39,9 @@ const BookingDetailPage = named(() => import('@/pages/customer/BookingDetailPage
 const AppointmentsPage = named(() => import('@/pages/owner/AppointmentsPage'), 'AppointmentsPage');
 const ReceiptPage = named(() => import('@/pages/customer/ReceiptPage'), 'ReceiptPage');
 const AdminSettlementsPage = named(() => import('@/pages/admin/AdminSettlementsPage'), 'AdminSettlementsPage');
+const NotificationsPage = named(() => import('@/pages/NotificationsPage'), 'NotificationsPage');
+const OwnerReviewsPage = named(() => import('@/pages/owner/OwnerReviewsPage'), 'OwnerReviewsPage');
+const AdminReviewsPage = named(() => import('@/pages/admin/AdminReviewsPage'), 'AdminReviewsPage');
 const SearchPage = named(() => import('@/pages/discovery/SearchPage'), 'SearchPage');
 const BusinessPage = named(() => import('@/pages/discovery/BusinessPage'), 'BusinessPage');
 const AcceptInvitationPage = named(() => import('@/pages/staff/AcceptInvitationPage'), 'AcceptInvitationPage');
@@ -78,6 +81,7 @@ export function AppRoutes() {
         />
         <Route path="business/register" element={guard(<RegisterBusinessPage />)} />
         <Route path="dashboard" element={guard(<DashboardRedirect />)} />
+        <Route path="notifications" element={guard(<NotificationsPage />)} />
         <Route path="customer" element={guard(<DashboardLayout area="customer" />)}>
           <Route index element={<CustomerOverviewPage />} />
           <Route path="bookings" element={<BookingsPage />} />
@@ -87,6 +91,7 @@ export function AppRoutes() {
         <Route path="owner" element={guard(<DashboardLayout area="owner" />, OWNER)}>
           <Route index element={<OwnerDashboardPage />} />
           <Route path="appointments" element={<AppointmentsPage />} />
+          <Route path="reviews" element={<OwnerReviewsPage />} />
           <Route path="organizations" element={<MyBusinessesPage />} />
           <Route path="organizations/:id" element={<OrganizationSetupPage />} />
         </Route>
@@ -102,6 +107,7 @@ export function AppRoutes() {
           <Route path="users" element={<AdminUsersPage />} />
           <Route path="audit" element={<AdminAuditPage />} />
           <Route path="settlements" element={<AdminSettlementsPage />} />
+          <Route path="reviews" element={<AdminReviewsPage />} />
         </Route>
         <Route path="*" element={<NotFoundPage />} />
       </Route>

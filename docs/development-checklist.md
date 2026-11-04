@@ -106,9 +106,15 @@ Legend: `[x]` done and tested · `[ ]` not started · `[~]` in progress
 - [x] Tests: backend 132 (signature, idempotent webhooks, expiry, late capture refund, refund retry, commission maths, settlement), frontend 81
 - [ ] GST invoices (needs the platform's GSTIN and tax rules); Route linked-account onboarding happens in the Razorpay dashboard
 
-## Phase 9 – Reviews & notifications
-- [ ] Reviews (completed only), replies, reports, moderation
-- [ ] Outbox + in-app/email/SMS/WhatsApp adapters, reminders, preferences
+## Phase 9 – Reviews & notifications ✅
+- [x] Flyway V8: reviews, review_reports, notifications (inbox), notification_outbox, notification_preferences, appointment_reminders
+- [x] Reviews only for the customer's completed bookings, once; owner replies; one report per person; admin hide/restore (audited); rating average and count recomputed from visible reviews; public pages show first name + initial
+- [x] Notifications for every booking event (booked/requested/new, approved, declined, cancelled either side, rescheduled, expired, completed) in the recipient's language, written in the same transaction as the change
+- [x] Outbox dispatcher (after commit + every 30 s) with exponential backoff, 5 attempts; email channel live
+- [x] Reminders at configurable offsets (default 24 h and 1 h), each sent once (primary key), closest one only when several are due
+- [x] Preferences (email, reminders; SMS/WhatsApp toggles stored), header bell with unread count, inbox page, review form, business reviews, owner replies page, admin moderation page
+- [x] Tests: backend 135, frontend 83
+- [ ] SMS / WhatsApp notification delivery needs DLT-registered (India) and Meta-approved message templates; the outbox already supports the channels
 
 ## Phase 10 – Additional features
 - [ ] Family members, favourites, comparison, addresses, support, retention jobs

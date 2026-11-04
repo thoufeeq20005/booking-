@@ -12,6 +12,7 @@ import { ErrorState, LoadingState } from '@/components/ui/StateMessage';
 import { BookingStatusBadge } from '@/features/booking/BookingStatusBadge';
 import { PayNow } from '@/features/booking/PayNow';
 import { SlotPicker } from '@/features/booking/SlotPicker';
+import { ReviewForm } from '@/features/engagement/ReviewWidgets';
 import { useApiForm } from '@/hooks/useApiForm';
 import { intlLocale } from '@/i18n';
 import { ACTIVE, bookingApi, isoDateIST, type Booking } from '@/services/bookingApi';
@@ -110,6 +111,9 @@ export function BookingDetailPage() {
           </div>
         )}
       </Card>
+      {b.status === 'COMPLETED' && !b.reviewed && (
+        <Card className="p-6"><ReviewForm appointmentId={b.id} onDone={() => void refetch()} /></Card>
+      )}
       {b.status === 'PENDING_PAYMENT' && (
         <Card className="p-6"><PayNow booking={b} onPaid={() => void refetch()} /></Card>
       )}

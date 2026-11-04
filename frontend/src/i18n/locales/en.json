@@ -121,7 +121,9 @@
     "INVALID_QR_CODE": "This booking pass isn't valid for this business.",
     "PAYMENT_SIGNATURE_INVALID": "We couldn't verify this payment. If money was taken, it will be confirmed or refunded automatically.",
     "PAYMENT_NOT_REQUIRED": "This booking doesn't need a payment.",
-    "BOOKING_EXPIRED": "The time to pay for this booking has run out. Please book again."
+    "BOOKING_EXPIRED": "The time to pay for this booking has run out. Please book again.",
+    "REVIEW_NOT_ALLOWED": "You can review a booking once it's completed.",
+    "REVIEW_ALREADY_EXISTS": "You've already reviewed this booking."
   },
   "notFound": {
     "title": "Page not found",
@@ -613,7 +615,9 @@
       "APPOINTMENT_CANCEL": "Booking cancelled by the business",
       "APPOINTMENT_NO_SHOW": "Marked as no-show",
       "SETTLEMENT_PAID": "Settlement paid out",
-      "ORGANIZATION_PAYOUT_ACCOUNT_SET": "Payout account set"
+      "ORGANIZATION_PAYOUT_ACCOUNT_SET": "Payout account set",
+      "REVIEW_HIDDEN": "Review hidden",
+      "REVIEW_RESTORED": "Review restored"
     }
   },
   "team": {
@@ -828,5 +832,44 @@
     "payouts": "Payouts",
     "payoutAccount": "Razorpay linked account",
     "payoutAccountHint": "From Razorpay Route after the business completes KYC. Leave empty for manual payouts."
+  },
+  "notify": {
+    "title": "Notifications",
+    "unreadLabel": "{{count}} unread notifications",
+    "readAll": "Mark all as read",
+    "empty": "You're all caught up.",
+    "prefsTitle": "Notifications",
+    "prefsIntro": "Updates always appear in your BookEasy inbox. Choose what else we send.",
+    "pref": {
+      "email": "Email me about bookings",
+      "reminders": "Send appointment reminders",
+      "sms": "SMS",
+      "whatsapp": "WhatsApp",
+      "soon": "Coming soon"
+    }
+  },
+  "review": {
+    "starsLabel": "{{count}} out of 5 stars",
+    "rateVisit": "How was your visit?",
+    "rating": "Rating",
+    "comment": "Tell others about your experience (optional)",
+    "submit": "Post review",
+    "reported": "Thanks, our team will take a look.",
+    "reportReason": "What's wrong with this review?",
+    "report": "Report",
+    "reply": "Reply from the business",
+    "title": "Reviews",
+    "none": "No reviews yet.",
+    "writeReply": "Reply publicly…",
+    "sendReply": "Reply",
+    "moderation": "Review moderation",
+    "onlyReported": "Only reported reviews",
+    "reports": "{{count}} reports",
+    "status": {
+      "VISIBLE": "Visible",
+      "HIDDEN": "Hidden"
+    },
+    "hide": "Hide",
+    "restore": "Restore"
   }
 }

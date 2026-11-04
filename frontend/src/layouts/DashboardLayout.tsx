@@ -9,6 +9,7 @@ import {
   LayoutDashboard,
   ScrollText,
   ShieldCheck,
+  Star,
   UserRound,
   Users,
   Wallet,
@@ -45,6 +46,7 @@ function useNav(area: DashboardArea): NavItem[] {
         { to: '/admin/users', label: t('dashboard.users'), icon: Users },
         { to: '/admin/categories', label: t('admin.categories'), icon: FolderTree },
         { to: '/admin/settlements', label: t('payment.settlements'), icon: Wallet },
+        { to: '/admin/reviews', label: t('review.moderation'), icon: Star },
         { to: '/admin/audit', label: t('dashboard.auditLog'), icon: ScrollText },
       ];
     case 'owner':
@@ -52,6 +54,7 @@ function useNav(area: DashboardArea): NavItem[] {
         { to: '/owner', label: t('dashboard.overview'), icon: LayoutDashboard, end: true },
         { to: '/owner/appointments', label: t('booking.appointments'), icon: CalendarDays },
         { to: '/owner/organizations', label: t('business.myBusinesses'), icon: Building2 },
+        { to: '/owner/reviews', label: t('review.title'), icon: Star },
       ];
     case 'staff':
       return [{ to: '/staff', label: t('dashboard.overview'), icon: CalendarDays, end: true }];

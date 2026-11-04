@@ -9,6 +9,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { ContactSection } from '@/features/account/ContactSection';
 import { PasswordSection } from '@/features/account/PasswordSection';
 import { TwoFactorSection } from '@/features/account/TwoFactorSection';
+import { NotificationPreferencesSection } from '@/features/account/NotificationPreferencesSection';
 import { useApiForm } from '@/hooks/useApiForm';
 import { session } from '@/services/apiClient';
 import { accountApi } from '@/services/authApi';
@@ -97,6 +98,9 @@ export function AccountPage() {
       </Section>
       <Section title={t('account.twoFactor')}>
         <TwoFactorSection />
+      </Section>
+      <Section title={t('notify.prefsTitle')}>
+        <NotificationPreferencesSection />
       </Section>
       <Section title={t('account.sessions')}>
         <p className="mb-4 text-sm text-fg-muted">{t('account.logoutAllDescription')}</p>

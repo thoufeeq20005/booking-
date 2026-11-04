@@ -246,6 +246,9 @@ public class BookingService {
         java.util.Set<Long> paid = new java.util.HashSet<>(jdbc.queryForList(
                 "SELECT appointment_id FROM payments WHERE status = 'CAPTURED' AND appointment_id IN (:ids)",
                 Map.of("ids", ids(list, Appointment::getId)), Long.class));
+        java.util.Set<Long> reviewed = new java.util.HashSet<>(jdbc.queryForList(
+                "SELECT appointment_id FROM reviews WHERE appointment_id IN (:ids)",
+                Map.of("ids", ids(list, Appointment::getId)), Long.class));
         return list.stream().map(a -> {
             Organization o = orgs.get(a.getOrganizationId());
             Branch b = brs.get(a.getBranchId());
@@ -262,7 +265,7 @@ public class BookingService {
                     c == null ? null : c.getFullName(), c == null ? null : c.getPhone(), a.getServicePrice(),
                     a.getPlatformFee(), a.getTotalAmount(), a.getCustomerNote(), a.getCancelReason(), a.getCancelledBy(),
                     a.getRefundAmount(), a.getCheckedInAt(), a.getRescheduleCount(),
-                    withQr && a.isActive() ? qr.payload(a.getReference()) : null, paid.contains(a.getId()), a.getCreatedAt());
+                    withQr && a.isActive() ? qr.payload(a.getReference()) : null, paid.contains(a.getId()), reviewed.contains(a.getId()), a.getCreatedAt());
         }).toList();
     }
 

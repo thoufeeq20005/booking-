@@ -34,6 +34,7 @@ export interface Booking {
   rescheduleCount: number;
   qrPayload?: string;
   paid: boolean;
+  reviewed: boolean;
   createdAt: string;
 }
 

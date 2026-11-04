@@ -7,6 +7,7 @@ import { ErrorState, LoadingState } from '@/components/ui/StateMessage';
 import { DAY_KEYS, fileUrl, useLocalized } from '@/features/organization/shared';
 import { intlLocale } from '@/i18n';
 import { BookingWizard } from '@/features/booking/BookingWizard';
+import { BusinessReviews } from '@/features/engagement/ReviewWidgets';
 import { discoveryApi, mapsLink } from '@/services/discoveryApi';
 import { formatINR, formatWallTime } from '@/utils/format';
 
@@ -76,6 +77,7 @@ export function BusinessPage() {
               </ul>
             </Card>
           )}
+          <BusinessReviews slug={p.slug} rating={Number(p.ratingAvg)} count={p.reviewCount} />
           {p.branches.map((b) => (
             <Card key={b.id} className="p-6 text-sm">
               <h2 className="text-lg font-semibold">{b.name}</h2>

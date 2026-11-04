@@ -72,7 +72,11 @@ public enum ErrorCode {
     // Payments
     PAYMENT_SIGNATURE_INVALID(HttpStatus.BAD_REQUEST, "The payment could not be verified"),
     PAYMENT_NOT_REQUIRED(HttpStatus.CONFLICT, "This booking doesn't need a payment"),
-    BOOKING_EXPIRED(HttpStatus.CONFLICT, "The time to pay for this booking has run out");
+    BOOKING_EXPIRED(HttpStatus.CONFLICT, "The time to pay for this booking has run out"),
+
+    // Reviews
+    REVIEW_NOT_ALLOWED(HttpStatus.CONFLICT, "You can review a booking once it is completed"),
+    REVIEW_ALREADY_EXISTS(HttpStatus.CONFLICT, "You have already reviewed this booking");
 
     private final HttpStatus status;
     private final String defaultMessage;
