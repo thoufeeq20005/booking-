@@ -77,8 +77,13 @@ Legend: `[x]` done and tested · `[ ]` not started · `[~]` in progress
 - [x] Tests: backend 121 (9 slot-engine unit tests incl. conflicts/buffer/leave/notice, end-to-end slots, invitations, isolation), frontend 75
 - [ ] Service groupings (categories within a business) dropped for now; deleting a service will become deactivate-only once bookings exist (Phase 7)
 
-## Phase 6 – Location & discovery
-- [ ] GPS/manual location, Google Maps, nearby search (spatial index), filters, sorting, suggestions, map sync
+## Phase 6 – Location & discovery ✅
+- [x] Nearby search (`GET /public/search`): bounding box on lat/lng index, then `ST_Distance_Sphere` on the generated POINT; filters (category, subcategory, text across business/subcategory/service names, min rating), sort by distance/rating/price, "from" price per branch
+- [x] Suggestions (`GET /public/suggest`) across business names and subcategory names in every language
+- [x] Public business profile (`GET /public/organizations/{slug}`): branches + hours, services with per-branch prices, active staff (approved businesses only)
+- [x] Frontend: search page (GPS or city presets, remembered locally), category chips, business page, "Open in Google Maps" links
+- [x] Tests: backend 123, frontend 77
+- [ ] Embedded interactive map and address geocoding need `VITE_GOOGLE_MAPS_API_KEY` / `GOOGLE_MAPS_SERVER_API_KEY`; deferred until keys exist (links work without keys)
 
 ## Phase 7 – Booking
 - [ ] Booking wizard (category workflows), instant/approval modes, state machine

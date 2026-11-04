@@ -47,9 +47,9 @@ export function HomePage() {
             </h1>
             <p className="mt-5 max-w-xl text-lg text-fg-muted">{t('home.heroSubtitle')}</p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <a href="#how" className={buttonClasses('primary', 'lg')}>
+              <Link to="/search" className={buttonClasses('primary', 'lg')}>
                 {t('home.ctaExplore')}
-              </a>
+              </Link>
               <Link to="/business/register" className={buttonClasses('secondary', 'lg')}>
                 {t('home.ctaBusiness')}
               </Link>

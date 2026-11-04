@@ -34,6 +34,8 @@ const AdminAuditPage = named(() => import('@/pages/admin/AdminAuditPage'), 'Admi
 const AdminDashboardPage = named(() => import('@/pages/dashboard/AdminDashboardPage'), 'AdminDashboardPage');
 const OwnerDashboardPage = named(() => import('@/pages/dashboard/OwnerDashboardPage'), 'OwnerDashboardPage');
 const CustomerOverviewPage = named(() => import('@/pages/dashboard/CustomerOverviewPage'), 'CustomerOverviewPage');
+const SearchPage = named(() => import('@/pages/discovery/SearchPage'), 'SearchPage');
+const BusinessPage = named(() => import('@/pages/discovery/BusinessPage'), 'BusinessPage');
 const AcceptInvitationPage = named(() => import('@/pages/staff/AcceptInvitationPage'), 'AcceptInvitationPage');
 const StaffOverviewPage = named(() => import('@/pages/dashboard/StaffOverviewPage'), 'StaffOverviewPage');
 
@@ -54,6 +56,8 @@ export function AppRoutes() {
       <Route element={<PublicLayout />}>
         <Route index element={<HomePage />} />
         <Route path="status" element={<StatusPage />} />
+        <Route path="search" element={<SearchPage />} />
+        <Route path="b/:slug" element={<BusinessPage />} />
         <Route path="signin" element={<SignInPage />} />
         <Route path="register" element={<RegisterPage />} />
         <Route path="verify-email" element={<VerifyEmailPage />} />

@@ -13,7 +13,8 @@
     "status": "System status",
     "skipToContent": "Skip to content",
     "signOut": "Sign out",
-    "dashboard": "Dashboard"
+    "dashboard": "Dashboard",
+    "findServices": "Find services"
   },
   "header": {
     "language": "Language",
@@ -685,5 +686,46 @@
     "accept": "Accept invitation",
     "canEditHint": "You can change your availability and leave; ask the owner for other changes.",
     "askOwnerHint": "Your owner manages your hours and leave."
+  },
+  "search": {
+    "title": "Find services near you",
+    "placeholder": "Clinic, salon, service or business name",
+    "location": "Location",
+    "myLocation": "My location",
+    "city": {
+      "chennai": "Chennai",
+      "bengaluru": "Bengaluru",
+      "hyderabad": "Hyderabad",
+      "mumbai": "Mumbai",
+      "delhi": "Delhi",
+      "kolkata": "Kolkata",
+      "pune": "Pune",
+      "kochi": "Kochi",
+      "coimbatore": "Coimbatore",
+      "thiruvananthapuram": "Thiruvananthapuram",
+      "visakhapatnam": "Visakhapatnam",
+      "mysuru": "Mysuru"
+    },
+    "radius": "Within",
+    "km": "{{count}} km",
+    "sort": "Sort by",
+    "sortBy": {
+      "DISTANCE": "Nearest",
+      "RATING": "Top rated",
+      "PRICE": "Lowest price"
+    },
+    "noResults": "Nothing found nearby",
+    "noResultsHint": "Try a bigger radius, another category or a different search.",
+    "distance": "{{km}} km away",
+    "from": "from {{price}}",
+    "openMap": "Open in Google Maps"
+  },
+  "biz": {
+    "reviews": "{{count}} reviews",
+    "team": "Our team",
+    "mode": {
+      "INSTANT": "Bookings are confirmed instantly.",
+      "APPROVAL": "The business confirms each booking request."
+    }
   }
 }

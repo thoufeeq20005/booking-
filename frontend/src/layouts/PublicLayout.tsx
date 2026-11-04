@@ -68,6 +68,9 @@ function RoleLinks({ onNavigate }: { onNavigate?: () => void }) {
   const { status, hasRole } = useAuth();
   return (
     <>
+      <NavLink to="/search" className={navLinkClass} onClick={onNavigate}>
+        {t('nav.findServices')}
+      </NavLink>
       {status === 'authenticated' && (
         <NavLink to="/dashboard" className={navLinkClass} onClick={onNavigate}>
           {t('nav.dashboard')}

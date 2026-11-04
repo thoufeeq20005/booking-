@@ -13,7 +13,8 @@
     "status": "सिस्टम स्थिति",
     "skipToContent": "सामग्री पर जाएँ",
     "signOut": "साइन आउट",
-    "dashboard": "डैशबोर्ड"
+    "dashboard": "डैशबोर्ड",
+    "findServices": "सेवाएँ खोजें"
   },
   "header": {
     "language": "भाषा",
@@ -685,5 +686,46 @@
     "accept": "आमंत्रण स्वीकार करें",
     "canEditHint": "आप अपनी उपलब्धता और अवकाश बदल सकते हैं; अन्य बदलावों के लिए मालिक से कहें।",
     "askOwnerHint": "आपका समय और अवकाश मालिक संभालते हैं।"
+  },
+  "search": {
+    "title": "अपने पास सेवाएँ खोजें",
+    "placeholder": "क्लिनिक, सैलून, सेवा या व्यवसाय का नाम",
+    "location": "स्थान",
+    "myLocation": "मेरा स्थान",
+    "city": {
+      "chennai": "चेन्नई",
+      "bengaluru": "बेंगलुरु",
+      "hyderabad": "हैदराबाद",
+      "mumbai": "मुंबई",
+      "delhi": "दिल्ली",
+      "kolkata": "कोलकाता",
+      "pune": "पुणे",
+      "kochi": "कोच्चि",
+      "coimbatore": "कोयंबटूर",
+      "thiruvananthapuram": "तिरुवनंतपुरम",
+      "visakhapatnam": "विशाखापत्तनम",
+      "mysuru": "मैसूरु"
+    },
+    "radius": "दूरी",
+    "km": "{{count}} किमी",
+    "sort": "क्रम",
+    "sortBy": {
+      "DISTANCE": "सबसे नज़दीक",
+      "RATING": "सर्वोच्च रेटिंग",
+      "PRICE": "सबसे कम कीमत"
+    },
+    "noResults": "पास में कुछ नहीं मिला",
+    "noResultsHint": "बड़ी दूरी, कोई और श्रेणी या अलग खोज आज़माएँ।",
+    "distance": "{{km}} किमी दूर",
+    "from": "{{price}} से",
+    "openMap": "Google Maps में खोलें"
+  },
+  "biz": {
+    "reviews": "{{count}} समीक्षाएँ",
+    "team": "हमारी टीम",
+    "mode": {
+      "INSTANT": "बुकिंग तुरंत पुष्ट होती है।",
+      "APPROVAL": "व्यवसाय हर बुकिंग अनुरोध की पुष्टि करता है।"
+    }
   }
 }
