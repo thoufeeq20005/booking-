@@ -1,11 +1,14 @@
 import '@testing-library/jest-dom/vitest';
 import { afterEach, beforeEach } from 'vitest';
-import { cleanup } from '@testing-library/react';
+import { cleanup, configure } from '@testing-library/react';
 import i18n from '@/i18n';
 import { session } from '@/services/apiClient';
 import { installFakeApi } from './fakeApi';
 
 void i18n.changeLanguage('en');
+
+// Route pages are lazy chunks; under a parallel run the first render can take longer than the 1 s default.
+configure({ asyncUtilTimeout: 5000 });
 
 if (!window.matchMedia) {
   window.matchMedia = (query: string) =>

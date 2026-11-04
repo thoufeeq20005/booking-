@@ -12,6 +12,8 @@ import { BranchesSection } from '@/features/organization/BranchesSection';
 import { DocumentsSection } from '@/features/organization/DocumentsSection';
 import { HistoryList } from '@/features/organization/HistoryList';
 import { OrganizationForm } from '@/features/organization/OrganizationForm';
+import { ServicesSection } from '@/features/organization/ServicesSection';
+import { StaffSection } from '@/features/organization/StaffSection';
 import { fileUrl, StatusBadge, useLocalized } from '@/features/organization/shared';
 import { useApiForm } from '@/hooks/useApiForm';
 import {
@@ -21,7 +23,7 @@ import {
   type OrganizationDetail,
 } from '@/services/organizationApi';
 
-const STEPS = ['details', 'branches', 'documents', 'review'] as const;
+const STEPS = ['details', 'branches', 'documents', 'services', 'staff', 'review'] as const;
 type Step = (typeof STEPS)[number];
 
 /** Which tab fixes each missing step. */
@@ -176,6 +178,8 @@ export function OrganizationSetupPage() {
     details: !org.missingSteps.includes('CONTACT'),
     branches: !org.missingSteps.includes('BRANCH') && !org.missingSteps.includes('WORKING_HOURS'),
     documents: !org.missingSteps.includes('DOCUMENTS'),
+    services: false,
+    staff: false,
     review: org.summary.status !== 'DRAFT' && org.summary.status !== 'REJECTED',
   };
 
@@ -226,6 +230,8 @@ export function OrganizationSetupPage() {
         )}
         {step === 'branches' && <BranchesSection org={org} />}
         {step === 'documents' && <DocumentsSection org={org} />}
+        {step === 'services' && <ServicesSection org={org} />}
+        {step === 'staff' && <StaffSection org={org} />}
         {step === 'review' && <ReviewStep org={org} goTo={goTo} />}
       </div>
     </div>

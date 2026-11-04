@@ -108,7 +108,10 @@ Implemented in `V3__organizations.sql`, with these deliberate differences from t
 - `categories.filter_schema` exists but is not exposed until search filters land (Phase 6).
 - `organizations.version` adds optimistic locking on top of the `SELECT … FOR UPDATE` taken by every state change.
 
-## Phase 5 — Services, staff, availability ⏳
+## Phase 5 — Services, staff, availability ✅
+
+Implemented in `V4__services_staff_availability.sql`. Differences from the plan: owner-written service names are plain text; `service_categories` and `slot_minutes` were dropped (each service has `slot_interval_minutes`); several availability windows per day are allowed; `staff_invitations` references the placeholder `staff_profiles` row.
+
 
 | Table | Key columns / constraints |
 |---|---|

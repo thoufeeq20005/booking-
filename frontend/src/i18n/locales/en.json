@@ -110,7 +110,9 @@
     "ORGANIZATION_INCOMPLETE": "Complete every step on the checklist before submitting.",
     "INVALID_STATUS_TRANSITION": "That action isn't possible in the business's current status.",
     "DOCUMENTS_NOT_ACCEPTED": "Every required document must be uploaded and not rejected.",
-    "BRANCH_LIMIT_REACHED": "This business already has the maximum number of branches."
+    "BRANCH_LIMIT_REACHED": "This business already has the maximum number of branches.",
+    "STAFF_ALREADY_EXISTS": "This person is already on the team or invited.",
+    "INVITATION_EMAIL_MISMATCH": "Sign in with the email address the invitation was sent to."
   },
   "notFound": {
     "title": "Page not found",
@@ -249,7 +251,11 @@
     "UNSUPPORTED_TYPE": "Only PDF, JPG, PNG and WebP are allowed.",
     "UNSUPPORTED_LANGUAGE": "That language isn't supported.",
     "DUPLICATE": "This already exists.",
-    "INVALID_TIMEZONE": "Unknown timezone."
+    "INVALID_TIMEZONE": "Unknown timezone.",
+    "OVERLAPPING_WINDOWS": "Windows on the same day can't overlap.",
+    "INVALID_BRANCH": "Choose this business's branches.",
+    "INVALID_SERVICE": "Choose this business's services.",
+    "TOO_MANY": "The limit has been reached."
   },
   "orgStatus": {
     "DRAFT": "Draft",
@@ -307,7 +313,9 @@
       "details": "Details",
       "branches": "Branches & hours",
       "documents": "Documents",
-      "review": "Review & submit"
+      "review": "Review & submit",
+      "services": "Services",
+      "staff": "Staff"
     },
     "banner": {
       "DRAFT": "Complete each step, then submit your business for verification.",
@@ -586,7 +594,96 @@
       "SUBCATEGORY_DELETED": "Subcategory deleted",
       "DOC_REQUIREMENT_CREATED": "Document requirement created",
       "DOC_REQUIREMENT_UPDATED": "Document requirement updated",
-      "DOC_REQUIREMENT_DELETED": "Document requirement deleted"
+      "DOC_REQUIREMENT_DELETED": "Document requirement deleted",
+      "STAFF_INVITED": "Staff invited",
+      "STAFF_JOINED": "Staff joined",
+      "STAFF_PERMISSIONS_CHANGED": "Staff permissions changed",
+      "STAFF_STATUS_CHANGED": "Staff status changed",
+      "STAFF_INVITATION_REVOKED": "Staff invitation withdrawn"
     }
+  },
+  "team": {
+    "serviceName": "Service name",
+    "duration": "Duration (minutes)",
+    "price": "Price (₹)",
+    "type": "Type",
+    "typeName": {
+      "IN_PERSON": "In person",
+      "ONLINE": "Online"
+    },
+    "buffer": "Buffer after (minutes)",
+    "bufferHint": "Free time kept after each appointment.",
+    "interval": "Start every (minutes)",
+    "intervalHint": "e.g. 15 → 9:00, 9:15, 9:30…",
+    "notice": "Minimum notice (minutes)",
+    "advance": "Bookable up to (days ahead)",
+    "offeredAt": "Offered at",
+    "branchPrice": "Price at {{branch}}",
+    "branchPricePlaceholder": "Branch price (optional)",
+    "requiresStaff": "Needs a staff member",
+    "requiresStaffHint": "Turn off for services like a lab test that any slot can serve.",
+    "previewTitle": "Preview available slots",
+    "previewHint": "Shows what customers will see on a date, based on hours, staff availability, holidays and leave.",
+    "service": "Service",
+    "branch": "Branch",
+    "slotsFound": "{{count}} slots · {{price}}",
+    "outcome": {
+      "FULL": "Fully booked or no time left on this date.",
+      "HOLIDAY": "The branch has a holiday on this date.",
+      "CLOSED": "The branch is closed on this day.",
+      "OUT_OF_RANGE": "This date is outside the booking window.",
+      "NO_STAFF": "No staff member is available for this service on this day."
+    },
+    "needBranch": "Add a branch first.",
+    "noServices": "No services yet",
+    "noServicesHint": "Add what customers can book, with its duration and price.",
+    "summary": "{{minutes}} min · {{price}}",
+    "noBranch": "no branch",
+    "addService": "Add a service",
+    "inviteHint": "We'll email an invitation link. They join by signing in with this address.",
+    "displayName": "Name shown to customers",
+    "title": "Title",
+    "specialisation": "Specialisation",
+    "branches": "Works at",
+    "services": "Provides",
+    "permissions": "Permissions",
+    "permission": {
+      "CAN_CONFIRM": "Confirm bookings",
+      "CAN_CANCEL": "Cancel bookings",
+      "CAN_EDIT_HOURS": "Edit own hours and leave"
+    },
+    "sendInvite": "Send invitation",
+    "weeklyAvailability": "Weekly availability",
+    "availabilityHint": "Times are in the branch's local time. Add several windows for split shifts.",
+    "noAvailability": "No availability set",
+    "day": "Day",
+    "addWindow": "Add time window",
+    "saveAvailability": "Save availability",
+    "leave": "Leave",
+    "noLeave": "No upcoming leave.",
+    "leaveFrom": "From",
+    "leaveTo": "To",
+    "addLeave": "Add leave",
+    "noStaff": "No staff yet",
+    "noStaffHint": "Invite your team, or add yourself if you serve customers personally.",
+    "status": {
+      "INVITED": "Invited",
+      "ACTIVE": "Active",
+      "INACTIVE": "Inactive"
+    },
+    "invitePending": "Invitation open until {{date}}",
+    "inviteExpired": "Invitation expired – resend it.",
+    "schedule": "Schedule",
+    "resend": "Resend",
+    "revoke": "Withdraw",
+    "deactivate": "Deactivate",
+    "inviteTitle": "Invite a staff member",
+    "addSelf": "Add myself as staff",
+    "joinTitle": "Join {{business}} on BookEasy",
+    "joinSubtitle": "This invitation was sent to {{email}}.",
+    "joinAs": "You'll appear to customers as {{name}}.",
+    "accept": "Accept invitation",
+    "canEditHint": "You can change your availability and leave; ask the owner for other changes.",
+    "askOwnerHint": "Your owner manages your hours and leave."
   }
 }

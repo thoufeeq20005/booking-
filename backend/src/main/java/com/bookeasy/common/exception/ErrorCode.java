@@ -56,7 +56,11 @@ public enum ErrorCode {
     ORGANIZATION_INCOMPLETE(HttpStatus.UNPROCESSABLE_ENTITY, "Complete every required step before submitting"),
     INVALID_STATUS_TRANSITION(HttpStatus.CONFLICT, "This action isn't possible in the business's current status"),
     DOCUMENTS_NOT_ACCEPTED(HttpStatus.CONFLICT, "Every required document must be present and not rejected"),
-    BRANCH_LIMIT_REACHED(HttpStatus.CONFLICT, "This business has the maximum number of branches");
+    BRANCH_LIMIT_REACHED(HttpStatus.CONFLICT, "This business has the maximum number of branches"),
+
+    // Staff
+    STAFF_ALREADY_EXISTS(HttpStatus.CONFLICT, "This person is already on the team or invited"),
+    INVITATION_EMAIL_MISMATCH(HttpStatus.FORBIDDEN, "Sign in with the email address the invitation was sent to");
 
     private final HttpStatus status;
     private final String defaultMessage;

@@ -43,7 +43,7 @@ describe('dashboard landing', () => {
   });
 
   it('shows staff an honest empty state until they are invited', async () => {
-    api({ ...sampleUser, roles: ['STAFF'] });
+    api({ ...sampleUser, roles: ['STAFF'] }, (r) => (r.url === '/staff/workplaces' ? reply.ok([]) : undefined));
     renderWithProviders(<AppRoutes />, { route: '/dashboard' });
     expect(await screen.findByText("You're not part of a business team yet.")).toBeInTheDocument();
   });

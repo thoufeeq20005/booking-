@@ -34,6 +34,7 @@ const AdminAuditPage = named(() => import('@/pages/admin/AdminAuditPage'), 'Admi
 const AdminDashboardPage = named(() => import('@/pages/dashboard/AdminDashboardPage'), 'AdminDashboardPage');
 const OwnerDashboardPage = named(() => import('@/pages/dashboard/OwnerDashboardPage'), 'OwnerDashboardPage');
 const CustomerOverviewPage = named(() => import('@/pages/dashboard/CustomerOverviewPage'), 'CustomerOverviewPage');
+const AcceptInvitationPage = named(() => import('@/pages/staff/AcceptInvitationPage'), 'AcceptInvitationPage');
 const StaffOverviewPage = named(() => import('@/pages/dashboard/StaffOverviewPage'), 'StaffOverviewPage');
 
 /** /dashboard sends each person to the area of their most powerful role. */
@@ -76,6 +77,7 @@ export function AppRoutes() {
           <Route path="organizations" element={<MyBusinessesPage />} />
           <Route path="organizations/:id" element={<OrganizationSetupPage />} />
         </Route>
+        <Route path="staff/invitations/accept" element={<AcceptInvitationPage />} />
         <Route path="staff" element={guard(<DashboardLayout area="staff" />, STAFF)}>
           <Route index element={<StaffOverviewPage />} />
         </Route>

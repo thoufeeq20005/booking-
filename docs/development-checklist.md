@@ -67,9 +67,15 @@ Legend: `[x]` done and tested · `[ ]` not started · `[~]` in progress
 - [x] Tests: backend 107 (owner dashboard isolation, admin counts, audit filters, 2FA reset), frontend 71
 - [ ] Not on real data yet (nothing to show until later phases): bookings, revenue, staff schedules, reviews
 
-## Phase 5 – Services & availability
-- [ ] Services, staff invites/permissions, availability, leaves
-- [ ] Slot computation + tests for conflicts
+## Phase 5 – Services & availability ✅
+- [x] Flyway V4: services (duration, ₹ price, buffer, slot interval, booking window, needs-staff), branch_services (per-branch price), staff_profiles (+ branches, services, permissions), staff_availability (split shifts), staff_leaves, staff_invitations (hashed tokens)
+- [x] Owner services CRUD; staff invite by email (7-day link, resend, withdraw), "add myself" for solo practitioners, assignments, permissions (confirm / cancel / edit own hours), activate/deactivate — all tenant-isolated and audited
+- [x] Invitation accept: must be signed in with the invited email; accepting verifies that email and grants STAFF
+- [x] Staff area: workplaces, services, availability, leave; staff with CAN_EDIT_HOURS edit their own availability/leave
+- [x] Slot engine (`SlotCalculator`): branch hours ∩ staff availability − break − holiday − leave − busy time (+ buffer), clock-aligned starts, minimum notice, booking window, merges staff per start time; `BusyTimeProvider` hook for Phase 7 bookings
+- [x] Owner slot preview (any status) and public slots (approved businesses only)
+- [x] Tests: backend 121 (9 slot-engine unit tests incl. conflicts/buffer/leave/notice, end-to-end slots, invitations, isolation), frontend 75
+- [ ] Service groupings (categories within a business) dropped for now; deleting a service will become deactivate-only once bookings exist (Phase 7)
 
 ## Phase 6 – Location & discovery
 - [ ] GPS/manual location, Google Maps, nearby search (spatial index), filters, sorting, suggestions, map sync
