@@ -8,6 +8,7 @@ import { DAY_KEYS, fileUrl, useLocalized } from '@/features/organization/shared'
 import { intlLocale } from '@/i18n';
 import { BookingWizard } from '@/features/booking/BookingWizard';
 import { BusinessReviews } from '@/features/engagement/ReviewWidgets';
+import { FavouriteButton } from '@/features/engagement/FavouriteButton';
 import { discoveryApi, mapsLink } from '@/services/discoveryApi';
 import { formatINR, formatWallTime } from '@/utils/format';
 
@@ -34,7 +35,7 @@ export function BusinessPage() {
         {p.logoUrl ? <img src={fileUrl(p.logoUrl)} alt="" className="h-16 w-16 rounded-2xl object-cover" />
           : <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-brand-50 text-2xl font-bold text-brand-700">{p.name.charAt(0)}</span>}
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">{p.name}</h1>
+          <h1 className="flex items-center gap-2 text-3xl font-bold tracking-tight">{p.name} <FavouriteButton orgId={p.id} /></h1>
           <p className="text-fg-muted">
             {pick(p.categoryName)} › {pick(p.subcategoryName)}
             {p.reviewCount > 0 && (

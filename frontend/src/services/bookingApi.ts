@@ -23,6 +23,7 @@ export interface Booking {
   staffName?: string;
   customerName?: string;
   customerPhone?: string;
+  patientName?: string;
   servicePrice: number | string;
   platformFee: number | string;
   totalAmount: number | string;
@@ -52,7 +53,7 @@ export const ACTIVE: BookingStatus[] = ['PENDING_PAYMENT', 'PENDING_APPROVAL', '
 export const bookingApi = {
   slots: (branchId: number, serviceId: number, date: string, staffId?: number) =>
     apiGet<DaySlots>(`/public/branches/${branchId}/services/${serviceId}/slots`, { params: { date, staffId } }),
-  book: (body: { branchId: number; serviceId: number; staffId?: number; startsAt: string; note?: string }) =>
+  book: (body: { branchId: number; serviceId: number; staffId?: number; startsAt: string; note?: string; familyMemberId?: number }) =>
     apiPost<Booking>('/customer/appointments', body),
   mine: () => apiGet<Booking[]>('/customer/appointments'),
   get: (id: number) => apiGet<Booking>(`/customer/appointments/${id}`),

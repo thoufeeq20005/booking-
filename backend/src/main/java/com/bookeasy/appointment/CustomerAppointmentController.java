@@ -41,7 +41,7 @@ public class CustomerAppointmentController {
     @PostMapping
     @Operation(summary = "Book a slot returned by the public slots endpoint")
     public ApiResponse<AppointmentView> book(@Valid @RequestBody BookBody b) {
-        return ApiResponse.ok(service.book(me(), new BookRequest(b.branchId(), b.serviceId(), b.staffId(), b.startsAt(), b.note())));
+        return ApiResponse.ok(service.book(me(), new BookRequest(b.branchId(), b.serviceId(), b.staffId(), b.startsAt(), b.note(), b.familyMemberId())));
     }
 
     @GetMapping

@@ -42,6 +42,11 @@ const AdminSettlementsPage = named(() => import('@/pages/admin/AdminSettlementsP
 const NotificationsPage = named(() => import('@/pages/NotificationsPage'), 'NotificationsPage');
 const OwnerReviewsPage = named(() => import('@/pages/owner/OwnerReviewsPage'), 'OwnerReviewsPage');
 const AdminReviewsPage = named(() => import('@/pages/admin/AdminReviewsPage'), 'AdminReviewsPage');
+const FamilyPage = named(() => import('@/pages/customer/CustomerExtrasPages'), 'FamilyPage');
+const FavouritesPage = named(() => import('@/pages/customer/CustomerExtrasPages'), 'FavouritesPage');
+const SupportPage = named(() => import('@/pages/customer/CustomerExtrasPages'), 'SupportPage');
+const ComparePage = named(() => import('@/pages/discovery/ComparePage'), 'ComparePage');
+const AdminSupportPage = named(() => import('@/pages/admin/AdminSupportPage'), 'AdminSupportPage');
 const SearchPage = named(() => import('@/pages/discovery/SearchPage'), 'SearchPage');
 const BusinessPage = named(() => import('@/pages/discovery/BusinessPage'), 'BusinessPage');
 const AcceptInvitationPage = named(() => import('@/pages/staff/AcceptInvitationPage'), 'AcceptInvitationPage');
@@ -66,6 +71,7 @@ export function AppRoutes() {
         <Route path="status" element={<StatusPage />} />
         <Route path="search" element={<SearchPage />} />
         <Route path="b/:slug" element={<BusinessPage />} />
+        <Route path="compare" element={<ComparePage />} />
         <Route path="signin" element={<SignInPage />} />
         <Route path="register" element={<RegisterPage />} />
         <Route path="verify-email" element={<VerifyEmailPage />} />
@@ -87,6 +93,9 @@ export function AppRoutes() {
           <Route path="bookings" element={<BookingsPage />} />
           <Route path="bookings/:id" element={<BookingDetailPage />} />
           <Route path="bookings/:id/receipt" element={<ReceiptPage />} />
+          <Route path="family" element={<FamilyPage />} />
+          <Route path="favourites" element={<FavouritesPage />} />
+          <Route path="support" element={<SupportPage />} />
         </Route>
         <Route path="owner" element={guard(<DashboardLayout area="owner" />, OWNER)}>
           <Route index element={<OwnerDashboardPage />} />
@@ -108,6 +117,7 @@ export function AppRoutes() {
           <Route path="audit" element={<AdminAuditPage />} />
           <Route path="settlements" element={<AdminSettlementsPage />} />
           <Route path="reviews" element={<AdminReviewsPage />} />
+          <Route path="support" element={<AdminSupportPage />} />
         </Route>
         <Route path="*" element={<NotFoundPage />} />
       </Route>

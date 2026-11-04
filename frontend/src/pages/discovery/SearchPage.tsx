@@ -12,6 +12,8 @@ import { usePublicCategories } from '@/services/organizationApi';
 import { CITIES, discoveryApi, mapsLink, type SortKey } from '@/services/discoveryApi';
 import { formatINR } from '@/utils/format';
 import { storage } from '@/utils/storage';
+import { useAuth } from '@/contexts/AuthContext';
+import { compareList, extrasApi } from '@/services/extrasApi';
 
 const LOCATION_KEY = 'bookeasy.location';
 type Loc = { lat: number; lng: number; label: string };
@@ -34,6 +36,9 @@ export function SearchPage() {
   const [loc, setLoc] = useState<Loc>(savedLocation);
   const [locating, setLocating] = useState(false);
   const [text, setText] = useState(params.get('q') ?? '');
+  const { status } = useAuth();
+  const saved = useQuery({ queryKey: ['saved-locations'], queryFn: extrasApi.locations, enabled: status === 'authenticated' });
+  const [compare, setCompare] = useState<string[]>(compareList.get);
   const q = params.get('q') ?? '';
   const categoryId = params.get('category') ? Number(params.get('category')) : undefined;
   const radiusKm = Number(params.get('radius') ?? 10);
@@ -73,8 +78,15 @@ export function SearchPage() {
       </form>
       <div className="flex flex-wrap items-end gap-3">
         <SelectField label={t('search.location')} className="w-48" value={loc.label === 'gps' ? '' : loc.label}
-          onChange={(e) => { const c = CITIES.find((x) => x.key === e.target.value); if (c) setLoc({ lat: c.lat, lng: c.lng, label: c.key }); }}>
+          onChange={(e) => {
+            const v = e.target.value;
+            const s = saved.data?.find((x) => `saved:${x.id}` === v);
+            if (s) { setLoc({ lat: Number(s.latitude), lng: Number(s.longitude), label: v }); return; }
+            const c = CITIES.find((x) => x.key === v);
+            if (c) setLoc({ lat: c.lat, lng: c.lng, label: c.key });
+          }}>
           {loc.label === 'gps' && <option value="">{t('search.myLocation')}</option>}
+          {saved.data?.map((s) => <option key={`saved-${s.id}`} value={`saved:${s.id}`}>{s.label}</option>)}
           {CITIES.map((c) => <option key={c.key} value={c.key}>{t(`search.city.${c.key}`)}</option>)}
         </SelectField>
         <Button variant="secondary" onClick={useGps} loading={locating}><LocateFixed className="h-4 w-4" aria-hidden="true" />{t('business.useMyLocation')}</Button>
@@ -103,6 +115,12 @@ export function SearchPage() {
         </div>
       )}
 
+      {compare.length >= 2 && (
+        <div className="sticky top-20 z-10 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-brand-300 bg-brand-50 px-4 py-2 text-sm">
+          <span>{t('extras.comparing', { count: compare.length })}</span>
+          <Link to={`/compare?slugs=${compare.join(',')}`} className="font-semibold text-brand-700 hover:underline">{t('extras.compareNow')}</Link>
+        </div>
+      )}
       {query.isLoading && <LoadingState />}
       {query.error && <ErrorState error={query.error} onRetry={() => void query.refetch()} />}
       {query.data?.items.length === 0 && <EmptyState title={t('search.noResults')}>{t('search.noResultsHint')}</EmptyState>}
@@ -121,9 +139,15 @@ export function SearchPage() {
                   {h.reviewCount > 0 && <span className="inline-flex items-center gap-1"><Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" aria-hidden="true" />{Number(h.ratingAvg).toFixed(1)} ({h.reviewCount})</span>}
                   {h.fromPrice != null && <span>{t('search.from', { price: formatINR(h.fromPrice) })}</span>}
                 </p>
-                <a href={mapsLink(h.latitude, h.longitude)} target="_blank" rel="noopener noreferrer" className="mt-1 inline-block text-xs text-brand-700 hover:underline">
-                  {t('search.openMap')}
-                </a>
+                <span className="mt-1 flex flex-wrap items-center gap-3 text-xs">
+                  <a href={mapsLink(h.latitude, h.longitude)} target="_blank" rel="noopener noreferrer" className="text-brand-700 hover:underline">
+                    {t('search.openMap')}
+                  </a>
+                  <label className="inline-flex items-center gap-1">
+                    <input type="checkbox" checked={compare.includes(h.slug)} onChange={() => setCompare(compareList.toggle(h.slug))} />
+                    {t('extras.compare')}
+                  </label>
+                </span>
               </div>
             </Card>
           </li>

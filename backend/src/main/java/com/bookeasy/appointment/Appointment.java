@@ -109,6 +109,12 @@ public class Appointment {
     @Column(name = "completed_at")
     private Instant completedAt;
 
+    @Column(name = "family_member_id")
+    private Long familyMemberId;
+
+    @Column(name = "patient_name", length = 120)
+    private String patientName;
+
     @Column(name = "reschedule_count", nullable = false)
     private int rescheduleCount;
 
@@ -151,6 +157,12 @@ public class Appointment {
         if (!ok) {
             throw new ApiException(ErrorCode.BOOKING_NOT_CHANGEABLE);
         }
+    }
+
+    /** Booked by the account holder for a family member; the name is kept even if the member is later removed. */
+    public void bookFor(long familyMemberId, String name) {
+        this.familyMemberId = familyMemberId;
+        this.patientName = name;
     }
 
     public boolean isActive() {
@@ -250,5 +262,6 @@ public class Appointment {
     public Instant getCheckedInAt() { return checkedInAt; }
     public Instant getCompletedAt() { return completedAt; }
     public int getRescheduleCount() { return rescheduleCount; }
+    public String getPatientName() { return patientName; }
     public Instant getCreatedAt() { return createdAt; }
 }

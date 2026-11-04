@@ -871,5 +871,50 @@
     },
     "hide": "Hide",
     "restore": "Restore"
+  },
+  "extras": {
+    "family": "Family",
+    "familyIntro": "Book appointments for the people you look after. Their name appears on the booking.",
+    "noFamily": "No family members yet.",
+    "relation": {
+      "SPOUSE": "Spouse",
+      "CHILD": "Child",
+      "PARENT": "Parent",
+      "SIBLING": "Sibling",
+      "OTHER": "Other"
+    },
+    "relationLabel": "Relation",
+    "dob": "Date of birth (optional)",
+    "addFamily": "Add family member",
+    "favourites": "Favourites",
+    "noFavourites": "No favourites yet.",
+    "removeFavourite": "Remove from favourites",
+    "addFavourite": "Add to favourites",
+    "support": "Support",
+    "supportSent": "Thanks! We'll reply here and by email.",
+    "subject": "Subject",
+    "aboutBooking": "About a booking (optional)",
+    "noBooking": "Not about a specific booking",
+    "message": "How can we help?",
+    "send": "Send",
+    "status": {
+      "OPEN": "Open",
+      "IN_PROGRESS": "In progress",
+      "RESOLVED": "Resolved"
+    },
+    "supportReply": "Reply",
+    "compareNeedTwo": "Pick at least two businesses on the search page to compare them.",
+    "priceRange": "Price range",
+    "compare": "Compare",
+    "comparing": "{{count}} selected to compare",
+    "compareNow": "Compare now",
+    "forWhom": "Who is this for?",
+    "myself": "Myself",
+    "noRequests": "No requests.",
+    "resolve": "Resolve",
+    "retention": "Data retention",
+    "runRetention": "Run now",
+    "retentionIntro": "Nightly, bookings older than the history window lose personal notes (amounts are kept for accounts), and old read notifications, sent emails, webhook ids and rate-limit counters are deleted.",
+    "retentionResult": "{{anonymised}} bookings anonymised, {{deleted}} records deleted"
   }
 }

@@ -6,6 +6,8 @@ import {
   CalendarDays,
   ClipboardCheck,
   FolderTree,
+  Heart,
+  LifeBuoy,
   LayoutDashboard,
   ScrollText,
   ShieldCheck,
@@ -47,6 +49,7 @@ function useNav(area: DashboardArea): NavItem[] {
         { to: '/admin/categories', label: t('admin.categories'), icon: FolderTree },
         { to: '/admin/settlements', label: t('payment.settlements'), icon: Wallet },
         { to: '/admin/reviews', label: t('review.moderation'), icon: Star },
+        { to: '/admin/support', label: t('extras.support'), icon: LifeBuoy },
         { to: '/admin/audit', label: t('dashboard.auditLog'), icon: ScrollText },
       ];
     case 'owner':
@@ -62,6 +65,9 @@ function useNav(area: DashboardArea): NavItem[] {
       return [
         { to: '/customer', label: t('dashboard.overview'), icon: LayoutDashboard, end: true },
         { to: '/customer/bookings', label: t('booking.myBookings'), icon: CalendarDays },
+        { to: '/customer/favourites', label: t('extras.favourites'), icon: Heart },
+        { to: '/customer/family', label: t('extras.family'), icon: Users },
+        { to: '/customer/support', label: t('extras.support'), icon: LifeBuoy },
         { to: '/account', label: t('account.title'), icon: UserRound },
       ];
   }

@@ -116,8 +116,14 @@ Legend: `[x]` done and tested · `[ ]` not started · `[~]` in progress
 - [x] Tests: backend 135, frontend 83
 - [ ] SMS / WhatsApp notification delivery needs DLT-registered (India) and Meta-approved message templates; the outbox already supports the channels
 
-## Phase 10 – Additional features
-- [ ] Family members, favourites, comparison, addresses, support, retention jobs
+## Phase 10 – Additional features ✅
+- [x] Flyway V9: family_members, appointments.family_member_id/patient_name, favourites, saved_locations, support_requests, data_retention_runs
+- [x] Family members (≤10) and booking for them (name kept on the booking)
+- [x] Favourites (approved businesses only), comparison of up to 3 businesses, saved search places (≤10)
+- [x] Support requests (≤5/hour), admin queue with replies (in-app + email notification), optional link to a booking
+- [x] Data retention: customer history limited to `retention.booking_history_years`; nightly job anonymises old personal notes (amounts kept), deletes old read notifications, sent emails, webhook ids and rate-limit counters; every run logged
+- [x] Tests: backend 138, frontend 85
+- [ ] Separate delivery addresses (home visits) are not modelled yet
 
 ## Phase 11 – Production readiness
 - [ ] Security review, integration/performance tests, deployment guides, production checklist

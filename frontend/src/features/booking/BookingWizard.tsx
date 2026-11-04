@@ -9,6 +9,8 @@ import { SelectField, TextAreaField } from '@/components/ui/FormFields';
 import { useAuth } from '@/contexts/AuthContext';
 import { useApiForm } from '@/hooks/useApiForm';
 import { bookingApi, isoDateIST } from '@/services/bookingApi';
+import { useQuery } from '@tanstack/react-query';
+import { extrasApi } from '@/services/extrasApi';
 import type { PublicProfile } from '@/services/discoveryApi';
 import { usePublicConfig } from '@/services/platformApi';
 import { formatINR } from '@/utils/format';
@@ -30,6 +32,8 @@ export function BookingWizard({ profile }: { profile: PublicProfile }) {
   const [date, setDate] = useState(isoDateIST(new Date()));
   const [startsAt, setStartsAt] = useState<string>();
   const [note, setNote] = useState('');
+  const [forWhom, setForWhom] = useState('');
+  const family = useQuery({ queryKey: ['family'], queryFn: extrasApi.family, enabled: status === 'authenticated' });
 
   if (!service || branchIds.length === 0) return null;
   const effectiveBranch = branchIds.includes(branchId) ? branchId : branchIds[0]!;
@@ -41,7 +45,7 @@ export function BookingWizard({ profile }: { profile: PublicProfile }) {
   const reset = () => setStartsAt(undefined);
   const book = async () => {
     if (!startsAt) return;
-    const b = await form.submit(() => bookingApi.book({ branchId: effectiveBranch, serviceId, staffId, startsAt, note: note.trim() || undefined }));
+    const b = await form.submit(() => bookingApi.book({ branchId: effectiveBranch, serviceId, staffId, startsAt, note: note.trim() || undefined, familyMemberId: forWhom ? Number(forWhom) : undefined }));
     if (b) navigate(`/customer/bookings/${b.id}`, { state: { justBooked: true } });
   };
 
@@ -71,6 +75,12 @@ export function BookingWizard({ profile }: { profile: PublicProfile }) {
       </dl>
       {status === 'authenticated' ? (
         <>
+          {Boolean(family.data?.length) && (
+            <SelectField label={t('extras.forWhom')} value={forWhom} onChange={(e) => setForWhom(e.target.value)}>
+              <option value="">{t('extras.myself')}</option>
+              {family.data?.map((m) => <option key={m.id} value={m.id}>{m.fullName}</option>)}
+            </SelectField>
+          )}
           <TextAreaField label={t('booking.note')} rows={2} maxLength={500} value={note} onChange={(e) => setNote(e.target.value)} />
           {form.formError && <Alert tone="error">{form.formError}</Alert>}
           <Button className="w-full" disabled={!startsAt} loading={form.submitting} onClick={() => void book()}>{t('booking.confirm')}</Button>

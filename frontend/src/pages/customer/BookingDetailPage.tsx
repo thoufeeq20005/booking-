@@ -97,6 +97,7 @@ export function BookingDetailPage() {
           <div><dt className="text-xs uppercase tracking-wide text-fg-muted">{t('booking.when')}</dt><dd className="font-medium">{formatDateTime(b.startsAt, locale)}</dd></div>
           <div><dt className="text-xs uppercase tracking-wide text-fg-muted">{t('booking.where')}</dt>
             <dd><Link to={`/b/${b.organizationSlug}`} className="font-medium text-brand-700 hover:underline">{b.organizationName}</Link> · {b.branchName}<br />{b.branchAddress}</dd></div>
+          {b.patientName && <div><dt className="text-xs uppercase tracking-wide text-fg-muted">{t('extras.forWhom')}</dt><dd>{b.patientName}</dd></div>}
           {b.staffName && <div><dt className="text-xs uppercase tracking-wide text-fg-muted">{t('booking.with')}</dt><dd>{b.staffName}</dd></div>}
           <div><dt className="text-xs uppercase tracking-wide text-fg-muted">{t('booking.reference')}</dt><dd className="font-mono">{b.reference}</dd></div>
           <div><dt className="text-xs uppercase tracking-wide text-fg-muted">{t('home.exampleTotal')}</dt>

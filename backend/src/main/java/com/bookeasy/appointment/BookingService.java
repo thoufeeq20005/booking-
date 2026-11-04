@@ -82,7 +82,7 @@ public class BookingService {
         this.clock = clock;
     }
 
-    public record BookRequest(long branchId, long serviceId, Long staffId, Instant startsAt, String note) {
+    public record BookRequest(long branchId, long serviceId, Long staffId, Instant startsAt, String note, Long familyMemberId) {
     }
 
     public record CancelPreview(BigDecimal totalPaid, BigDecimal refundAmount, int refundPercent, boolean allowed) {
@@ -108,6 +108,9 @@ public class BookingService {
         Appointment a = new Appointment(newReference(), customerId, org.getId(), branch.getId(), service.getId(),
                 chosen.staffId(), chosen.slot().startsAt(), end, blocked, Status.PENDING_PAYMENT, service.getName(), price, fee,
                 blank(req.note()), now);
+        if (req.familyMemberId() != null) {
+            a.bookFor(req.familyMemberId(), familyName(customerId, req.familyMemberId()));
+        }
         appointments.saveAndFlush(a);
         locks.claim(SlotLocks.resourceKey(chosen.staffId(), branch.getId(), service.getId()), a.getStartsAt(), blocked, a.getId());
         if (!paymentGate.requiresOnlinePayment(a)) {
@@ -117,9 +120,19 @@ public class BookingService {
         return view(a, true);
     }
 
+    /** The customer's history, limited to the retention window (platform setting retention.booking_history_years). */
     @Transactional(readOnly = true)
     public List<AppointmentView> mine(long customerId) {
-        return views(appointments.findByCustomerIdOrderByStartsAtDesc(customerId), false);
+        Instant since = clock.instant().atZone(ZoneId.of("Asia/Kolkata"))
+                .minusYears(settings.integer("retention.booking_history_years")).toInstant();
+        return views(appointments.findByCustomerIdOrderByStartsAtDesc(customerId).stream()
+                .filter(a -> a.getStartsAt().isAfter(since)).toList(), false);
+    }
+
+    private String familyName(long customerId, long familyMemberId) {
+        return jdbc.getJdbcTemplate().query("SELECT full_name FROM family_members WHERE id = ? AND user_id = ?",
+                        (rs, i) -> rs.getString(1), familyMemberId, customerId).stream().findFirst()
+                .orElseThrow(() -> ApiException.invalidField("familyMemberId", "INVALID", "Choose one of your family members"));
     }
 
     @Transactional(readOnly = true)
@@ -262,7 +275,7 @@ public class BookingService {
                     a.getServiceId(), a.getServiceName(), a.getStaffId(),
                     s == null ? null : String.join(" ", java.util.stream.Stream.of(s.getTitle(), s.getDisplayName())
                             .filter(Objects::nonNull).toList()),
-                    c == null ? null : c.getFullName(), c == null ? null : c.getPhone(), a.getServicePrice(),
+                    c == null ? null : c.getFullName(), c == null ? null : c.getPhone(), a.getPatientName(), a.getServicePrice(),
                     a.getPlatformFee(), a.getTotalAmount(), a.getCustomerNote(), a.getCancelReason(), a.getCancelledBy(),
                     a.getRefundAmount(), a.getCheckedInAt(), a.getRescheduleCount(),
                     withQr && a.isActive() ? qr.payload(a.getReference()) : null, paid.contains(a.getId()), reviewed.contains(a.getId()), a.getCreatedAt());

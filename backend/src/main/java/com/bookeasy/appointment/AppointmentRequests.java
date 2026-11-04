@@ -13,7 +13,7 @@ public final class AppointmentRequests {
     }
 
     public record BookBody(@NotNull Long branchId, @NotNull Long serviceId, Long staffId, @NotNull Instant startsAt,
-                           @Size(max = 500) String note) {
+                           @Size(max = 500) String note, Long familyMemberId) {
     }
 
     public record ReasonBody(@Size(max = 500) String reason) {

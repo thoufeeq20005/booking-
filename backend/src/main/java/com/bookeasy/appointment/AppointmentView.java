@@ -23,6 +23,7 @@ public record AppointmentView(
         String staffName,
         String customerName,
         String customerPhone,
+        String patientName,
         BigDecimal servicePrice,
         BigDecimal platformFee,
         BigDecimal totalAmount,
