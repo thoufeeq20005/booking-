@@ -1,4 +1,3 @@
-import type { ReactNode } from 'react';
 import { useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
@@ -7,13 +6,11 @@ import { Card } from '@/components/ui/Card';
 import { ErrorState, LoadingState } from '@/components/ui/StateMessage';
 import { DAY_KEYS, fileUrl, useLocalized } from '@/features/organization/shared';
 import { intlLocale } from '@/i18n';
-import { discoveryApi, mapsLink, type PublicProfile } from '@/services/discoveryApi';
+import { BookingWizard } from '@/features/booking/BookingWizard';
+import { discoveryApi, mapsLink } from '@/services/discoveryApi';
 import { formatINR, formatWallTime } from '@/utils/format';
 
-/** Slot for the booking panel; Phase 7 renders the booking wizard here. */
-export type BookingSlot = (profile: PublicProfile) => ReactNode;
-
-export function BusinessPage({ bookingPanel }: { bookingPanel?: BookingSlot }) {
+export function BusinessPage() {
   const { t, i18n } = useTranslation();
   const pick = useLocalized();
   const slug = useParams().slug ?? '';
@@ -103,7 +100,7 @@ export function BusinessPage({ bookingPanel }: { bookingPanel?: BookingSlot }) {
           ))}
         </div>
         <aside className="space-y-4">
-          {bookingPanel?.(p)}
+          <BookingWizard profile={p} />
           <Card className="space-y-2 p-5 text-sm">
             {p.contactPhone && <p className="flex items-center gap-2"><Phone className="h-4 w-4 text-brand-600" aria-hidden="true" /><a href={`tel:${p.contactPhone}`}>{p.contactPhone}</a></p>}
             {p.contactEmail && <p className="flex items-center gap-2"><Mail className="h-4 w-4 text-brand-600" aria-hidden="true" /><a href={`mailto:${p.contactEmail}`}>{p.contactEmail}</a></p>}

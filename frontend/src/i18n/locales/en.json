@@ -113,7 +113,12 @@
     "DOCUMENTS_NOT_ACCEPTED": "Every required document must be uploaded and not rejected.",
     "BRANCH_LIMIT_REACHED": "This business already has the maximum number of branches.",
     "STAFF_ALREADY_EXISTS": "This person is already on the team or invited.",
-    "INVITATION_EMAIL_MISMATCH": "Sign in with the email address the invitation was sent to."
+    "INVITATION_EMAIL_MISMATCH": "Sign in with the email address the invitation was sent to.",
+    "SLOT_UNAVAILABLE": "That time was just taken. Please pick another.",
+    "VERIFICATION_REQUIRED": "Verify your email or mobile number before booking.",
+    "BOOKING_NOT_CHANGEABLE": "This booking can't be changed any more.",
+    "RESCHEDULE_LIMIT_REACHED": "This booking has been rescheduled the maximum number of times.",
+    "INVALID_QR_CODE": "This booking pass isn't valid for this business."
   },
   "notFound": {
     "title": "Page not found",
@@ -600,7 +605,10 @@
       "STAFF_JOINED": "Staff joined",
       "STAFF_PERMISSIONS_CHANGED": "Staff permissions changed",
       "STAFF_STATUS_CHANGED": "Staff status changed",
-      "STAFF_INVITATION_REVOKED": "Staff invitation withdrawn"
+      "STAFF_INVITATION_REVOKED": "Staff invitation withdrawn",
+      "APPOINTMENT_DECLINE": "Booking declined",
+      "APPOINTMENT_CANCEL": "Booking cancelled by the business",
+      "APPOINTMENT_NO_SHOW": "Marked as no-show"
     }
   },
   "team": {
@@ -727,5 +735,58 @@
       "INSTANT": "Bookings are confirmed instantly.",
       "APPROVAL": "The business confirms each booking request."
     }
+  },
+  "booking": {
+    "title": "Book an appointment",
+    "date": "Day",
+    "time": "Time",
+    "with": "With",
+    "anyone": "Anyone available",
+    "note": "Note for the business (optional)",
+    "confirm": "Confirm booking",
+    "signInToBook": "Sign in to book",
+    "myBookings": "My bookings",
+    "past": "Past bookings",
+    "qrAlt": "Booking pass QR code",
+    "cannotCancel": "This booking can no longer be cancelled.",
+    "refundPreview": "Cancelling now refunds {{amount}} ({{percent}}% of the service fee; the platform fee isn't refunded).",
+    "confirmCancel": "Cancel booking",
+    "confirmReschedule": "Move to this time",
+    "requested": "Request sent! The business will confirm it soon.",
+    "booked": "You're booked!",
+    "when": "When",
+    "where": "Where",
+    "reference": "Booking reference",
+    "refund": "Refund",
+    "reason": "Reason",
+    "showAtVenue": "Show this at the venue to check in.",
+    "reschedule": "Reschedule",
+    "cancel": "Cancel",
+    "status": {
+      "PENDING_PAYMENT": "Awaiting payment",
+      "PENDING_APPROVAL": "Awaiting confirmation",
+      "CONFIRMED": "Confirmed",
+      "CANCELLED": "Cancelled",
+      "DECLINED": "Declined",
+      "COMPLETED": "Completed",
+      "NO_SHOW": "No-show",
+      "EXPIRED": "Expired"
+    },
+    "noneToday": "No bookings on this day.",
+    "checkedIn": "checked in",
+    "action": {
+      "confirm": "Confirm",
+      "decline": "Decline",
+      "cancel": "Cancel",
+      "check-in": "Check in",
+      "complete": "Complete",
+      "no-show": "No-show"
+    },
+    "appointments": "Appointments",
+    "noApprovedBusiness": "Bookings appear here once a business is approved.",
+    "checkedInName": "{{name}} checked in for {{service}}.",
+    "scanCode": "Booking pass code",
+    "scanHint": "Scan the customer's QR code with any scanner app and paste the text here.",
+    "today": "Today"
   }
 }

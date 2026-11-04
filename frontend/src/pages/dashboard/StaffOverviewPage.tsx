@@ -1,5 +1,7 @@
 import { useTranslation } from 'react-i18next';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { BusinessDayList } from '@/features/booking/BusinessDayList';
+import { bookingApi, isoDateIST } from '@/services/bookingApi';
 import { Card } from '@/components/ui/Card';
 import { EmptyState, ErrorState, LoadingState } from '@/components/ui/StateMessage';
 import { useAuth } from '@/contexts/AuthContext';
@@ -14,6 +16,9 @@ export function StaffOverviewPage() {
   const { user } = useAuth();
   const { data, error, isLoading, refetch } = useQuery({ queryKey: ['staff-workplaces'], queryFn: invitationApi.workplaces });
   const locale = intlLocale(i18n.language);
+  const qc = useQueryClient();
+  const today = isoDateIST(new Date());
+  const day = useQuery({ queryKey: ['staff-day', today], queryFn: () => bookingApi.staffDay(today), enabled: Boolean(data?.length) });
 
   return (
     <div className="mx-auto max-w-4xl space-y-6 px-4 py-10 sm:px-6">
@@ -22,6 +27,13 @@ export function StaffOverviewPage() {
       {error && <ErrorState error={error} onRetry={() => void refetch()} />}
       {data?.length === 0 && (
         <Card className="p-6"><EmptyState title={t('dashboard.staffEmpty')}>{t('dashboard.staffEmptyHint')}</EmptyState></Card>
+      )}
+      {Boolean(data?.length) && (
+        <section className="space-y-3">
+          <h2 className="text-lg font-semibold">{t('booking.today')}</h2>
+          <BusinessDayList bookings={day.data ?? []} act={(b, action, reason) =>
+            bookingApi.staffAct(b.id, action, reason).then(() => qc.invalidateQueries({ queryKey: ['staff-day'] }))} />
+        </section>
       )}
       {data?.map((w) => {
         const branchName = (id: number) => w.branches.find((b) => b.id === id)?.name ?? '';

@@ -66,6 +66,18 @@ public class PlatformConfigService {
                         support.isAvailable()));
     }
 
+    /** A numeric setting; fails loudly when missing because money rules depend on it. */
+    @Transactional(readOnly = true)
+    public BigDecimal decimal(String key) {
+        return settingRepository.findById(key).map(s -> new BigDecimal(s.getValue().trim()))
+                .orElseThrow(() -> new ApiException(ErrorCode.INTERNAL_ERROR, "Missing platform setting " + key));
+    }
+
+    @Transactional(readOnly = true)
+    public int integer(String key) {
+        return decimal(key).intValueExact();
+    }
+
     static List<String> splitList(String value) {
         return Arrays.stream(value.split(",")).map(String::trim).filter(s -> !s.isEmpty()).toList();
     }

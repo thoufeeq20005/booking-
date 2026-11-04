@@ -113,7 +113,12 @@
     "DOCUMENTS_NOT_ACCEPTED": "हर आवश्यक दस्तावेज़ अपलोड होना चाहिए और अस्वीकृत नहीं होना चाहिए।",
     "BRANCH_LIMIT_REACHED": "इस व्यवसाय की शाखाएँ अधिकतम संख्या तक पहुँच चुकी हैं।",
     "STAFF_ALREADY_EXISTS": "यह व्यक्ति पहले से टीम में है या आमंत्रित है।",
-    "INVITATION_EMAIL_MISMATCH": "उसी ईमेल पते से साइन इन करें जिस पर आमंत्रण भेजा गया था।"
+    "INVITATION_EMAIL_MISMATCH": "उसी ईमेल पते से साइन इन करें जिस पर आमंत्रण भेजा गया था।",
+    "SLOT_UNAVAILABLE": "यह समय अभी-अभी ले लिया गया। कृपया दूसरा चुनें।",
+    "VERIFICATION_REQUIRED": "बुक करने से पहले अपना ईमेल या मोबाइल नंबर सत्यापित करें।",
+    "BOOKING_NOT_CHANGEABLE": "यह बुकिंग अब बदली नहीं जा सकती।",
+    "RESCHEDULE_LIMIT_REACHED": "इस बुकिंग का समय अधिकतम बार बदला जा चुका है।",
+    "INVALID_QR_CODE": "यह बुकिंग पास इस व्यवसाय के लिए मान्य नहीं है।"
   },
   "notFound": {
     "title": "पेज नहीं मिला",
@@ -600,7 +605,10 @@
       "STAFF_JOINED": "स्टाफ़ शामिल हुआ",
       "STAFF_PERMISSIONS_CHANGED": "स्टाफ़ अनुमतियाँ बदलीं",
       "STAFF_STATUS_CHANGED": "स्टाफ़ स्थिति बदली",
-      "STAFF_INVITATION_REVOKED": "स्टाफ़ आमंत्रण वापस लिया"
+      "STAFF_INVITATION_REVOKED": "स्टाफ़ आमंत्रण वापस लिया",
+      "APPOINTMENT_DECLINE": "बुकिंग अस्वीकृत",
+      "APPOINTMENT_CANCEL": "व्यवसाय द्वारा बुकिंग रद्द",
+      "APPOINTMENT_NO_SHOW": "नहीं आए के रूप में चिह्नित"
     }
   },
   "team": {
@@ -727,5 +735,58 @@
       "INSTANT": "बुकिंग तुरंत पुष्ट होती है।",
       "APPROVAL": "व्यवसाय हर बुकिंग अनुरोध की पुष्टि करता है।"
     }
+  },
+  "booking": {
+    "title": "अपॉइंटमेंट बुक करें",
+    "date": "दिन",
+    "time": "समय",
+    "with": "किसके साथ",
+    "anyone": "जो भी उपलब्ध हो",
+    "note": "व्यवसाय के लिए नोट (वैकल्पिक)",
+    "confirm": "बुकिंग की पुष्टि करें",
+    "signInToBook": "बुक करने के लिए साइन इन करें",
+    "myBookings": "मेरी बुकिंग",
+    "past": "पिछली बुकिंग",
+    "qrAlt": "बुकिंग पास QR कोड",
+    "cannotCancel": "यह बुकिंग अब रद्द नहीं की जा सकती।",
+    "refundPreview": "अभी रद्द करने पर {{amount}} वापस मिलेंगे (सेवा शुल्क का {{percent}}%; प्लेटफ़ॉर्म शुल्क वापस नहीं होता)।",
+    "confirmCancel": "बुकिंग रद्द करें",
+    "confirmReschedule": "इस समय पर ले जाएँ",
+    "requested": "अनुरोध भेजा गया! व्यवसाय जल्द पुष्टि करेगा।",
+    "booked": "आपकी बुकिंग हो गई!",
+    "when": "कब",
+    "where": "कहाँ",
+    "reference": "बुकिंग संदर्भ",
+    "refund": "रिफ़ंड",
+    "reason": "कारण",
+    "showAtVenue": "चेक-इन के लिए इसे वहाँ दिखाएँ।",
+    "reschedule": "समय बदलें",
+    "cancel": "रद्द करें",
+    "status": {
+      "PENDING_PAYMENT": "भुगतान बाकी",
+      "PENDING_APPROVAL": "पुष्टि बाकी",
+      "CONFIRMED": "पुष्ट",
+      "CANCELLED": "रद्द",
+      "DECLINED": "अस्वीकृत",
+      "COMPLETED": "पूर्ण",
+      "NO_SHOW": "नहीं आए",
+      "EXPIRED": "समाप्त"
+    },
+    "noneToday": "इस दिन कोई बुकिंग नहीं।",
+    "checkedIn": "चेक-इन हुआ",
+    "action": {
+      "confirm": "पुष्टि करें",
+      "decline": "अस्वीकार करें",
+      "cancel": "रद्द करें",
+      "check-in": "चेक-इन",
+      "complete": "पूर्ण करें",
+      "no-show": "नहीं आए"
+    },
+    "appointments": "अपॉइंटमेंट",
+    "noApprovedBusiness": "व्यवसाय स्वीकृत होने के बाद बुकिंग यहाँ दिखेंगी।",
+    "checkedInName": "{{name}} ने {{service}} के लिए चेक-इन किया।",
+    "scanCode": "बुकिंग पास कोड",
+    "scanHint": "किसी भी स्कैनर ऐप से ग्राहक का QR कोड स्कैन करें और टेक्स्ट यहाँ चिपकाएँ।",
+    "today": "आज"
   }
 }

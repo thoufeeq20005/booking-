@@ -85,10 +85,16 @@ Legend: `[x]` done and tested · `[ ]` not started · `[~]` in progress
 - [x] Tests: backend 123, frontend 77
 - [ ] Embedded interactive map and address geocoding need `VITE_GOOGLE_MAPS_API_KEY` / `GOOGLE_MAPS_SERVER_API_KEY`; deferred until keys exist (links work without keys)
 
-## Phase 7 – Booking
-- [ ] Booking wizard (category workflows), instant/approval modes, state machine
-- [ ] Slot-lock double-booking guard + concurrency test
-- [ ] Booking reference, QR token, check-in, reschedule, cancel with refund preview
+## Phase 7 – Booking ✅
+- [x] Flyway V6: appointments (reference, snapshot of service name/price, platform fee, total, status, buffer-aware `blocked_until`), appointment_slot_locks, refund/reschedule settings
+- [x] Booking wizard: service → branch → staff (or anyone) → day → time → note; prices and fee from the server; instant vs approval businesses
+- [x] State machine: PENDING_PAYMENT → PENDING_APPROVAL/CONFIRMED → COMPLETED/NO_SHOW; CANCELLED, DECLINED, EXPIRED
+- [x] Double-booking guard: one lock row per 5-minute unit per resource with a primary key; concurrency test (6 parallel requests → exactly 1 booking); slot engine now subtracts real bookings
+- [x] Reference (BE + 8 chars), HMAC-signed QR pass, owner check-in by pass, staff/owner confirm, decline, cancel (reasons, audited), complete, no-show with permission checks
+- [x] Customer cancel with refund preview (100% ≥24 h, 50% ≥2 h, else 0; platform fee kept), reschedule (≥2 h ahead, max 2)
+- [x] Customer bookings list/detail, owner appointments day view with pass check-in, staff "today" list
+- [x] Tests: backend 127, frontend 80
+- [ ] Customers book only for themselves until family members (Phase 10); camera QR scanning uses any scanner app + paste
 
 ## Phase 8 – Payments
 - [ ] Razorpay orders, signature verification, webhooks (idempotent), refunds

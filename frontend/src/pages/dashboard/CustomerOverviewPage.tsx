@@ -5,6 +5,38 @@ import { buttonClasses } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { EmptyState } from '@/components/ui/StateMessage';
 import { useAuth } from '@/contexts/AuthContext';
+import { useQuery } from '@tanstack/react-query';
+import { BookingStatusBadge } from '@/features/booking/BookingStatusBadge';
+import { intlLocale } from '@/i18n';
+import { ACTIVE, bookingApi } from '@/services/bookingApi';
+import { formatDateTime } from '@/utils/format';
+
+function UpcomingBookings() {
+  const { t, i18n } = useTranslation();
+  const { data } = useQuery({ queryKey: ['my-bookings'], queryFn: bookingApi.mine });
+  const upcoming = (data ?? []).filter((b) => ACTIVE.includes(b.status) && new Date(b.endsAt).getTime() > Date.now())
+    .sort((a, b) => a.startsAt.localeCompare(b.startsAt)).slice(0, 3);
+  if (upcoming.length === 0) {
+    return (
+      <EmptyState title={t('dashboard.noBookings')}>
+        <Link to="/search" className="text-brand-700 hover:underline">{t('nav.findServices')}</Link>
+      </EmptyState>
+    );
+  }
+  return (
+    <ul className="mt-3 divide-y divide-border">
+      {upcoming.map((b) => (
+        <li key={b.id}>
+          <Link to={`/customer/bookings/${b.id}`} className="flex items-center gap-3 py-3 text-sm hover:text-brand-700">
+            <span className="min-w-0 flex-1"><span className="font-medium">{b.serviceName}</span> · {b.organizationName}
+              <span className="block text-fg-muted">{formatDateTime(b.startsAt, intlLocale(i18n.language))}</span></span>
+            <BookingStatusBadge status={b.status} />
+          </Link>
+        </li>
+      ))}
+    </ul>
+  );
+}
 
 export function CustomerOverviewPage() {
   const { t } = useTranslation();
@@ -30,7 +62,7 @@ export function CustomerOverviewPage() {
           <CalendarCheck className="h-5 w-5 text-brand-600" aria-hidden="true" />
           {t('dashboard.upcomingBookings')}
         </h2>
-        <EmptyState title={t('dashboard.noBookings')}>{t('dashboard.noBookingsHint')}</EmptyState>
+        <UpcomingBookings />
       </Card>
 
       <Card className="p-6">

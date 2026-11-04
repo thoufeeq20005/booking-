@@ -60,7 +60,14 @@ public enum ErrorCode {
 
     // Staff
     STAFF_ALREADY_EXISTS(HttpStatus.CONFLICT, "This person is already on the team or invited"),
-    INVITATION_EMAIL_MISMATCH(HttpStatus.FORBIDDEN, "Sign in with the email address the invitation was sent to");
+    INVITATION_EMAIL_MISMATCH(HttpStatus.FORBIDDEN, "Sign in with the email address the invitation was sent to"),
+
+    // Booking
+    SLOT_UNAVAILABLE(HttpStatus.CONFLICT, "This time is no longer available"),
+    VERIFICATION_REQUIRED(HttpStatus.FORBIDDEN, "Verify your email or mobile number before booking"),
+    BOOKING_NOT_CHANGEABLE(HttpStatus.CONFLICT, "This booking can't be changed any more"),
+    RESCHEDULE_LIMIT_REACHED(HttpStatus.CONFLICT, "This booking has been rescheduled the maximum number of times"),
+    INVALID_QR_CODE(HttpStatus.BAD_REQUEST, "This booking code isn't valid here");
 
     private final HttpStatus status;
     private final String defaultMessage;

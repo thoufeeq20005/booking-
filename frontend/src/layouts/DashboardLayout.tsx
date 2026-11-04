@@ -48,6 +48,7 @@ function useNav(area: DashboardArea): NavItem[] {
     case 'owner':
       return [
         { to: '/owner', label: t('dashboard.overview'), icon: LayoutDashboard, end: true },
+        { to: '/owner/appointments', label: t('booking.appointments'), icon: CalendarDays },
         { to: '/owner/organizations', label: t('business.myBusinesses'), icon: Building2 },
       ];
     case 'staff':
@@ -55,6 +56,7 @@ function useNav(area: DashboardArea): NavItem[] {
     default:
       return [
         { to: '/customer', label: t('dashboard.overview'), icon: LayoutDashboard, end: true },
+        { to: '/customer/bookings', label: t('booking.myBookings'), icon: CalendarDays },
         { to: '/account', label: t('account.title'), icon: UserRound },
       ];
   }

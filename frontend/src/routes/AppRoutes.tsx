@@ -34,6 +34,9 @@ const AdminAuditPage = named(() => import('@/pages/admin/AdminAuditPage'), 'Admi
 const AdminDashboardPage = named(() => import('@/pages/dashboard/AdminDashboardPage'), 'AdminDashboardPage');
 const OwnerDashboardPage = named(() => import('@/pages/dashboard/OwnerDashboardPage'), 'OwnerDashboardPage');
 const CustomerOverviewPage = named(() => import('@/pages/dashboard/CustomerOverviewPage'), 'CustomerOverviewPage');
+const BookingsPage = named(() => import('@/pages/customer/BookingsPage'), 'BookingsPage');
+const BookingDetailPage = named(() => import('@/pages/customer/BookingDetailPage'), 'BookingDetailPage');
+const AppointmentsPage = named(() => import('@/pages/owner/AppointmentsPage'), 'AppointmentsPage');
 const SearchPage = named(() => import('@/pages/discovery/SearchPage'), 'SearchPage');
 const BusinessPage = named(() => import('@/pages/discovery/BusinessPage'), 'BusinessPage');
 const AcceptInvitationPage = named(() => import('@/pages/staff/AcceptInvitationPage'), 'AcceptInvitationPage');
@@ -75,9 +78,12 @@ export function AppRoutes() {
         <Route path="dashboard" element={guard(<DashboardRedirect />)} />
         <Route path="customer" element={guard(<DashboardLayout area="customer" />)}>
           <Route index element={<CustomerOverviewPage />} />
+          <Route path="bookings" element={<BookingsPage />} />
+          <Route path="bookings/:id" element={<BookingDetailPage />} />
         </Route>
         <Route path="owner" element={guard(<DashboardLayout area="owner" />, OWNER)}>
           <Route index element={<OwnerDashboardPage />} />
+          <Route path="appointments" element={<AppointmentsPage />} />
           <Route path="organizations" element={<MyBusinessesPage />} />
           <Route path="organizations/:id" element={<OrganizationSetupPage />} />
         </Route>
