@@ -96,9 +96,15 @@ Legend: `[x]` done and tested · `[ ]` not started · `[~]` in progress
 - [x] Tests: backend 127, frontend 80
 - [ ] Customers book only for themselves until family members (Phase 10); camera QR scanning uses any scanner app + paste
 
-## Phase 8 – Payments
-- [ ] Razorpay orders, signature verification, webhooks (idempotent), refunds
-- [ ] Commission records, Route eligibility & settlements, receipts/invoices
+## Phase 8 – Payments ✅
+- [x] Flyway V7: payments, refunds, webhook_events, commission_records, settlements, organizations.razorpay_account_id
+- [x] Razorpay orders (paise, reused per booking), Checkout signature verification, signed + de-duplicated webhooks (payment.captured/failed, order.paid, refund.processed/failed)
+- [x] Unpaid bookings expire after the hold and free their slot; late captures refunded automatically
+- [x] Refunds queued transactionally with the cancellation, dispatched after commit, retried; commission adjusted (customer cancel keeps fee, business cancel refunds all)
+- [x] Settlements nightly: Route transfers when enabled + linked account, else manual payouts with UTR; owner earnings; admin settlements page
+- [x] Receipts (printable); pay-at-venue mode when keys are absent; see docs/integrations/razorpay.md
+- [x] Tests: backend 132 (signature, idempotent webhooks, expiry, late capture refund, refund retry, commission maths, settlement), frontend 81
+- [ ] GST invoices (needs the platform's GSTIN and tax rules); Route linked-account onboarding happens in the Razorpay dashboard
 
 ## Phase 9 – Reviews & notifications
 - [ ] Reviews (completed only), replies, reports, moderation

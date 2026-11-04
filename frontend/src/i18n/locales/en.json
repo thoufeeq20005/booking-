@@ -118,7 +118,10 @@
     "VERIFICATION_REQUIRED": "Verify your email or mobile number before booking.",
     "BOOKING_NOT_CHANGEABLE": "This booking can't be changed any more.",
     "RESCHEDULE_LIMIT_REACHED": "This booking has been rescheduled the maximum number of times.",
-    "INVALID_QR_CODE": "This booking pass isn't valid for this business."
+    "INVALID_QR_CODE": "This booking pass isn't valid for this business.",
+    "PAYMENT_SIGNATURE_INVALID": "We couldn't verify this payment. If money was taken, it will be confirmed or refunded automatically.",
+    "PAYMENT_NOT_REQUIRED": "This booking doesn't need a payment.",
+    "BOOKING_EXPIRED": "The time to pay for this booking has run out. Please book again."
   },
   "notFound": {
     "title": "Page not found",
@@ -608,7 +611,9 @@
       "STAFF_INVITATION_REVOKED": "Staff invitation withdrawn",
       "APPOINTMENT_DECLINE": "Booking declined",
       "APPOINTMENT_CANCEL": "Booking cancelled by the business",
-      "APPOINTMENT_NO_SHOW": "Marked as no-show"
+      "APPOINTMENT_NO_SHOW": "Marked as no-show",
+      "SETTLEMENT_PAID": "Settlement paid out",
+      "ORGANIZATION_PAYOUT_ACCOUNT_SET": "Payout account set"
     }
   },
   "team": {
@@ -788,5 +793,40 @@
     "scanCode": "Booking pass code",
     "scanHint": "Scan the customer's QR code with any scanner app and paste the text here.",
     "today": "Today"
+  },
+  "payment": {
+    "checkoutUnavailable": "The payment window couldn't open. Check your connection and try again.",
+    "holdNotice": "Your slot is held until {{time}}. Pay before then to keep it.",
+    "payNow": "Pay {{amount}}",
+    "viewReceipt": "View receipt",
+    "print": "Print",
+    "receipt": "Payment receipt",
+    "billedTo": "Billed to",
+    "platformFee": "BookEasy platform fee",
+    "totalPaid": "Total paid",
+    "paymentId": "Payment id",
+    "refundStatus": {
+      "PENDING": "pending",
+      "REQUESTED": "requested",
+      "PROCESSED": "processed",
+      "FAILED": "failed"
+    },
+    "settlements": "Settlements",
+    "runSettlement": "Run settlement now",
+    "settlementsIntro": "Each night BookEasy groups completed, paid bookings per business. With Razorpay Route and a linked account the money is transferred automatically; otherwise pay the business and record the bank reference here.",
+    "settlementStatus": {
+      "PENDING_MANUAL": "Awaiting manual payout",
+      "TRANSFERRED": "Transferred by Razorpay",
+      "PAID": "Paid"
+    },
+    "noSettlements": "No settlements.",
+    "payoutReference": "Bank / UTR reference",
+    "markPaid": "Mark paid",
+    "earnings": "Earnings",
+    "pendingPayout": "Waiting to be paid out",
+    "paidOut": "Paid out",
+    "payouts": "Payouts",
+    "payoutAccount": "Razorpay linked account",
+    "payoutAccountHint": "From Razorpay Route after the business completes KYC. Leave empty for manual payouts."
   }
 }

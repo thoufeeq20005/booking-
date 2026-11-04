@@ -10,6 +10,7 @@ import { Card } from '@/components/ui/Card';
 import { TextAreaField } from '@/components/ui/FormFields';
 import { ErrorState, LoadingState } from '@/components/ui/StateMessage';
 import { BookingStatusBadge } from '@/features/booking/BookingStatusBadge';
+import { PayNow } from '@/features/booking/PayNow';
 import { SlotPicker } from '@/features/booking/SlotPicker';
 import { useApiForm } from '@/hooks/useApiForm';
 import { intlLocale } from '@/i18n';
@@ -109,6 +110,12 @@ export function BookingDetailPage() {
           </div>
         )}
       </Card>
+      {b.status === 'PENDING_PAYMENT' && (
+        <Card className="p-6"><PayNow booking={b} onPaid={() => void refetch()} /></Card>
+      )}
+      {b.paid && (
+        <Link to={`/customer/bookings/${b.id}/receipt`} className="inline-block text-sm text-brand-700 hover:underline">{t('payment.viewReceipt')}</Link>
+      )}
       {active && (
         <Card className="space-y-4 p-6">
           <div className="flex flex-wrap gap-2">

@@ -14,6 +14,8 @@ import { useApiForm } from '@/hooks/useApiForm';
 import { intlLocale } from '@/i18n';
 import { adminOrganizationApi as api, orgKeys, type DocumentSlot, type OrganizationDetail } from '@/services/organizationApi';
 import { formatWallTime } from '@/utils/format';
+import { paymentApi } from '@/services/paymentApi';
+import { TextField } from '@/components/ui/TextField';
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -99,6 +101,26 @@ function DocumentReview({ org, slot, onUpdated }: { org: OrganizationDetail; slo
       )}
       {form.formError && <Alert tone="error">{form.formError}</Alert>}
     </li>
+  );
+}
+
+function PayoutAccount({ orgId }: { orgId: number }) {
+  const { t } = useTranslation();
+  const form = useApiForm();
+  const [value, setValue] = useState('');
+  const [saved, setSaved] = useState(false);
+  return (
+    <form className="flex flex-wrap items-end gap-3" onSubmit={(e) => {
+      e.preventDefault();
+      setSaved(false);
+      void form.submit(() => paymentApi.setPayoutAccount(orgId, value.trim()).then(() => true)).then((ok) => ok && setSaved(true));
+    }}>
+      <TextField label={t('payment.payoutAccount')} value={value} onChange={(e) => setValue(e.target.value)} placeholder="acc_XXXXXXXX"
+        hint={t('payment.payoutAccountHint')} error={form.fieldErrors.accountId} className="min-w-[16rem] flex-1" />
+      <Button type="submit" variant="secondary" loading={form.submitting}>{t('common.save')}</Button>
+      {saved && <span className="text-sm text-success">{t('account.saved')}</span>}
+      {form.formError && <Alert tone="error">{form.formError}</Alert>}
+    </form>
   );
 }
 
@@ -249,6 +271,12 @@ export function AdminOrganizationReviewPage() {
           ))}
         </ul>
       </Section>
+
+      {s.status === 'APPROVED' && (
+        <Section title={t('payment.payouts')}>
+          <PayoutAccount orgId={s.id} />
+        </Section>
+      )}
 
       <Section title={t('business.history')}>
         <HistoryList entries={org.history} />

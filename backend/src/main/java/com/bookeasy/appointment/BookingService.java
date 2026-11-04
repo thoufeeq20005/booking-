@@ -57,12 +57,14 @@ public class BookingService {
     private final PaymentGate paymentGate;
     private final CryptoService crypto;
     private final ApplicationEventPublisher events;
+    private final org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate jdbc;
     private final Clock clock;
 
     public BookingService(AppointmentRepository appointments, SlotService slots, SlotLocks locks, QrCodes qr,
                           OrganizationRepository organizations, BranchRepository branches, ServiceRepository services,
                           StaffProfileRepository staff, UserRepository users, PlatformConfigService settings,
-                          PaymentGate paymentGate, CryptoService crypto, ApplicationEventPublisher events, Clock clock) {
+                          PaymentGate paymentGate, CryptoService crypto, ApplicationEventPublisher events,
+                          org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate jdbc, Clock clock) {
         this.appointments = appointments;
         this.slots = slots;
         this.locks = locks;
@@ -76,6 +78,7 @@ public class BookingService {
         this.paymentGate = paymentGate;
         this.crypto = crypto;
         this.events = events;
+        this.jdbc = jdbc;
         this.clock = clock;
     }
 
@@ -240,6 +243,9 @@ public class BookingService {
         Map<Long, Branch> brs = index(branches.findAllById(ids(list, Appointment::getBranchId)), Branch::getId);
         Map<Long, StaffProfile> st = index(staff.findAllById(ids(list, Appointment::getStaffId)), StaffProfile::getId);
         Map<Long, User> cust = index(users.findAllById(ids(list, Appointment::getCustomerId)), User::getId);
+        java.util.Set<Long> paid = new java.util.HashSet<>(jdbc.queryForList(
+                "SELECT appointment_id FROM payments WHERE status = 'CAPTURED' AND appointment_id IN (:ids)",
+                Map.of("ids", ids(list, Appointment::getId)), Long.class));
         return list.stream().map(a -> {
             Organization o = orgs.get(a.getOrganizationId());
             Branch b = brs.get(a.getBranchId());
@@ -256,7 +262,7 @@ public class BookingService {
                     c == null ? null : c.getFullName(), c == null ? null : c.getPhone(), a.getServicePrice(),
                     a.getPlatformFee(), a.getTotalAmount(), a.getCustomerNote(), a.getCancelReason(), a.getCancelledBy(),
                     a.getRefundAmount(), a.getCheckedInAt(), a.getRescheduleCount(),
-                    withQr && a.isActive() ? qr.payload(a.getReference()) : null, a.getCreatedAt());
+                    withQr && a.isActive() ? qr.payload(a.getReference()) : null, paid.contains(a.getId()), a.getCreatedAt());
         }).toList();
     }
 

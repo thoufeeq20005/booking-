@@ -8,6 +8,7 @@ import { SelectField } from '@/components/ui/FormFields';
 import { EmptyState, LoadingState } from '@/components/ui/StateMessage';
 import { TextField } from '@/components/ui/TextField';
 import { BusinessDayList } from '@/features/booking/BusinessDayList';
+import { EarningsCard } from '@/features/booking/EarningsCard';
 import { useApiForm } from '@/hooks/useApiForm';
 import { bookingApi, isoDateIST } from '@/services/bookingApi';
 import { orgKeys, ownerOrganizationApi } from '@/services/organizationApi';
@@ -50,6 +51,7 @@ export function AppointmentsPage() {
         )}
         <TextField label={t('business.holidayDate')} type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-44" />
       </div>
+      {current && <EarningsCard orgId={current} />}
       <Card className="p-5">
         <form onSubmit={checkIn} className="flex flex-wrap items-end gap-3">
           <TextField label={t('booking.scanCode')} value={code} onChange={(e) => setCode(e.target.value)} hint={t('booking.scanHint')} className="min-w-[18rem] flex-1" />

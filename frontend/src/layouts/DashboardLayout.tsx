@@ -11,6 +11,7 @@ import {
   ShieldCheck,
   UserRound,
   Users,
+  Wallet,
   type LucideIcon,
 } from 'lucide-react';
 import clsx from 'clsx';
@@ -43,6 +44,7 @@ function useNav(area: DashboardArea): NavItem[] {
         { to: '/admin/organizations', label: t('admin.organizations'), icon: ClipboardCheck },
         { to: '/admin/users', label: t('dashboard.users'), icon: Users },
         { to: '/admin/categories', label: t('admin.categories'), icon: FolderTree },
+        { to: '/admin/settlements', label: t('payment.settlements'), icon: Wallet },
         { to: '/admin/audit', label: t('dashboard.auditLog'), icon: ScrollText },
       ];
     case 'owner':

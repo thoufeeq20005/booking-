@@ -37,6 +37,8 @@ const CustomerOverviewPage = named(() => import('@/pages/dashboard/CustomerOverv
 const BookingsPage = named(() => import('@/pages/customer/BookingsPage'), 'BookingsPage');
 const BookingDetailPage = named(() => import('@/pages/customer/BookingDetailPage'), 'BookingDetailPage');
 const AppointmentsPage = named(() => import('@/pages/owner/AppointmentsPage'), 'AppointmentsPage');
+const ReceiptPage = named(() => import('@/pages/customer/ReceiptPage'), 'ReceiptPage');
+const AdminSettlementsPage = named(() => import('@/pages/admin/AdminSettlementsPage'), 'AdminSettlementsPage');
 const SearchPage = named(() => import('@/pages/discovery/SearchPage'), 'SearchPage');
 const BusinessPage = named(() => import('@/pages/discovery/BusinessPage'), 'BusinessPage');
 const AcceptInvitationPage = named(() => import('@/pages/staff/AcceptInvitationPage'), 'AcceptInvitationPage');
@@ -80,6 +82,7 @@ export function AppRoutes() {
           <Route index element={<CustomerOverviewPage />} />
           <Route path="bookings" element={<BookingsPage />} />
           <Route path="bookings/:id" element={<BookingDetailPage />} />
+          <Route path="bookings/:id/receipt" element={<ReceiptPage />} />
         </Route>
         <Route path="owner" element={guard(<DashboardLayout area="owner" />, OWNER)}>
           <Route index element={<OwnerDashboardPage />} />
@@ -98,6 +101,7 @@ export function AppRoutes() {
           <Route path="categories" element={<AdminCategoriesPage />} />
           <Route path="users" element={<AdminUsersPage />} />
           <Route path="audit" element={<AdminAuditPage />} />
+          <Route path="settlements" element={<AdminSettlementsPage />} />
         </Route>
         <Route path="*" element={<NotFoundPage />} />
       </Route>

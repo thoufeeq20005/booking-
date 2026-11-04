@@ -33,5 +33,6 @@ public record AppointmentView(
         Instant checkedInAt,
         int rescheduleCount,
         String qrPayload,
+        boolean paid,
         Instant createdAt) {
 }

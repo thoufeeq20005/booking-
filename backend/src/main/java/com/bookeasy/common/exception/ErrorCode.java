@@ -67,7 +67,12 @@ public enum ErrorCode {
     VERIFICATION_REQUIRED(HttpStatus.FORBIDDEN, "Verify your email or mobile number before booking"),
     BOOKING_NOT_CHANGEABLE(HttpStatus.CONFLICT, "This booking can't be changed any more"),
     RESCHEDULE_LIMIT_REACHED(HttpStatus.CONFLICT, "This booking has been rescheduled the maximum number of times"),
-    INVALID_QR_CODE(HttpStatus.BAD_REQUEST, "This booking code isn't valid here");
+    INVALID_QR_CODE(HttpStatus.BAD_REQUEST, "This booking code isn't valid here"),
+
+    // Payments
+    PAYMENT_SIGNATURE_INVALID(HttpStatus.BAD_REQUEST, "The payment could not be verified"),
+    PAYMENT_NOT_REQUIRED(HttpStatus.CONFLICT, "This booking doesn't need a payment"),
+    BOOKING_EXPIRED(HttpStatus.CONFLICT, "The time to pay for this booking has run out");
 
     private final HttpStatus status;
     private final String defaultMessage;

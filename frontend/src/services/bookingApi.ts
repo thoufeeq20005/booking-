@@ -33,6 +33,7 @@ export interface Booking {
   checkedInAt?: string;
   rescheduleCount: number;
   qrPayload?: string;
+  paid: boolean;
   createdAt: string;
 }
 

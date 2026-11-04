@@ -108,6 +108,15 @@ bookeasy:
     bootstrap:
       email: ${BOOTSTRAP_ADMIN_EMAIL:}
       token: ${BOOTSTRAP_ADMIN_TOKEN:}
+  payments:
+    # Minutes an unpaid booking holds its slot before it expires.
+    hold-minutes: ${PAYMENT_HOLD_MINUTES:15}
+    razorpay:
+      key-id: ${RAZORPAY_KEY_ID:}
+      key-secret: ${RAZORPAY_KEY_SECRET:}
+      webhook-secret: ${RAZORPAY_WEBHOOK_SECRET:}
+      route-enabled: ${RAZORPAY_ROUTE_ENABLED:false}
+      base-url: ${RAZORPAY_BASE_URL:https://api.razorpay.com}
   notifications:
     # Dev only: with no provider configured, log emails/OTPs instead of failing. Always false in prod.
     dev-log-delivery: ${NOTIFICATIONS_DEV_LOG:true}
