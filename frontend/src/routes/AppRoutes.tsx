@@ -1,10 +1,13 @@
 import { lazy } from 'react';
-import { Route, Routes } from 'react-router';
+import { Navigate, Route, Routes } from 'react-router';
+import { useAuth } from '@/contexts/AuthContext';
+import { DashboardLayout } from '@/layouts/DashboardLayout';
 import { PublicLayout } from '@/layouts/PublicLayout';
 import { HomePage } from '@/pages/HomePage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 import { StatusPage } from '@/pages/StatusPage';
 import type { Role } from '@/services/apiClient';
+import { homeFor } from '@/services/dashboardApi';
 import { RequireAuth } from './RequireAuth';
 
 // Loaded on demand so the home page stays light.
@@ -26,10 +29,23 @@ const AdminOrganizationReviewPage = named(
   'AdminOrganizationReviewPage',
 );
 const AdminCategoriesPage = named(() => import('@/pages/admin/AdminCategoriesPage'), 'AdminCategoriesPage');
+const AdminUsersPage = named(() => import('@/pages/admin/AdminUsersPage'), 'AdminUsersPage');
+const AdminAuditPage = named(() => import('@/pages/admin/AdminAuditPage'), 'AdminAuditPage');
+const AdminDashboardPage = named(() => import('@/pages/dashboard/AdminDashboardPage'), 'AdminDashboardPage');
+const OwnerDashboardPage = named(() => import('@/pages/dashboard/OwnerDashboardPage'), 'OwnerDashboardPage');
+const CustomerOverviewPage = named(() => import('@/pages/dashboard/CustomerOverviewPage'), 'CustomerOverviewPage');
+const StaffOverviewPage = named(() => import('@/pages/dashboard/StaffOverviewPage'), 'StaffOverviewPage');
+
+/** /dashboard sends each person to the area of their most powerful role. */
+function DashboardRedirect() {
+  const { user } = useAuth();
+  return <Navigate to={homeFor(user?.roles ?? [])} replace />;
+}
 
 const guard = (page: React.ReactNode, roles?: Role[]) => <RequireAuth roles={roles}>{page}</RequireAuth>;
 const OWNER: Role[] = ['BUSINESS_OWNER'];
 const ADMIN: Role[] = ['SUPER_ADMIN'];
+const STAFF: Role[] = ['STAFF'];
 
 export function AppRoutes() {
   return (
@@ -51,11 +67,26 @@ export function AppRoutes() {
           }
         />
         <Route path="business/register" element={guard(<RegisterBusinessPage />)} />
-        <Route path="owner/organizations" element={guard(<MyBusinessesPage />, OWNER)} />
-        <Route path="owner/organizations/:id" element={guard(<OrganizationSetupPage />, OWNER)} />
-        <Route path="admin/organizations" element={guard(<AdminOrganizationsPage />, ADMIN)} />
-        <Route path="admin/organizations/:id" element={guard(<AdminOrganizationReviewPage />, ADMIN)} />
-        <Route path="admin/categories" element={guard(<AdminCategoriesPage />, ADMIN)} />
+        <Route path="dashboard" element={guard(<DashboardRedirect />)} />
+        <Route path="customer" element={guard(<DashboardLayout area="customer" />)}>
+          <Route index element={<CustomerOverviewPage />} />
+        </Route>
+        <Route path="owner" element={guard(<DashboardLayout area="owner" />, OWNER)}>
+          <Route index element={<OwnerDashboardPage />} />
+          <Route path="organizations" element={<MyBusinessesPage />} />
+          <Route path="organizations/:id" element={<OrganizationSetupPage />} />
+        </Route>
+        <Route path="staff" element={guard(<DashboardLayout area="staff" />, STAFF)}>
+          <Route index element={<StaffOverviewPage />} />
+        </Route>
+        <Route path="admin" element={guard(<DashboardLayout area="admin" />, ADMIN)}>
+          <Route index element={<AdminDashboardPage />} />
+          <Route path="organizations" element={<AdminOrganizationsPage />} />
+          <Route path="organizations/:id" element={<AdminOrganizationReviewPage />} />
+          <Route path="categories" element={<AdminCategoriesPage />} />
+          <Route path="users" element={<AdminUsersPage />} />
+          <Route path="audit" element={<AdminAuditPage />} />
+        </Route>
         <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>

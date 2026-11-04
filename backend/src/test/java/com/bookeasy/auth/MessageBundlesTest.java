@@ -37,6 +37,10 @@ class MessageBundlesTest {
             assertThat(rendered).doesNotContain("{0}", "{1}", "{2}");
         }
 
+        String reset = new MessageFormat(bundle.getProperty("email.twoFactorReset.body"), Locale.ROOT)
+                .format(new Object[]{"NAME", "https://x.test/account"});
+        assertThat(reset).contains("NAME", "https://x.test/account").doesNotContain("{");
+
         for (String action : new String[]{"submitted", "approved", "rejected", "suspended", "reinstated"}) {
             String subject = new MessageFormat(bundle.getProperty("email.org." + action + ".subject"), Locale.ROOT)
                     .format(new Object[]{"BIZ"});

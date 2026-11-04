@@ -13,8 +13,7 @@
     "status": "ಸಿಸ್ಟಮ್ ಸ್ಥಿತಿ",
     "skipToContent": "ವಿಷಯಕ್ಕೆ ಹೋಗಿ",
     "signOut": "ಸೈನ್ ಔಟ್",
-    "myBusinesses": "ನನ್ನ ವ್ಯವಹಾರಗಳು",
-    "admin": "ಅಡ್ಮಿನ್"
+    "dashboard": "ಡ್ಯಾಶ್‌ಬೋರ್ಡ್"
   },
   "header": {
     "language": "ಭಾಷೆ",
@@ -463,5 +462,131 @@
     "mandatory": "ಕಡ್ಡಾಯ",
     "delete": "ಅಳಿಸಿ",
     "confirmDelete": "ಇದನ್ನು ಅಳಿಸಬೇಕೆ? ಇದನ್ನು ಹಿಂಪಡೆಯಲಾಗುವುದಿಲ್ಲ."
+  },
+  "dashboard": {
+    "overview": "ಅವಲೋಕನ",
+    "users": "ಬಳಕೆದಾರರು",
+    "auditLog": "ಆಡಿಟ್ ಲಾಗ್",
+    "area": {
+      "customer": "ನನ್ನ ಬುಕಿಂಗ್‌ಗಳು",
+      "owner": "ವ್ಯವಹಾರ",
+      "staff": "ಸಿಬ್ಬಂದಿ",
+      "admin": "ಅಡ್ಮಿನ್"
+    },
+    "switchTo": "ಇದಕ್ಕೆ ಬದಲಿಸಿ",
+    "hello": "ನಮಸ್ಕಾರ, {{name}}",
+    "customerSubtitle": "ನಿಮ್ಮ ಅಪಾಯಿಂಟ್‌ಮೆಂಟ್‌ಗಳು ಮತ್ತು ಖಾತೆ ಒಂದೇ ನೋಟದಲ್ಲಿ.",
+    "upcomingBookings": "ಮುಂಬರುವ ಬುಕಿಂಗ್‌ಗಳು",
+    "noBookings": "ನಿಮಗೆ ಮುಂಬರುವ ಅಪಾಯಿಂಟ್‌ಮೆಂಟ್‌ಗಳಿಲ್ಲ.",
+    "noBookingsHint": "ಹತ್ತಿರದ ಪರಿಶೀಲಿತ ವ್ಯವಹಾರಗಳಲ್ಲಿ ಬುಕಿಂಗ್ ಶೀಘ್ರದಲ್ಲೇ ಬರಲಿದೆ. ನಿಮ್ಮ ಅಪಾಯಿಂಟ್‌ಮೆಂಟ್‌ಗಳು ಇಲ್ಲಿ ಕಾಣಿಸುತ್ತವೆ.",
+    "accountReadiness": "ಖಾತೆ ಸಿದ್ಧತೆ",
+    "allDone": "ಎಲ್ಲವೂ ಪೂರ್ಣ",
+    "stepsLeft": "ಉಳಿದ ಹಂತಗಳು: {{count}}",
+    "check": {
+      "email": "ಇಮೇಲ್ ವಿಳಾಸ ಪರಿಶೀಲಿಸಲಾಗಿದೆ",
+      "phone": "ಮೊಬೈಲ್ ಸಂಖ್ಯೆ ಪರಿಶೀಲಿಸಲಾಗಿದೆ",
+      "twoFactor": "ಎರಡು-ಹಂತದ ಪರಿಶೀಲನೆ ಆನ್ ಆಗಿದೆ"
+    },
+    "openAccount": "ಖಾತೆ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ತೆರೆಯಿರಿ",
+    "ownBusiness": "ವ್ಯವಹಾರ ನಡೆಸುತ್ತೀರಾ?",
+    "ownBusinessHint": "ನಿಮ್ಮ ಕ್ಲಿನಿಕ್, ಸಲೂನ್, ಸಂಸ್ಥೆ ಅಥವಾ ಸ್ಟುಡಿಯೋವನ್ನು ಪಟ್ಟಿ ಮಾಡಿ BookEasy ನಲ್ಲಿ ಬುಕಿಂಗ್‌ಗಳನ್ನು ಪಡೆಯಿರಿ.",
+    "staffEmpty": "ನೀವು ಇನ್ನೂ ಯಾವುದೇ ವ್ಯವಹಾರ ತಂಡದ ಭಾಗವಾಗಿಲ್ಲ.",
+    "staffEmptyHint": "ಒಂದು ವ್ಯವಹಾರ ನಿಮ್ಮನ್ನು ಸಿಬ್ಬಂದಿಯಾಗಿ ಆಹ್ವಾನಿಸಿದಾಗ, ನಿಮ್ಮ ವೇಳಾಪಟ್ಟಿ ಮತ್ತು ಅಪಾಯಿಂಟ್‌ಮೆಂಟ್‌ಗಳು ಇಲ್ಲಿ ಕಾಣಿಸುತ್ತವೆ.",
+    "branches": "ಸಕ್ರಿಯ ಶಾಖೆಗಳು",
+    "withoutHours": "({{count}} ಸಮಯವಿಲ್ಲದೆ)",
+    "requiredDocuments": "ಅಗತ್ಯ ದಾಖಲೆಗಳು",
+    "docsUploaded": "{{required}} ರಲ್ಲಿ {{uploaded}} ಅಪ್‌ಲೋಡ್ ಆಗಿವೆ",
+    "docsRejected": "({{count}} ತಿರಸ್ಕೃತ)",
+    "nextStep": "ಮುಂದಿನ ಹಂತ",
+    "readyToSubmit": "ಪರಿಶೀಲನೆಗೆ ಸಲ್ಲಿಸಲು ಸಿದ್ಧ",
+    "ownerTitle": "ವ್ಯವಹಾರ ಅವಲೋಕನ",
+    "suspendedNotice": "ನಿಮ್ಮ {{count}} ವ್ಯವಹಾರ ಅಮಾನತುಗೊಂಡಿದೆ. ಕಾರಣ ನೋಡಲು ತೆರೆಯಿರಿ.",
+    "businesses": "ವ್ಯವಹಾರಗಳು",
+    "needsAction": "ನಿಮ್ಮ ಕ್ರಮ ಅಗತ್ಯ",
+    "upcomingHolidays": "ಮುಂಬರುವ ರಜೆಗಳು",
+    "system": "ಸಿಸ್ಟಮ್",
+    "adminTitle": "ಪ್ಲಾಟ್‌ಫಾರ್ಮ್ ಅವಲೋಕನ",
+    "pendingReviews": "ಪರಿಶೀಲನೆಗಾಗಿ ಕಾಯುತ್ತಿವೆ",
+    "oldestSince": "ಹಳೆಯದು {{date}} ರಿಂದ",
+    "docsAwaitingReview": "ಪರಿಶೀಲಿಸಬೇಕಾದ ದಾಖಲೆಗಳು",
+    "totalUsers": "ಬಳಕೆದಾರರು",
+    "newThisWeek": "ಕಳೆದ 7 ದಿನಗಳಲ್ಲಿ +{{count}}",
+    "suspendedUsers": "ಅಮಾನತುಗೊಂಡ ಬಳಕೆದಾರರು",
+    "businessesByStatus": "ಸ್ಥಿತಿಯ ಪ್ರಕಾರ ವ್ಯವಹಾರಗಳು",
+    "usersByRole": "ಪಾತ್ರದ ಪ್ರಕಾರ ಬಳಕೆದಾರರು",
+    "role": {
+      "CUSTOMER": "ಗ್ರಾಹಕರು",
+      "BUSINESS_OWNER": "ವ್ಯವಹಾರ ಮಾಲೀಕರು",
+      "STAFF": "ಸಿಬ್ಬಂದಿ",
+      "SUPER_ADMIN": "ಸೂಪರ್ ಅಡ್ಮಿನ್‌ಗಳು"
+    },
+    "rolesOverlap": "ಒಬ್ಬರಿಗೆ ಹಲವು ಪಾತ್ರಗಳಿರಬಹುದು, ಆದ್ದರಿಂದ ಇವುಗಳ ಮೊತ್ತ ಒಟ್ಟು ಸಂಖ್ಯೆಗಿಂತ ಹೆಚ್ಚಿರಬಹುದು.",
+    "recentActivity": "ಇತ್ತೀಚಿನ ಚಟುವಟಿಕೆ",
+    "viewAll": "ಎಲ್ಲವನ್ನೂ ನೋಡಿ",
+    "userAction": {
+      "suspend": "{{name}} ಅವರನ್ನು ಅಮಾನತುಗೊಳಿಸಬೇಕೆ? ಅವರು ತಕ್ಷಣ ಎಲ್ಲೆಡೆಯಿಂದ ಸೈನ್ ಔಟ್ ಆಗುತ್ತಾರೆ.",
+      "reactivate": "{{name}} ಅವರನ್ನು ಮತ್ತೆ ಸಕ್ರಿಯಗೊಳಿಸಬೇಕೆ?",
+      "reset2fa": "{{name}} ಅವರ ಎರಡು-ಹಂತದ ಪರಿಶೀಲನೆಯನ್ನು ಆಫ್ ಮಾಡಬೇಕೆ?"
+    },
+    "reset2faWarning": "ವ್ಯಕ್ತಿಯ ಗುರುತನ್ನು ದೃಢೀಕರಿಸಿದ ನಂತರವೇ ಇದನ್ನು ಮಾಡಿ. ಅವರು ಎಲ್ಲೆಡೆಯಿಂದ ಸೈನ್ ಔಟ್ ಆಗುತ್ತಾರೆ ಮತ್ತು ಭದ್ರತಾ ಸೂಚನೆ ಇಮೇಲ್ ಆಗುತ್ತದೆ.",
+    "reset2faReason": "ಅವರ ಗುರುತನ್ನು ಹೇಗೆ ದೃಢೀಕರಿಸಿದಿರಿ?",
+    "userConfirm": {
+      "suspend": "ಬಳಕೆದಾರರನ್ನು ಅಮಾನತುಗೊಳಿಸಿ",
+      "reactivate": "ಬಳಕೆದಾರರನ್ನು ಮತ್ತೆ ಸಕ್ರಿಯಗೊಳಿಸಿ",
+      "reset2fa": "ಎರಡು-ಹಂತದ ಪರಿಶೀಲನೆ ಆಫ್ ಮಾಡಿ"
+    },
+    "searchUsers": "ಹೆಸರು, ಇಮೇಲ್ ಅಥವಾ ಮೊಬೈಲ್ ಹುಡುಕಿ",
+    "userStatus": {
+      "ACTIVE": "ಸಕ್ರಿಯ",
+      "SUSPENDED": "ಅಮಾನತುಗೊಂಡಿದೆ"
+    },
+    "roleFilter": "ಪಾತ್ರ",
+    "noUsers": "ಹೊಂದಾಣಿಕೆಯ ಬಳಕೆದಾರರಿಲ್ಲ.",
+    "joined": "{{date}} ರಂದು ಸೇರಿದರು",
+    "twoFactorOn": "ಎರಡು-ಹಂತ ಆನ್",
+    "reset2fa": "ಎರಡು-ಹಂತ ಮರುಹೊಂದಿಸಿ",
+    "reactivate": "ಮತ್ತೆ ಸಕ್ರಿಯಗೊಳಿಸಿ",
+    "suspend": "ಅಮಾನತುಗೊಳಿಸಿ",
+    "auditIntro": "ಪ್ಲಾಟ್‌ಫಾರ್ಮ್‌ನ ಪ್ರತಿ ಸೂಕ್ಷ್ಮ ಕ್ರಿಯೆ, ಹೊಸದು ಮೊದಲು. ನಮೂದುಗಳನ್ನು ಸಂಪಾದಿಸಲು ಅಥವಾ ಅಳಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ.",
+    "auditFilter": {
+      "action": "ಕ್ರಿಯೆ ಕೋಡ್",
+      "entityType": "ದಾಖಲೆ ಪ್ರಕಾರ",
+      "entityId": "ದಾಖಲೆ ಐಡಿ",
+      "actorUserId": "ಬಳಕೆದಾರ ಐಡಿ"
+    },
+    "applyFilters": "ಫಿಲ್ಟರ್‌ಗಳನ್ನು ಅನ್ವಯಿಸಿ",
+    "noAudit": "ಹೊಂದಾಣಿಕೆಯ ನಮೂದುಗಳಿಲ್ಲ.",
+    "auditCol": {
+      "time": "ಸಮಯ",
+      "actor": "ಮಾಡಿದವರು",
+      "action": "ಕ್ರಿಯೆ",
+      "entity": "ದಾಖಲೆ",
+      "details": "ವಿವರಗಳು"
+    }
+  },
+  "audit": {
+    "action": {
+      "USER_SUSPENDED": "ಬಳಕೆದಾರರನ್ನು ಅಮಾನತುಗೊಳಿಸಲಾಗಿದೆ",
+      "USER_REACTIVATED": "ಬಳಕೆದಾರರನ್ನು ಮತ್ತೆ ಸಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ",
+      "USER_2FA_RESET": "ಎರಡು-ಹಂತದ ಪರಿಶೀಲನೆ ಮರುಹೊಂದಿಸಲಾಗಿದೆ",
+      "SUPER_ADMIN_BOOTSTRAPPED": "ಮೊದಲ ಸೂಪರ್ ಅಡ್ಮಿನ್ ರಚಿಸಲಾಗಿದೆ",
+      "ORGANIZATION_CREATED": "ವ್ಯವಹಾರ ರಚಿಸಲಾಗಿದೆ",
+      "ORGANIZATION_SUBMITTED": "ವ್ಯವಹಾರ ಸಲ್ಲಿಸಲಾಗಿದೆ",
+      "ORGANIZATION_DOCUMENT_UPLOADED": "ದಾಖಲೆ ಅಪ್‌ಲೋಡ್ ಆಗಿದೆ",
+      "ORGANIZATION_DOCUMENT_REVIEWED": "ದಾಖಲೆ ಪರಿಶೀಲಿಸಲಾಗಿದೆ",
+      "ORGANIZATION_APPROVED": "ವ್ಯವಹಾರ ಅನುಮೋದಿಸಲಾಗಿದೆ",
+      "ORGANIZATION_REJECTED": "ಬದಲಾವಣೆಗಳನ್ನು ಕೋರಲಾಗಿದೆ",
+      "ORGANIZATION_SUSPENDED": "ವ್ಯವಹಾರ ಅಮಾನತುಗೊಳಿಸಲಾಗಿದೆ",
+      "ORGANIZATION_REINSTATED": "ವ್ಯವಹಾರ ಮರುಸ್ಥಾಪಿಸಲಾಗಿದೆ",
+      "CATEGORY_CREATED": "ವರ್ಗ ರಚಿಸಲಾಗಿದೆ",
+      "CATEGORY_UPDATED": "ವರ್ಗ ನವೀಕರಿಸಲಾಗಿದೆ",
+      "CATEGORY_DELETED": "ವರ್ಗ ಅಳಿಸಲಾಗಿದೆ",
+      "SUBCATEGORY_CREATED": "ಉಪವರ್ಗ ರಚಿಸಲಾಗಿದೆ",
+      "SUBCATEGORY_UPDATED": "ಉಪವರ್ಗ ನವೀಕರಿಸಲಾಗಿದೆ",
+      "SUBCATEGORY_DELETED": "ಉಪವರ್ಗ ಅಳಿಸಲಾಗಿದೆ",
+      "DOC_REQUIREMENT_CREATED": "ದಾಖಲೆ ಅಗತ್ಯ ರಚಿಸಲಾಗಿದೆ",
+      "DOC_REQUIREMENT_UPDATED": "ದಾಖಲೆ ಅಗತ್ಯ ನವೀಕರಿಸಲಾಗಿದೆ",
+      "DOC_REQUIREMENT_DELETED": "ದಾಖಲೆ ಅಗತ್ಯ ಅಳಿಸಲಾಗಿದೆ"
+    }
   }
 }

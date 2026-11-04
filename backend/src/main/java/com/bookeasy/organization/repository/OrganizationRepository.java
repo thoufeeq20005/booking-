@@ -40,6 +40,11 @@ public interface OrganizationRepository extends JpaRepository<Organization, Long
 
     boolean existsBySlug(String slug);
 
+    @Query("select o.status, count(o) from Organization o group by o.status")
+    List<Object[]> countByStatus();
+
+    Optional<Organization> findFirstByStatusOrderBySubmittedAtAsc(OrganizationStatus status);
+
     boolean existsBySubcategoryIdIn(Collection<Long> subcategoryIds);
 
     @Query("""

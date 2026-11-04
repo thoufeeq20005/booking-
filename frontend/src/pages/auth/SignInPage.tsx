@@ -22,7 +22,7 @@ export function SignInPage() {
   const { status, signIn } = useAuth();
   const navigate = useNavigate();
   const [params] = useSearchParams();
-  const next = safeNext(params.get('next'));
+  const next = safeNext(params.get('next'), '/dashboard');
   const [method, setMethod] = useState<Method>('email');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

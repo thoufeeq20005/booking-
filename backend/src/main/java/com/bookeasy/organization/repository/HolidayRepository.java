@@ -12,6 +12,9 @@ public interface HolidayRepository extends JpaRepository<Holiday, Long> {
 
     List<Holiday> findByBranchIdAndDateGreaterThanEqualOrderByDateAsc(Long branchId, LocalDate from);
 
+    List<Holiday> findTop10ByBranchIdInAndDateGreaterThanEqualOrderByDateAsc(java.util.Collection<Long> branchIds,
+                                                                             LocalDate from);
+
     Optional<Holiday> findByIdAndBranchId(Long id, Long branchId);
 
     boolean existsByBranchIdAndDate(Long branchId, LocalDate date);

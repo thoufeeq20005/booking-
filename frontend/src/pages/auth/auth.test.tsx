@@ -52,7 +52,7 @@ describe('sign in', () => {
     await userEvent.type(await screen.findByLabelText('6-digit code'), '12a3456');
     await userEvent.click(screen.getByRole('button', { name: 'Verify' }));
 
-    expect(await screen.findByRole('heading', { name: 'My account' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Hello, Asha Kumar' })).toBeInTheDocument();
     expect(requests.find((r) => r.url === '/auth/login/two-factor')!.body).toEqual({
       challengeToken: 'chal-1',
       code: '123456',
@@ -78,7 +78,7 @@ describe('sign in', () => {
     await userEvent.type(await screen.findByLabelText('Full name'), 'Ravi');
     await userEvent.click(screen.getByRole('button', { name: 'Verify and continue' }));
 
-    expect(await screen.findByRole('heading', { name: 'My account' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Hello, Asha Kumar' })).toBeInTheDocument();
     expect(requests.filter((r) => r.url === '/auth/otp/login').at(-1)!.body).toMatchObject({
       phone: '98765 43210',
       code: '482913',

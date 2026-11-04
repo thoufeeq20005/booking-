@@ -16,4 +16,13 @@ public interface OrganizationDocumentRepository extends JpaRepository<Organizati
     Optional<OrganizationDocument> findByIdAndOrganizationId(Long id, Long organizationId);
 
     boolean existsByRequirementId(Long requirementId);
+
+    /** Documents a reviewer still has to look at: unreviewed uploads of applications under review. */
+    @org.springframework.data.jpa.repository.Query("""
+            select count(d) from OrganizationDocument d
+            where d.status = com.bookeasy.organization.entity.OrganizationDocument.Status.SUBMITTED
+              and d.organizationId in (select o.id from Organization o
+                                       where o.status = com.bookeasy.organization.entity.OrganizationStatus.PENDING)
+            """)
+    long countAwaitingReview();
 }

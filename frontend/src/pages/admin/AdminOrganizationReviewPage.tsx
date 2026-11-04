@@ -8,7 +8,6 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { TextAreaField } from '@/components/ui/FormFields';
 import { ErrorState, LoadingState } from '@/components/ui/StateMessage';
-import { AdminNav } from '@/features/admin/AdminNav';
 import { HistoryList } from '@/features/organization/HistoryList';
 import { DAY_KEYS, fileUrl, formatBytes, openBlob, StatusBadge, useLocalized } from '@/features/organization/shared';
 import { useApiForm } from '@/hooks/useApiForm';
@@ -182,7 +181,6 @@ export function AdminOrganizationReviewPage() {
         <Link to="/admin/organizations" className="inline-flex items-center gap-1 text-sm text-fg-muted hover:text-fg">
           <ArrowLeft className="h-4 w-4" aria-hidden="true" />{t('admin.backToQueue')}
         </Link>
-        <AdminNav />
       </div>
       <div className="flex flex-wrap items-center gap-3">
         {s.logoUrl && <img src={fileUrl(s.logoUrl)} alt="" className="h-12 w-12 rounded-xl object-cover" />}

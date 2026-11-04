@@ -13,8 +13,7 @@
     "status": "सिस्टम स्थिति",
     "skipToContent": "सामग्री पर जाएँ",
     "signOut": "साइन आउट",
-    "myBusinesses": "मेरे व्यवसाय",
-    "admin": "एडमिन"
+    "dashboard": "डैशबोर्ड"
   },
   "header": {
     "language": "भाषा",
@@ -463,5 +462,131 @@
     "mandatory": "अनिवार्य",
     "delete": "हटाएँ",
     "confirmDelete": "यह आइटम हटाएँ? इसे वापस नहीं लाया जा सकता।"
+  },
+  "dashboard": {
+    "overview": "अवलोकन",
+    "users": "उपयोगकर्ता",
+    "auditLog": "ऑडिट लॉग",
+    "area": {
+      "customer": "मेरी बुकिंग",
+      "owner": "व्यवसाय",
+      "staff": "स्टाफ़",
+      "admin": "एडमिन"
+    },
+    "switchTo": "यहाँ जाएँ",
+    "hello": "नमस्ते, {{name}}",
+    "customerSubtitle": "आपकी अपॉइंटमेंट और खाता एक नज़र में।",
+    "upcomingBookings": "आगामी बुकिंग",
+    "noBookings": "आपकी कोई आगामी अपॉइंटमेंट नहीं है।",
+    "noBookingsHint": "आपके पास के सत्यापित व्यवसायों में बुकिंग जल्द शुरू होगी। आपकी अपॉइंटमेंट यहाँ दिखेंगी।",
+    "accountReadiness": "खाते की तैयारी",
+    "allDone": "सब पूरा",
+    "stepsLeft": "बाकी चरण: {{count}}",
+    "check": {
+      "email": "ईमेल पता सत्यापित",
+      "phone": "मोबाइल नंबर सत्यापित",
+      "twoFactor": "दो-चरणीय सत्यापन चालू"
+    },
+    "openAccount": "खाता सेटिंग खोलें",
+    "ownBusiness": "व्यवसाय चलाते हैं?",
+    "ownBusinessHint": "अपना क्लिनिक, सैलून, संस्थान या स्टूडियो सूचीबद्ध करें और BookEasy पर बुकिंग लें।",
+    "staffEmpty": "आप अभी किसी व्यवसाय टीम का हिस्सा नहीं हैं।",
+    "staffEmptyHint": "जब कोई व्यवसाय आपको स्टाफ़ के रूप में आमंत्रित करेगा, तो आपका शेड्यूल और अपॉइंटमेंट यहाँ दिखेंगे।",
+    "branches": "सक्रिय शाखाएँ",
+    "withoutHours": "({{count}} बिना समय के)",
+    "requiredDocuments": "आवश्यक दस्तावेज़",
+    "docsUploaded": "{{required}} में से {{uploaded}} अपलोड",
+    "docsRejected": "({{count}} अस्वीकृत)",
+    "nextStep": "अगला चरण",
+    "readyToSubmit": "सत्यापन के लिए जमा करने को तैयार",
+    "ownerTitle": "व्यवसाय अवलोकन",
+    "suspendedNotice": "आपके {{count}} व्यवसाय निलंबित हैं। कारण देखने के लिए खोलें।",
+    "businesses": "व्यवसाय",
+    "needsAction": "आपकी कार्रवाई आवश्यक",
+    "upcomingHolidays": "आगामी छुट्टियाँ",
+    "system": "सिस्टम",
+    "adminTitle": "प्लेटफ़ॉर्म अवलोकन",
+    "pendingReviews": "समीक्षा की प्रतीक्षा में",
+    "oldestSince": "सबसे पुराना {{date}} से",
+    "docsAwaitingReview": "समीक्षा के लिए दस्तावेज़",
+    "totalUsers": "उपयोगकर्ता",
+    "newThisWeek": "पिछले 7 दिनों में +{{count}}",
+    "suspendedUsers": "निलंबित उपयोगकर्ता",
+    "businessesByStatus": "स्थिति के अनुसार व्यवसाय",
+    "usersByRole": "भूमिका के अनुसार उपयोगकर्ता",
+    "role": {
+      "CUSTOMER": "ग्राहक",
+      "BUSINESS_OWNER": "व्यवसाय मालिक",
+      "STAFF": "स्टाफ़",
+      "SUPER_ADMIN": "सुपर एडमिन"
+    },
+    "rolesOverlap": "एक व्यक्ति की कई भूमिकाएँ हो सकती हैं, इसलिए इनका योग कुल से अधिक हो सकता है।",
+    "recentActivity": "हाल की गतिविधि",
+    "viewAll": "सभी देखें",
+    "userAction": {
+      "suspend": "{{name}} को निलंबित करें? वे तुरंत हर जगह से साइन आउट हो जाएँगे।",
+      "reactivate": "{{name}} को फिर से सक्रिय करें?",
+      "reset2fa": "{{name}} का दो-चरणीय सत्यापन बंद करें?"
+    },
+    "reset2faWarning": "व्यक्ति की पहचान की पुष्टि करने के बाद ही ऐसा करें। उन्हें हर जगह से साइन आउट किया जाएगा और सुरक्षा सूचना ईमेल की जाएगी।",
+    "reset2faReason": "आपने उनकी पहचान की पुष्टि कैसे की?",
+    "userConfirm": {
+      "suspend": "उपयोगकर्ता निलंबित करें",
+      "reactivate": "उपयोगकर्ता फिर से सक्रिय करें",
+      "reset2fa": "दो-चरणीय सत्यापन बंद करें"
+    },
+    "searchUsers": "नाम, ईमेल या मोबाइल खोजें",
+    "userStatus": {
+      "ACTIVE": "सक्रिय",
+      "SUSPENDED": "निलंबित"
+    },
+    "roleFilter": "भूमिका",
+    "noUsers": "कोई मेल खाता उपयोगकर्ता नहीं।",
+    "joined": "{{date}} को जुड़े",
+    "twoFactorOn": "दो-चरणीय चालू",
+    "reset2fa": "दो-चरणीय रीसेट करें",
+    "reactivate": "फिर से सक्रिय करें",
+    "suspend": "निलंबित करें",
+    "auditIntro": "प्लेटफ़ॉर्म पर हर संवेदनशील कार्रवाई, नवीनतम पहले। प्रविष्टियाँ बदली या हटाई नहीं जा सकतीं।",
+    "auditFilter": {
+      "action": "कार्रवाई कोड",
+      "entityType": "रिकॉर्ड प्रकार",
+      "entityId": "रिकॉर्ड आईडी",
+      "actorUserId": "उपयोगकर्ता आईडी"
+    },
+    "applyFilters": "फ़िल्टर लागू करें",
+    "noAudit": "कोई मेल खाती प्रविष्टि नहीं।",
+    "auditCol": {
+      "time": "समय",
+      "actor": "द्वारा",
+      "action": "कार्रवाई",
+      "entity": "रिकॉर्ड",
+      "details": "विवरण"
+    }
+  },
+  "audit": {
+    "action": {
+      "USER_SUSPENDED": "उपयोगकर्ता निलंबित",
+      "USER_REACTIVATED": "उपयोगकर्ता फिर से सक्रिय",
+      "USER_2FA_RESET": "दो-चरणीय सत्यापन रीसेट",
+      "SUPER_ADMIN_BOOTSTRAPPED": "पहला सुपर एडमिन बनाया गया",
+      "ORGANIZATION_CREATED": "व्यवसाय बनाया गया",
+      "ORGANIZATION_SUBMITTED": "व्यवसाय जमा किया गया",
+      "ORGANIZATION_DOCUMENT_UPLOADED": "दस्तावेज़ अपलोड",
+      "ORGANIZATION_DOCUMENT_REVIEWED": "दस्तावेज़ की समीक्षा",
+      "ORGANIZATION_APPROVED": "व्यवसाय स्वीकृत",
+      "ORGANIZATION_REJECTED": "बदलाव माँगे गए",
+      "ORGANIZATION_SUSPENDED": "व्यवसाय निलंबित",
+      "ORGANIZATION_REINSTATED": "व्यवसाय बहाल",
+      "CATEGORY_CREATED": "श्रेणी बनाई गई",
+      "CATEGORY_UPDATED": "श्रेणी अपडेट की गई",
+      "CATEGORY_DELETED": "श्रेणी हटाई गई",
+      "SUBCATEGORY_CREATED": "उपश्रेणी बनाई गई",
+      "SUBCATEGORY_UPDATED": "उपश्रेणी अपडेट की गई",
+      "SUBCATEGORY_DELETED": "उपश्रेणी हटाई गई",
+      "DOC_REQUIREMENT_CREATED": "दस्तावेज़ आवश्यकता बनाई गई",
+      "DOC_REQUIREMENT_UPDATED": "दस्तावेज़ आवश्यकता अपडेट की गई",
+      "DOC_REQUIREMENT_DELETED": "दस्तावेज़ आवश्यकता हटाई गई"
+    }
   }
 }

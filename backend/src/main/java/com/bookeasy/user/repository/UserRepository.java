@@ -31,6 +31,13 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("select count(u) > 0 from User u join u.roles r where r = :role")
     boolean existsWithRole(@Param("role") RoleCode role);
 
+    long countByStatus(UserStatus status);
+
+    long countByCreatedAtGreaterThanEqual(java.time.Instant since);
+
+    @Query("select count(distinct u) from User u join u.roles r where r = :role")
+    long countWithRole(@Param("role") RoleCode role);
+
     @Query(value = """
             select u from User u
             where (:q is null or lower(u.fullName) like lower(concat('%', :q, '%'))

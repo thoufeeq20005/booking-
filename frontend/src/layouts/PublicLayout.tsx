@@ -62,19 +62,20 @@ function AuthControls({ onNavigate }: { onNavigate?: () => void }) {
   );
 }
 
-/** Role-aware links: business owners go to their businesses, everyone else to registration. */
+/** Signed-in people get their dashboard; visitors and customers without a business see "For business". */
 function RoleLinks({ onNavigate }: { onNavigate?: () => void }) {
   const { t } = useTranslation();
-  const { hasRole } = useAuth();
+  const { status, hasRole } = useAuth();
   return (
     <>
-      <NavLink to={hasRole('BUSINESS_OWNER') ? '/owner/organizations' : '/business/register'} className={navLinkClass}
-        onClick={onNavigate}>
-        {hasRole('BUSINESS_OWNER') ? t('nav.myBusinesses') : t('nav.forBusiness')}
-      </NavLink>
-      {hasRole('SUPER_ADMIN') && (
-        <NavLink to="/admin/organizations" className={navLinkClass} onClick={onNavigate}>
-          {t('nav.admin')}
+      {status === 'authenticated' && (
+        <NavLink to="/dashboard" className={navLinkClass} onClick={onNavigate}>
+          {t('nav.dashboard')}
+        </NavLink>
+      )}
+      {!hasRole('BUSINESS_OWNER') && (
+        <NavLink to="/business/register" className={navLinkClass} onClick={onNavigate}>
+          {t('nav.forBusiness')}
         </NavLink>
       )}
     </>

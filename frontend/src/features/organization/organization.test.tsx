@@ -240,7 +240,7 @@ describe('admin categories', () => {
 });
 
 describe('header', () => {
-  it('shows owners their businesses and admins the admin area', async () => {
+  it('gives signed-in people a dashboard link and hides "For business" from owners', async () => {
     api({ ...owner, roles: ['BUSINESS_OWNER', 'SUPER_ADMIN'] }, () => undefined);
     renderWithProviders(
       <Routes>
@@ -249,7 +249,7 @@ describe('header', () => {
         </Route>
       </Routes>,
     );
-    expect(await screen.findAllByRole('link', { name: 'My businesses' })).not.toHaveLength(0);
-    expect(screen.getAllByRole('link', { name: 'Admin' })[0]).toHaveAttribute('href', '/admin/organizations');
+    expect((await screen.findAllByRole('link', { name: 'Dashboard' }))[0]).toHaveAttribute('href', '/dashboard');
+    expect(screen.queryByRole('link', { name: 'For business' })).not.toBeInTheDocument();
   });
 });

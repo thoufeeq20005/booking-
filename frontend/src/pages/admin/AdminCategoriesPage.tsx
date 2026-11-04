@@ -8,7 +8,6 @@ import { Card } from '@/components/ui/Card';
 import { CheckboxField, SelectField } from '@/components/ui/FormFields';
 import { ErrorState, LoadingState } from '@/components/ui/StateMessage';
 import { TextField } from '@/components/ui/TextField';
-import { AdminNav } from '@/features/admin/AdminNav';
 import { CATEGORY_ICONS, CategoryIcon, formatBytes, typeLabels, useLocalized } from '@/features/organization/shared';
 import { useApiForm } from '@/hooks/useApiForm';
 import { LANGUAGES } from '@/i18n';
@@ -226,7 +225,6 @@ export function AdminCategoriesPage() {
     <div className="mx-auto max-w-5xl space-y-6 px-4 py-10 sm:px-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-3xl font-bold tracking-tight">{t('admin.categoriesTitle')}</h1>
-        <AdminNav />
       </div>
       <p className="text-sm text-fg-muted">{t('admin.categoriesIntro')}</p>
       {form.formError && <Alert tone="error">{form.formError}</Alert>}

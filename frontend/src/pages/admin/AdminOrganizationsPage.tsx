@@ -7,7 +7,6 @@ import clsx from 'clsx';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { EmptyState, ErrorState, LoadingState } from '@/components/ui/StateMessage';
-import { AdminNav } from '@/features/admin/AdminNav';
 import { StatusBadge, useLocalized } from '@/features/organization/shared';
 import { intlLocale } from '@/i18n';
 import { adminOrganizationApi, orgKeys, type OrganizationStatus } from '@/services/organizationApi';
@@ -35,7 +34,6 @@ export function AdminOrganizationsPage() {
     <div className="mx-auto max-w-6xl space-y-6 px-4 py-10 sm:px-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-3xl font-bold tracking-tight">{t('admin.organizationsTitle')}</h1>
-        <AdminNav />
       </div>
       <div className="flex flex-wrap items-center gap-3">
         <div role="tablist" aria-label={t('admin.statusFilter')} className="flex flex-wrap gap-1">

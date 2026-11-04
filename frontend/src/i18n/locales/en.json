@@ -13,8 +13,7 @@
     "status": "System status",
     "skipToContent": "Skip to content",
     "signOut": "Sign out",
-    "myBusinesses": "My businesses",
-    "admin": "Admin"
+    "dashboard": "Dashboard"
   },
   "header": {
     "language": "Language",
@@ -463,5 +462,131 @@
     "mandatory": "Mandatory",
     "delete": "Delete",
     "confirmDelete": "Delete this item? This can't be undone."
+  },
+  "dashboard": {
+    "overview": "Overview",
+    "users": "Users",
+    "auditLog": "Audit log",
+    "area": {
+      "customer": "My bookings",
+      "owner": "Business",
+      "staff": "Staff",
+      "admin": "Admin"
+    },
+    "switchTo": "Switch to",
+    "hello": "Hello, {{name}}",
+    "customerSubtitle": "Your appointments and account at a glance.",
+    "upcomingBookings": "Upcoming bookings",
+    "noBookings": "You have no upcoming appointments.",
+    "noBookingsHint": "Booking with verified businesses near you is coming soon. Your appointments will appear here.",
+    "accountReadiness": "Account readiness",
+    "allDone": "All done",
+    "stepsLeft": "Steps left: {{count}}",
+    "check": {
+      "email": "Email address verified",
+      "phone": "Mobile number verified",
+      "twoFactor": "Two-step verification on"
+    },
+    "openAccount": "Open account settings",
+    "ownBusiness": "Run a business?",
+    "ownBusinessHint": "List your clinic, salon, institute or studio and take bookings on BookEasy.",
+    "staffEmpty": "You're not part of a business team yet.",
+    "staffEmptyHint": "When a business invites you as staff, your schedule and appointments will appear here.",
+    "branches": "Active branches",
+    "withoutHours": "({{count}} without hours)",
+    "requiredDocuments": "Required documents",
+    "docsUploaded": "{{uploaded}} of {{required}} uploaded",
+    "docsRejected": "({{count}} rejected)",
+    "nextStep": "Next step",
+    "readyToSubmit": "Ready to submit for verification",
+    "ownerTitle": "Business overview",
+    "suspendedNotice": "{{count}} of your businesses is suspended. Open it to see the reason.",
+    "businesses": "Businesses",
+    "needsAction": "Needs your action",
+    "upcomingHolidays": "Upcoming holidays",
+    "system": "System",
+    "adminTitle": "Platform overview",
+    "pendingReviews": "Waiting for review",
+    "oldestSince": "Oldest since {{date}}",
+    "docsAwaitingReview": "Documents to review",
+    "totalUsers": "Users",
+    "newThisWeek": "+{{count}} in the last 7 days",
+    "suspendedUsers": "Suspended users",
+    "businessesByStatus": "Businesses by status",
+    "usersByRole": "Users by role",
+    "role": {
+      "CUSTOMER": "Customers",
+      "BUSINESS_OWNER": "Business owners",
+      "STAFF": "Staff",
+      "SUPER_ADMIN": "Super Admins"
+    },
+    "rolesOverlap": "One person can have several roles, so these can add up to more than the total.",
+    "recentActivity": "Recent activity",
+    "viewAll": "View all",
+    "userAction": {
+      "suspend": "Suspend {{name}}? They are signed out everywhere immediately.",
+      "reactivate": "Reactivate {{name}}?",
+      "reset2fa": "Turn off two-step verification for {{name}}?"
+    },
+    "reset2faWarning": "Only do this after confirming the person's identity. They are signed out everywhere and emailed a security notice.",
+    "reset2faReason": "How did you confirm their identity?",
+    "userConfirm": {
+      "suspend": "Suspend user",
+      "reactivate": "Reactivate user",
+      "reset2fa": "Turn off two-step verification"
+    },
+    "searchUsers": "Search name, email or mobile",
+    "userStatus": {
+      "ACTIVE": "Active",
+      "SUSPENDED": "Suspended"
+    },
+    "roleFilter": "Role",
+    "noUsers": "No users match.",
+    "joined": "Joined {{date}}",
+    "twoFactorOn": "two-step on",
+    "reset2fa": "Reset two-step",
+    "reactivate": "Reactivate",
+    "suspend": "Suspend",
+    "auditIntro": "Every sensitive action on the platform, newest first. Entries can't be edited or deleted.",
+    "auditFilter": {
+      "action": "Action code",
+      "entityType": "Entity type",
+      "entityId": "Entity id",
+      "actorUserId": "Actor user id"
+    },
+    "applyFilters": "Apply filters",
+    "noAudit": "No matching entries.",
+    "auditCol": {
+      "time": "Time",
+      "actor": "By",
+      "action": "Action",
+      "entity": "Record",
+      "details": "Details"
+    }
+  },
+  "audit": {
+    "action": {
+      "USER_SUSPENDED": "User suspended",
+      "USER_REACTIVATED": "User reactivated",
+      "USER_2FA_RESET": "Two-step verification reset",
+      "SUPER_ADMIN_BOOTSTRAPPED": "First Super Admin created",
+      "ORGANIZATION_CREATED": "Business created",
+      "ORGANIZATION_SUBMITTED": "Business submitted",
+      "ORGANIZATION_DOCUMENT_UPLOADED": "Document uploaded",
+      "ORGANIZATION_DOCUMENT_REVIEWED": "Document reviewed",
+      "ORGANIZATION_APPROVED": "Business approved",
+      "ORGANIZATION_REJECTED": "Changes requested",
+      "ORGANIZATION_SUSPENDED": "Business suspended",
+      "ORGANIZATION_REINSTATED": "Business reinstated",
+      "CATEGORY_CREATED": "Category created",
+      "CATEGORY_UPDATED": "Category updated",
+      "CATEGORY_DELETED": "Category deleted",
+      "SUBCATEGORY_CREATED": "Subcategory created",
+      "SUBCATEGORY_UPDATED": "Subcategory updated",
+      "SUBCATEGORY_DELETED": "Subcategory deleted",
+      "DOC_REQUIREMENT_CREATED": "Document requirement created",
+      "DOC_REQUIREMENT_UPDATED": "Document requirement updated",
+      "DOC_REQUIREMENT_DELETED": "Document requirement deleted"
+    }
   }
 }

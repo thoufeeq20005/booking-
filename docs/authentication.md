@@ -59,6 +59,6 @@ Admin user management (Phase 2): `GET /admin/users?q=&status=&role=&page=&size=`
 
 ## Known limitations (tracked)
 
-- No 2FA recovery codes yet. A user who loses their authenticator needs support to clear 2FA (admin action to be added in Phase 4).
+- No 2FA recovery codes yet. A user who loses their authenticator contacts support; a Super Admin confirms their identity and uses **Admin → Users → Reset two-step** (`POST /admin/users/{id}/two-factor/reset`, reason required, signs the user out everywhere, audited as `USER_2FA_RESET`, security email sent).
 - Changing `DATA_ENCRYPTION_KEY` invalidates enrolled authenticators. Key rotation is not implemented.
 - Email verification isn't required to sign in. Booking (Phase 7) will require a verified email or mobile.

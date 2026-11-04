@@ -5,6 +5,7 @@ export interface FakeRequest {
   method: string;
   url: string;
   body: Record<string, unknown> | null;
+  params: Record<string, unknown>;
   headers: Record<string, string>;
 }
 
@@ -33,6 +34,7 @@ export function installFakeApi(handler: (req: FakeRequest) => FakeResponse | und
       method: (config.method ?? 'get').toUpperCase(),
       url: config.url ?? '',
       body: typeof config.data === 'string' && config.data ? JSON.parse(config.data) : null,
+      params: (config.params as Record<string, unknown> | undefined) ?? {},
       headers,
     };
     requests.push(req);

@@ -8,6 +8,7 @@ import jakarta.validation.constraints.Size;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -39,6 +40,16 @@ public class AdminUserController {
     }
 
     public record StatusChange(@NotNull UserStatus status, @Size(max = 500) String reason) {
+    }
+
+    public record ResetTwoFactor(@Size(max = 500) String reason) {
+    }
+
+    @PostMapping("/{id}/two-factor/reset")
+    @Operation(summary = "Turn off a user's two-step verification after confirming their identity (audited)")
+    public ApiResponse<UserView> resetTwoFactor(@PathVariable long id, @Valid @RequestBody ResetTwoFactor req,
+                                                HttpServletRequest http) {
+        return ApiResponse.ok(service.resetTwoFactor(CurrentUser.require(), id, req.reason(), ipResolver.resolve(http)));
     }
 
     @GetMapping

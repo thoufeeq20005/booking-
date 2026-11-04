@@ -48,6 +48,18 @@ public class AuthEmails {
                 messages.getMessage("email.reset.body", new Object[]{user.getFullName(), link, minutes}, locale)));
     }
 
+    /** Security notice after a Super Admin switched off the user's two-step verification. */
+    public void sendTwoFactorReset(User user) {
+        if (user.getEmail() == null) {
+            return;
+        }
+        Locale locale = Locale.forLanguageTag(user.getPreferredLanguage());
+        emailSender.send(new EmailMessage(user.getEmail(),
+                messages.getMessage("email.twoFactorReset.subject", null, locale),
+                messages.getMessage("email.twoFactorReset.body",
+                        new Object[]{user.getFullName(), appProperties.frontendUrl() + "/account"}, locale)));
+    }
+
     private String link(String path, String token) {
         return appProperties.frontendUrl() + path + "?token=" + URLEncoder.encode(token, StandardCharsets.UTF_8);
     }

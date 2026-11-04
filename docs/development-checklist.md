@@ -41,7 +41,8 @@ Legend: `[x]` done and tested · `[ ]` not started · `[~]` in progress
 - [x] Localised emails in 6 languages; 123 new UI strings in 6 languages
 - [x] Frontend: auth context, sign in (email / OTP / Google / 2FA), register, verify email, forgot/reset, account security page, route guard, open-redirect protection
 - [x] Tests: backend 78 (all four roles, unauthorised access, token rotation/reuse, lockout, OTP limits, Google forgery, 2FA replay, RFC vectors), frontend 46; real-browser check of HttpOnly cookie
-- [ ] Not yet: 2FA recovery codes; admin action to reset a user's 2FA (Phase 4)
+- [x] Admin reset of a user's 2FA (Phase 4)
+- [ ] Not yet: 2FA recovery codes
 
 ## Phase 3 – Organizations & verification ✅
 - [x] Flyway V3: uploaded_files, categories, subcategories, category_document_requirements, organizations, organization_owners, organization_branches (generated `POINT SRID 4326` + spatial index), working_hours, holidays, organization_documents, organization_verifications; starter catalogue in 6 languages
@@ -55,8 +56,16 @@ Legend: `[x]` done and tested · `[ ]` not started · `[~]` in progress
 - [x] Tests: backend 103 (approval/rejection/resubmission, tenant isolation for every owner endpoint, private file access, upload spoofing/size, spatial column, hours/holiday rules, category admin), frontend 58; live upload/download smoke test through the Vite proxy
 - [ ] Not yet: map picker & geocoding (Phase 6), gallery images, co-owners, payout/bank details (Phase 8), org-wide holidays (set per branch for now)
 
-## Phase 4 – Dashboards
-- [ ] Customer, Owner, Staff, Admin shells and overview pages on real data
+## Phase 4 – Dashboards ✅
+- [x] One sidebar shell for every area (`/customer`, `/owner`, `/staff`, `/admin`), area switcher for multi-role users, `/dashboard` sends each person to their most powerful role; sign-in lands there
+- [x] Customer overview: account readiness checklist, bookings empty state (bookings arrive in Phase 7), business CTA
+- [x] Owner overview (`GET /owner/dashboard`): status counts, per-business progress (branches, hours, required documents, next step), upcoming holidays across branches
+- [x] Staff overview: empty state until invitations (Phase 5)
+- [x] Admin overview (`GET /admin/dashboard`): review queue (count, oldest, documents to review), users (total, new in 7 days, suspended, by role), businesses by status, recent activity
+- [x] Admin users page: search/filter, suspend/reactivate with reason, reset two-step verification (reason required, signs out everywhere, audited, security email in 6 languages)
+- [x] Audit log viewer (`GET /admin/audit-logs`, filter by action/entity/actor/time, details shown readably)
+- [x] Tests: backend 107 (owner dashboard isolation, admin counts, audit filters, 2FA reset), frontend 71
+- [ ] Not on real data yet (nothing to show until later phases): bookings, revenue, staff schedules, reviews
 
 ## Phase 5 – Services & availability
 - [ ] Services, staff invites/permissions, availability, leaves
