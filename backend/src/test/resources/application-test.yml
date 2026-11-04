@@ -10,6 +10,9 @@ bookeasy:
   frontend-url: http://localhost:5173
   cors:
     allowed-origins: http://localhost:5173
+  storage:
+    # Inside Maven's build folder, so test uploads never mix with local dev files.
+    root-path: target/test-uploads
   security:
     # Test-only keys. Real keys come from the environment.
     data-encryption-key: dGVzdC1vbmx5LWRhdGEtZW5jcnlwdGlvbi1rZXktMzJieXRlcyEhIQ==

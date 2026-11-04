@@ -38,6 +38,11 @@ public class ApiException extends RuntimeException {
         return new ApiException(ErrorCode.NOT_FOUND, what + " not found");
     }
 
+    /** A rule failure that lists several problems, e.g. every missing step of an application. */
+    public static ApiException withFields(ErrorCode code, List<ApiError.FieldError> fieldErrors) {
+        return new ApiException(code, code.defaultMessage(), List.copyOf(fieldErrors));
+    }
+
     /** A single-field validation failure raised by service-level rules (e.g. password policy). */
     public static ApiException invalidField(String field, String code, String message) {
         return new ApiException(ErrorCode.VALIDATION_FAILED, ErrorCode.VALIDATION_FAILED.defaultMessage(),

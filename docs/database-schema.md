@@ -83,7 +83,7 @@ erDiagram
 Also adds FKs `platform_settings.updated_by` / `support_settings.updated_by` → `users` (SET NULL).
 Extended profile data (photo, gender, DOB) lands in `user_profiles` with Phase 10 customer features.
 
-## Phase 3 — Organizations, categories, verification ⏳
+## Phase 3 — Organizations, categories, verification ✅
 
 | Table | Key columns / constraints |
 |---|---|
@@ -98,6 +98,15 @@ Extended profile data (photo, gender, DOB) lands in `user_profiles` with Phase 1
 | `organization_images` | gallery, `sort_order` |
 | `working_hours` | FK branch, `day_of_week TINYINT`, `opens_at`, `closes_at`, `break_start`, `break_end`; `UNIQUE(branch_id, day_of_week)` |
 | `holidays` | FK branch (or org-wide), `date`, `reason`; `UNIQUE(branch_id, date)` |
+
+Implemented in `V3__organizations.sql`, with these deliberate differences from the original plan:
+
+- `organizations.description` is plain text in the owner's own language (owner-written content is not translated); categories, subcategories and document requirements keep `*_i18n` JSON.
+- `organization_branches.location` is a **stored generated column** `ST_SRID(POINT(longitude, latitude), 4326)`, so it can never disagree with latitude/longitude. JPA does not map it. MySQL reads SRID 4326 points as (longitude, latitude) when built with `POINT(x, y)` this way; verified by `TenantIsolationIT`.
+- `holidays` are per branch only; the UI applies them branch by branch.
+- `uploaded_files` (planned for Phase 10) arrived now; `organization_images` (gallery) and the payout account reference are deferred (gallery later, payouts in Phase 8).
+- `categories.filter_schema` exists but is not exposed until search filters land (Phase 6).
+- `organizations.version` adds optimistic locking on top of the `SELECT … FOR UPDATE` taken by every state change.
 
 ## Phase 5 — Services, staff, availability ⏳
 
@@ -163,6 +172,6 @@ Slots are **computed** (working hours ∩ staff availability − breaks − holi
 | `favorites` | PK(`user_id`,`organization_id`) |
 | `saved_locations` | recent/preferred search locations |
 | `comparison_history` | user, organization ids JSON, created_at |
-| `uploaded_files` | `storage_key UNIQUE`, original name, MIME, size, SHA-256, `visibility` (`PUBLIC/PRIVATE`), `purpose`, owner user/org — *introduced in Phase 3 with document upload* |
+| `uploaded_files` | *moved to Phase 3* (see above) |
 | `support_requests` | customer, booking/payment reference, subject, status |
 | `data_retention_runs` | archive/cleanup job audit |

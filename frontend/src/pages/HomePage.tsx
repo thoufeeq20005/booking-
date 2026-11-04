@@ -1,3 +1,4 @@
+import { Link } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { BadgeCheck, CalendarClock, IndianRupee, MapPin, Search, QrCode } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
@@ -49,6 +50,9 @@ export function HomePage() {
               <a href="#how" className={buttonClasses('primary', 'lg')}>
                 {t('home.ctaExplore')}
               </a>
+              <Link to="/business/register" className={buttonClasses('secondary', 'lg')}>
+                {t('home.ctaBusiness')}
+              </Link>
             </div>
           </div>
 

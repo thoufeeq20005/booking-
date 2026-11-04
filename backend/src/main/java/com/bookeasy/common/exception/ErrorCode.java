@@ -40,7 +40,23 @@ public enum ErrorCode {
     GOOGLE_TOKEN_INVALID(HttpStatus.UNAUTHORIZED, "Google sign-in could not be verified"),
     GOOGLE_NOT_CONFIGURED(HttpStatus.SERVICE_UNAVAILABLE, "Google sign-in is not available"),
     BOOTSTRAP_UNAVAILABLE(HttpStatus.NOT_FOUND, "Not found"),
-    BOOTSTRAP_ALREADY_DONE(HttpStatus.CONFLICT, "A Super Admin already exists");
+    BOOTSTRAP_ALREADY_DONE(HttpStatus.CONFLICT, "A Super Admin already exists"),
+
+    // Files
+    FILE_TYPE_NOT_ALLOWED(HttpStatus.UNSUPPORTED_MEDIA_TYPE, "This file type is not allowed"),
+    FILE_EMPTY(HttpStatus.BAD_REQUEST, "The file is empty"),
+
+    // Categories
+    SLUG_TAKEN(HttpStatus.CONFLICT, "This slug is already in use"),
+    CATEGORY_IN_USE(HttpStatus.CONFLICT, "Businesses use this item, so it can only be deactivated"),
+
+    // Organizations
+    ORGANIZATION_LIMIT_REACHED(HttpStatus.CONFLICT, "You already have the maximum number of businesses in setup or review"),
+    ORGANIZATION_NOT_EDITABLE(HttpStatus.CONFLICT, "This business can't be changed in its current state"),
+    ORGANIZATION_INCOMPLETE(HttpStatus.UNPROCESSABLE_ENTITY, "Complete every required step before submitting"),
+    INVALID_STATUS_TRANSITION(HttpStatus.CONFLICT, "This action isn't possible in the business's current status"),
+    DOCUMENTS_NOT_ACCEPTED(HttpStatus.CONFLICT, "Every required document must be present and not rejected"),
+    BRANCH_LIMIT_REACHED(HttpStatus.CONFLICT, "This business has the maximum number of branches");
 
     private final HttpStatus status;
     private final String defaultMessage;

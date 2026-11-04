@@ -43,13 +43,17 @@ Legend: `[x]` done and tested · `[ ]` not started · `[~]` in progress
 - [x] Tests: backend 78 (all four roles, unauthorised access, token rotation/reuse, lockout, OTP limits, Google forgery, 2FA replay, RFC vectors), frontend 46; real-browser check of HttpOnly cookie
 - [ ] Not yet: 2FA recovery codes; admin action to reset a user's 2FA (Phase 4)
 
-## Phase 3 – Organizations & verification
-- [ ] Dynamic categories/subcategories + document requirements (admin CRUD)
-- [ ] File storage abstraction, private documents
-- [ ] Owner business registration wizard
-- [ ] Organizations, branches, working hours, holidays
-- [ ] Admin review → approve/reject/suspend + audit + notification hook
-- [ ] Tests: approval/rejection, tenant isolation, private file access
+## Phase 3 – Organizations & verification ✅
+- [x] Flyway V3: uploaded_files, categories, subcategories, category_document_requirements, organizations, organization_owners, organization_branches (generated `POINT SRID 4326` + spatial index), working_hours, holidays, organization_documents, organization_verifications; starter catalogue in 6 languages
+- [x] Dynamic categories/subcategories + document requirements: admin CRUD, deactivate-not-delete when in use, audited
+- [x] File storage abstraction (`FileStorage` / local disk), magic-byte type detection, generated keys, SHA-256, rollback-safe cleanup; private documents streamed only through owner/admin endpoints, public logos by random id
+- [x] Owner business registration wizard: details → branches & hours & holidays → documents → review checklist → submit (customer gains BUSINESS_OWNER immediately)
+- [x] Edit rules per status (identity locked after approval, everything locked while pending/suspended), row locks on every state change
+- [x] Admin review queue (oldest first), per-document accept/reject with notes, approve/reject/suspend/reinstate with reasons, self-review blocked, audit + verification history
+- [x] Notification hook: `OrganizationStatusChanged` event → owner email after commit, in 6 languages
+- [x] Frontend: register business, my businesses, setup tabs, admin queue/review, admin categories; 150+ new strings in 6 languages
+- [x] Tests: backend 103 (approval/rejection/resubmission, tenant isolation for every owner endpoint, private file access, upload spoofing/size, spatial column, hours/holiday rules, category admin), frontend 58; live upload/download smoke test through the Vite proxy
+- [ ] Not yet: map picker & geocoding (Phase 6), gallery images, co-owners, payout/bank details (Phase 8), org-wide holidays (set per branch for now)
 
 ## Phase 4 – Dashboards
 - [ ] Customer, Owner, Staff, Admin shells and overview pages on real data

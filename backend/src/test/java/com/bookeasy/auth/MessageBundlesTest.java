@@ -36,5 +36,18 @@ class MessageBundlesTest {
             assertThat(rendered).contains("NAME", "https://x.test/?token=T", "24").contains("\n");
             assertThat(rendered).doesNotContain("{0}", "{1}", "{2}");
         }
+
+        for (String action : new String[]{"submitted", "approved", "rejected", "suspended", "reinstated"}) {
+            String subject = new MessageFormat(bundle.getProperty("email.org." + action + ".subject"), Locale.ROOT)
+                    .format(new Object[]{"BIZ"});
+            assertThat(subject).as("%s subject %s", suffix, action).contains("BIZ");
+            String body = new MessageFormat(bundle.getProperty("email.org." + action + ".body"), Locale.ROOT)
+                    .format(new Object[]{"NAME", "BIZ", "WHY", "https://x.test/owner/organizations/1"});
+            assertThat(body).as("%s body %s", suffix, action)
+                    .contains("NAME", "BIZ", "https://x.test/owner/organizations/1").doesNotContain("{");
+            if (action.equals("rejected") || action.equals("suspended")) {
+                assertThat(body).contains("WHY");
+            }
+        }
     }
 }

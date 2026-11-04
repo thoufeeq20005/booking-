@@ -183,3 +183,39 @@ export function apiPost<T>(url: string, body?: unknown, headers?: Record<string,
 export function apiPatch<T>(url: string, body?: unknown): Promise<T> {
   return call<T>({ method: 'PATCH', url, data: body });
 }
+
+export function apiPut<T>(url: string, body?: unknown): Promise<T> {
+  return call<T>({ method: 'PUT', url, data: body });
+}
+
+export function apiDelete<T = void>(url: string): Promise<T> {
+  return call<T>({ method: 'DELETE', url });
+}
+
+/** Multipart upload of a single file in the `file` part. */
+export function apiUpload<T>(url: string, file: File): Promise<T> {
+  const form = new FormData();
+  form.append('file', file);
+  return call<T>({ method: 'POST', url, data: form, timeout: 60000 });
+}
+
+/**
+ * Downloads a protected file with the session's access token. Private documents are never addressable
+ * by a plain link, so the UI shows them from an object URL made from this blob.
+ */
+export async function apiBlob(url: string): Promise<Blob> {
+  try {
+    const res = await apiClient.get<Blob>(url, { responseType: 'blob', timeout: 60000 });
+    return res.data;
+  } catch (err) {
+    if (err instanceof AxiosError && err.response?.data instanceof Blob) {
+      try {
+        const text = await err.response.data.text();
+        err.response.data = JSON.parse(text);
+      } catch {
+        // not JSON: fall through with the generic error
+      }
+    }
+    throw toApiError(err);
+  }
+}

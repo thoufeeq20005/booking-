@@ -53,7 +53,7 @@ Counters live in MySQL (`rate_limit_counters`) so limits hold across instances. 
 | `/api/v1/staff/**` | `STAFF` |
 | `/api/v1/admin/**` | `SUPER_ADMIN` |
 
-URL rules are the coarse gate. Services additionally check resource ownership (owner owns the organization, staff is assigned to the branch, customer owns the booking) as each module lands. Self-service sign-up always creates `CUSTOMER`. `BUSINESS_OWNER` comes from the business registration flow (Phase 3). `STAFF` comes from owner invitations (Phase 5). `SUPER_ADMIN` comes from the bootstrap procedure ([admin-setup.md](admin-setup.md)).
+URL rules are the coarse gate. Services additionally check resource ownership (owner owns the organization, staff is assigned to the branch, customer owns the booking) as each module lands. Self-service sign-up always creates `CUSTOMER`. `BUSINESS_OWNER` is granted when a signed-in user starts a business application (`POST /business/organizations`, see [organizations.md](organizations.md)). `STAFF` comes from owner invitations (Phase 5). `SUPER_ADMIN` comes from the bootstrap procedure ([admin-setup.md](admin-setup.md)).
 
 Admin user management (Phase 2): `GET /admin/users?q=&status=&role=&page=&size=` and `PATCH /admin/users/{id}/status` (suspend/reactivate, audited, self-change refused, suspension signs the user out everywhere).
 

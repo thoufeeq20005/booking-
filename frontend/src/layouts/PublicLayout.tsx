@@ -62,6 +62,25 @@ function AuthControls({ onNavigate }: { onNavigate?: () => void }) {
   );
 }
 
+/** Role-aware links: business owners go to their businesses, everyone else to registration. */
+function RoleLinks({ onNavigate }: { onNavigate?: () => void }) {
+  const { t } = useTranslation();
+  const { hasRole } = useAuth();
+  return (
+    <>
+      <NavLink to={hasRole('BUSINESS_OWNER') ? '/owner/organizations' : '/business/register'} className={navLinkClass}
+        onClick={onNavigate}>
+        {hasRole('BUSINESS_OWNER') ? t('nav.myBusinesses') : t('nav.forBusiness')}
+      </NavLink>
+      {hasRole('SUPER_ADMIN') && (
+        <NavLink to="/admin/organizations" className={navLinkClass} onClick={onNavigate}>
+          {t('nav.admin')}
+        </NavLink>
+      )}
+    </>
+  );
+}
+
 function SiteHeader() {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
@@ -78,6 +97,7 @@ function SiteHeader() {
           <NavLink to="/status" className={navLinkClass}>
             {t('nav.status')}
           </NavLink>
+          <RoleLinks />
         </nav>
         <div className="ml-auto hidden items-center gap-2 md:flex">
           <LanguageSelector />
@@ -105,6 +125,7 @@ function SiteHeader() {
             <NavLink to="/status" className={navLinkClass} onClick={() => setOpen(false)}>
               {t('nav.status')}
             </NavLink>
+            <RoleLinks onNavigate={() => setOpen(false)} />
           </nav>
           <div className="mt-3 flex items-center gap-2">
             <LanguageSelector />
