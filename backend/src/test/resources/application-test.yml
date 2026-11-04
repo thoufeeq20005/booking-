@@ -1,0 +1,11 @@
+# Integration tests run against a dedicated MySQL schema that is wiped and re-migrated on every run.
+# Never point TEST_DB_NAME at a database holding real data.
+spring:
+  datasource:
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${TEST_DB_NAME:bookeasy_test}?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=utf8&connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true&allowPublicKeyRetrieval=true&sslMode=PREFERRED
+  flyway:
+    clean-disabled: false
+
+bookeasy:
+  cors:
+    allowed-origins: http://localhost:5173

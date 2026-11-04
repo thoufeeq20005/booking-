@@ -1,0 +1,40 @@
+import { describe, expect, it } from 'vitest';
+import { screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import i18n, { LANGUAGE_STORAGE_KEY } from '@/i18n';
+import { renderWithProviders } from '@/test/renderWithProviders';
+import { LanguageSelector } from './LanguageSelector';
+import { ThemeToggle } from './ThemeToggle';
+
+describe('ThemeToggle', () => {
+  it('switches theme on the document and remembers the choice', async () => {
+    renderWithProviders(<ThemeToggle />);
+    expect(document.documentElement.dataset.theme).toBe('light');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Switch to dark theme' }));
+
+    expect(document.documentElement.dataset.theme).toBe('dark');
+    expect(localStorage.getItem('bookeasy.theme')).toBe('dark');
+    expect(screen.getByRole('button', { name: 'Switch to light theme' })).toBeInTheDocument();
+  });
+});
+
+describe('LanguageSelector', () => {
+  it('offers exactly the six supported languages', () => {
+    renderWithProviders(<LanguageSelector />);
+    const options = screen.getAllByRole('option').map((o) => o.getAttribute('value'));
+    expect(options).toEqual(['en', 'ta', 'hi', 'ml', 'te', 'kn']);
+  });
+
+  it('changes the UI language, html lang attribute and stored preference', async () => {
+    renderWithProviders(<LanguageSelector />);
+    await userEvent.selectOptions(screen.getByLabelText('Language'), 'ta');
+
+    expect(i18n.language).toBe('ta');
+    expect(document.documentElement.lang).toBe('ta');
+    expect(localStorage.getItem(LANGUAGE_STORAGE_KEY)).toBe('ta');
+    expect(screen.getByLabelText('மொழி')).toBeInTheDocument();
+
+    await i18n.changeLanguage('en');
+  });
+});

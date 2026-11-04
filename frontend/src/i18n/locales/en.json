@@ -1,0 +1,89 @@
+{
+  "common": {
+    "appName": "BookEasy",
+    "tagline": "Appointments made easy"
+  },
+  "nav": {
+    "home": "Home",
+    "forBusiness": "For business",
+    "signIn": "Sign in",
+    "register": "Create account",
+    "status": "System status",
+    "skipToContent": "Skip to content"
+  },
+  "header": {
+    "language": "Language",
+    "switchToDark": "Switch to dark theme",
+    "switchToLight": "Switch to light theme",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu"
+  },
+  "home": {
+    "heroEyebrow": "Hospitals · Clinics · Salons · Colleges · Gyms",
+    "heroTitle": "Book trusted services near you, in seconds",
+    "heroSubtitle": "Discover verified organizations, see real availability and confirm your appointment with transparent pricing.",
+    "ctaExplore": "Start exploring",
+    "ctaBusiness": "List your business",
+    "valueVerifiedTitle": "Verified organizations",
+    "valueVerifiedBody": "Every listed organization is reviewed by our team before it can accept bookings.",
+    "valueRealtimeTitle": "Real-time availability",
+    "valueRealtimeBody": "Pick a slot that is actually free – double bookings are prevented on our servers.",
+    "valuePricingTitle": "Transparent pricing",
+    "valuePricingBody": "You pay the service fee plus a {{percent}}% BookEasy platform fee. Nothing hidden.",
+    "howTitle": "How BookEasy works",
+    "howStep1": "Choose your location and search for a service",
+    "howStep2": "Compare organizations, staff, prices and reviews",
+    "howStep3": "Pick a time, pay securely and get your QR booking pass",
+    "exampleTitle": "Example price breakdown",
+    "exampleService": "Service fee",
+    "examplePlatform": "BookEasy platform fee ({{percent}}%)",
+    "exampleTotal": "You pay"
+  },
+  "footer": {
+    "support": "Customer support",
+    "email": "Email",
+    "phone": "Phone",
+    "hours": "Hours",
+    "notConfigured": "Contact details will be published soon",
+    "rights": "© {{year}} BookEasy. All rights reserved.",
+    "currencyNote": "All prices are in Indian Rupees (₹)."
+  },
+  "status": {
+    "title": "System status",
+    "subtitle": "Live health of the BookEasy platform.",
+    "api": "API server",
+    "database": "Database",
+    "up": "Operational",
+    "down": "Unavailable",
+    "checkedAt": "Last checked {{time}}"
+  },
+  "states": {
+    "loading": "Loading…",
+    "retry": "Try again"
+  },
+  "errors": {
+    "NETWORK_ERROR": "We can't reach BookEasy right now. Check your connection and try again.",
+    "INTERNAL_ERROR": "Something went wrong on our side. Please try again.",
+    "NOT_FOUND": "We couldn't find what you were looking for.",
+    "UNAUTHENTICATED": "Please sign in to continue.",
+    "ACCESS_DENIED": "You don't have permission to do that.",
+    "VALIDATION_FAILED": "Some fields need your attention.",
+    "RATE_LIMITED": "Too many attempts. Please wait a moment and try again.",
+    "boundaryTitle": "This page hit a problem",
+    "boundaryBody": "Reload the page to continue. If it keeps happening, contact support."
+  },
+  "notFound": {
+    "title": "Page not found",
+    "body": "The page you're looking for doesn't exist or has moved.",
+    "goHome": "Back to home"
+  },
+  "days": {
+    "MON": "Mon",
+    "TUE": "Tue",
+    "WED": "Wed",
+    "THU": "Thu",
+    "FRI": "Fri",
+    "SAT": "Sat",
+    "SUN": "Sun"
+  }
+}
