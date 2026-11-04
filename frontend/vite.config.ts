@@ -40,5 +40,6 @@ export default defineConfig({
     // Node 25+ ships a global localStorage stub that shadows jsdom's; turn it off in test workers.
     execArgv: ['--no-experimental-webstorage'],
     css: false,
+    testTimeout: 30000,
   },
 });

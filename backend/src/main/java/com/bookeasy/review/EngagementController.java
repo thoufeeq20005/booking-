@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.bookeasy.common.api.ApiResponse;
@@ -30,6 +31,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 /** Reviews and the signed-in user's notifications. */
 @RestController
+@RequestMapping("/api/v1")
 @Tag(name = "Reviews & notifications")
 public class EngagementController {
 
@@ -55,41 +57,41 @@ public class EngagementController {
 
     // ----- reviews -----
 
-    @PostMapping("/api/v1/customer/appointments/{id}/review")
+    @PostMapping("/customer/appointments/{id}/review")
     @Operation(summary = "Review a completed booking (once)")
     public ApiResponse<ReviewView> review(@PathVariable long id, @Valid @RequestBody ReviewBody b) {
         return ApiResponse.ok(reviews.create(me(), id, b.rating(), b.comment()));
     }
 
-    @GetMapping("/api/v1/public/organizations/{slug}/reviews")
+    @GetMapping("/public/organizations/{slug}/reviews")
     @SecurityRequirements
     public ApiResponse<List<ReviewView>> publicReviews(@PathVariable String slug, @RequestParam(defaultValue = "20") int limit) {
         return ApiResponse.ok(reviews.forBusinessPage(slug, limit));
     }
 
-    @GetMapping("/api/v1/owner/organizations/{orgId}/reviews")
+    @GetMapping("/owner/organizations/{orgId}/reviews")
     public ApiResponse<List<ReviewView>> ownerReviews(@PathVariable long orgId) {
         return ApiResponse.ok(reviews.forOwner(me(), orgId));
     }
 
-    @PostMapping("/api/v1/owner/organizations/{orgId}/reviews/{reviewId}/reply")
+    @PostMapping("/owner/organizations/{orgId}/reviews/{reviewId}/reply")
     public ApiResponse<ReviewView> reply(@PathVariable long orgId, @PathVariable long reviewId, @Valid @RequestBody TextBody b) {
         return ApiResponse.ok(reviews.reply(me(), orgId, reviewId, b.text()));
     }
 
-    @PostMapping("/api/v1/reviews/{reviewId}/report")
+    @PostMapping("/reviews/{reviewId}/report")
     @Operation(summary = "Report a review to the moderators (once per person)")
     public ApiResponse<Void> report(@PathVariable long reviewId, @Valid @RequestBody TextBody b) {
         reviews.report(me(), reviewId, b.text());
         return ApiResponse.ok(null);
     }
 
-    @GetMapping("/api/v1/admin/reviews")
+    @GetMapping("/admin/reviews")
     public ApiResponse<List<ReviewView>> moderation(@RequestParam(defaultValue = "true") boolean reported) {
         return ApiResponse.ok(reviews.moderationQueue(reported));
     }
 
-    @PostMapping("/api/v1/admin/reviews/{reviewId}/{action}")
+    @PostMapping("/admin/reviews/{reviewId}/{action}")
     @Operation(summary = "hide | restore")
     public ApiResponse<ReviewView> moderate(@PathVariable long reviewId, @PathVariable String action,
                                             @Valid @RequestBody(required = false) TextBody b, HttpServletRequest http) {
@@ -102,34 +104,34 @@ public class EngagementController {
 
     // ----- notifications -----
 
-    @GetMapping("/api/v1/account/notifications")
+    @GetMapping("/account/notifications")
     public ApiResponse<List<InboxItem>> inbox(@RequestParam(defaultValue = "30") int limit) {
         return ApiResponse.ok(notifications.inbox(me(), limit));
     }
 
-    @GetMapping("/api/v1/account/notifications/unread-count")
+    @GetMapping("/account/notifications/unread-count")
     public ApiResponse<Long> unread() {
         return ApiResponse.ok(notifications.unread(me()));
     }
 
-    @PostMapping("/api/v1/account/notifications/{id}/read")
+    @PostMapping("/account/notifications/{id}/read")
     public ApiResponse<Void> read(@PathVariable long id) {
         notifications.markRead(me(), id);
         return ApiResponse.ok(null);
     }
 
-    @PostMapping("/api/v1/account/notifications/read-all")
+    @PostMapping("/account/notifications/read-all")
     public ApiResponse<Void> readAll() {
         notifications.markRead(me(), null);
         return ApiResponse.ok(null);
     }
 
-    @GetMapping("/api/v1/account/notification-preferences")
+    @GetMapping("/account/notification-preferences")
     public ApiResponse<Preferences> preferences() {
         return ApiResponse.ok(notifications.preferences(me()));
     }
 
-    @PutMapping("/api/v1/account/notification-preferences")
+    @PutMapping("/account/notification-preferences")
     public ApiResponse<Preferences> savePreferences(@RequestBody Preferences p) {
         return ApiResponse.ok(notifications.savePreferences(me(), p));
     }

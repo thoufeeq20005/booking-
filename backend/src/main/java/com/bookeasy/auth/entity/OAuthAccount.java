@@ -47,4 +47,8 @@ public class OAuthAccount {
     public Long getUserId() {
         return userId;
     }
+
+    public String getEmail() {
+        return email;
+    }
 }

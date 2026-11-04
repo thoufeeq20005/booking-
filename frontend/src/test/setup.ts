@@ -8,7 +8,7 @@ import { installFakeApi } from './fakeApi';
 void i18n.changeLanguage('en');
 
 // Route pages are lazy chunks; under a parallel run the first render can take longer than the 1 s default.
-configure({ asyncUtilTimeout: 5000 });
+configure({ asyncUtilTimeout: 10000 });
 
 if (!window.matchMedia) {
   window.matchMedia = (query: string) =>

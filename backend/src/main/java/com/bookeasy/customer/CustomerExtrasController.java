@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.bookeasy.common.api.ApiResponse;
@@ -34,6 +35,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
+@RequestMapping("/api/v1")
 @Tag(name = "Customer extras & support")
 public class CustomerExtrasController {
 
@@ -63,83 +65,83 @@ public class CustomerExtrasController {
         return CurrentUser.require().id();
     }
 
-    @GetMapping("/api/v1/customer/family")
+    @GetMapping("/customer/family")
     public ApiResponse<List<FamilyMember>> family() {
         return ApiResponse.ok(service.family(me()));
     }
 
-    @PostMapping("/api/v1/customer/family")
+    @PostMapping("/customer/family")
     public ApiResponse<FamilyMember> addFamily(@Valid @RequestBody FamilyBody b) {
         return ApiResponse.ok(service.addFamily(me(), b.fullName(), b.relation(), b.dateOfBirth()));
     }
 
-    @DeleteMapping("/api/v1/customer/family/{id}")
+    @DeleteMapping("/customer/family/{id}")
     public ApiResponse<Void> removeFamily(@PathVariable long id) {
         service.removeFamily(me(), id);
         return ApiResponse.ok(null);
     }
 
-    @GetMapping("/api/v1/customer/favourites")
+    @GetMapping("/customer/favourites")
     public ApiResponse<List<Favourite>> favourites() {
         return ApiResponse.ok(service.favourites(me()));
     }
 
-    @PutMapping("/api/v1/customer/favourites/{orgId}")
+    @PutMapping("/customer/favourites/{orgId}")
     public ApiResponse<Void> addFavourite(@PathVariable long orgId) {
         service.addFavourite(me(), orgId);
         return ApiResponse.ok(null);
     }
 
-    @DeleteMapping("/api/v1/customer/favourites/{orgId}")
+    @DeleteMapping("/customer/favourites/{orgId}")
     public ApiResponse<Void> removeFavourite(@PathVariable long orgId) {
         service.removeFavourite(me(), orgId);
         return ApiResponse.ok(null);
     }
 
-    @GetMapping("/api/v1/customer/saved-locations")
+    @GetMapping("/customer/saved-locations")
     public ApiResponse<List<SavedLocation>> locations() {
         return ApiResponse.ok(service.locations(me()));
     }
 
-    @PostMapping("/api/v1/customer/saved-locations")
+    @PostMapping("/customer/saved-locations")
     public ApiResponse<List<SavedLocation>> saveLocation(@Valid @RequestBody LocationBody b) {
         return ApiResponse.ok(service.saveLocation(me(), b.label(), b.latitude(), b.longitude()));
     }
 
-    @DeleteMapping("/api/v1/customer/saved-locations/{id}")
+    @DeleteMapping("/customer/saved-locations/{id}")
     public ApiResponse<Void> removeLocation(@PathVariable long id) {
         service.removeLocation(me(), id);
         return ApiResponse.ok(null);
     }
 
-    @PostMapping("/api/v1/support-requests")
+    @PostMapping("/support-requests")
     @Operation(summary = "Contact support (any signed-in user, at most 5 per hour)")
     public ApiResponse<SupportRequest> open(@Valid @RequestBody SupportBody b) {
         return ApiResponse.ok(service.openRequest(me(), b.appointmentId(), b.subject(), b.message()));
     }
 
-    @GetMapping("/api/v1/support-requests")
+    @GetMapping("/support-requests")
     public ApiResponse<List<SupportRequest>> mine() {
         return ApiResponse.ok(service.myRequests(me()));
     }
 
-    @GetMapping("/api/v1/admin/support-requests")
+    @GetMapping("/admin/support-requests")
     public ApiResponse<List<SupportRequest>> adminList(@RequestParam(required = false) SupportStatus status) {
         return ApiResponse.ok(service.adminRequests(status));
     }
 
-    @PostMapping("/api/v1/admin/support-requests/{id}")
+    @PostMapping("/admin/support-requests/{id}")
     public ApiResponse<SupportRequest> answer(@PathVariable long id, @Valid @RequestBody AnswerBody b) {
         return ApiResponse.ok(service.answer(id, b.status(), b.reply()));
     }
 
-    @PostMapping("/api/v1/admin/retention/run")
+    @PostMapping("/admin/retention/run")
     @Operation(summary = "Run data retention now (normally nightly at 03:30 IST)")
     public ApiResponse<Run> runRetention() {
         return ApiResponse.ok(retention.run());
     }
 
-    @GetMapping("/api/v1/admin/retention/runs")
+    @GetMapping("/admin/retention/runs")
     public ApiResponse<List<Run>> retentionRuns() {
         return ApiResponse.ok(retention.runs());
     }

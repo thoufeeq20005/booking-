@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.bookeasy.appointment.AppointmentRequests.CodeBody;
@@ -25,6 +26,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 /** Owner (/owner/**) and staff (/staff/**) booking views and actions. */
 @RestController
+@RequestMapping("/api/v1")
 @Tag(name = "Business – Bookings")
 public class BusinessAppointmentController {
 
@@ -38,33 +40,33 @@ public class BusinessAppointmentController {
         return CurrentUser.require().id();
     }
 
-    @GetMapping("/api/v1/owner/organizations/{orgId}/appointments")
+    @GetMapping("/owner/organizations/{orgId}/appointments")
     public ApiResponse<List<AppointmentView>> ownerDay(@PathVariable long orgId,
                                                        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
                                                        @RequestParam(required = false) Long branchId) {
         return ApiResponse.ok(service.ownerDay(me(), orgId, date, branchId));
     }
 
-    @PostMapping("/api/v1/owner/organizations/{orgId}/appointments/{id}/{action}")
+    @PostMapping("/owner/organizations/{orgId}/appointments/{id}/{action}")
     @Operation(summary = "confirm | decline | cancel | check-in | complete | no-show (decline and cancel need a reason)")
     public ApiResponse<AppointmentView> ownerAct(@PathVariable long orgId, @PathVariable long id, @PathVariable String action,
                                                  @Valid @RequestBody(required = false) ReasonBody b) {
         return ApiResponse.ok(service.ownerAct(me(), orgId, id, parse(action), b == null ? null : b.reason()));
     }
 
-    @PostMapping("/api/v1/owner/organizations/{orgId}/check-in")
+    @PostMapping("/owner/organizations/{orgId}/check-in")
     @Operation(summary = "Check a customer in with their booking pass")
     public ApiResponse<AppointmentView> scan(@PathVariable long orgId, @Valid @RequestBody CodeBody b) {
         return ApiResponse.ok(service.ownerCheckIn(me(), orgId, b.code()));
     }
 
-    @GetMapping("/api/v1/staff/appointments")
+    @GetMapping("/staff/appointments")
     public ApiResponse<List<AppointmentView>> staffDay(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         return ApiResponse.ok(service.staffDay(me(), date));
     }
 
-    @PostMapping("/api/v1/staff/appointments/{id}/{action}")
+    @PostMapping("/staff/appointments/{id}/{action}")
     public ApiResponse<AppointmentView> staffAct(@PathVariable long id, @PathVariable String action,
                                                  @Valid @RequestBody(required = false) ReasonBody b) {
         return ApiResponse.ok(service.staffAct(me(), id, parse(action), b == null ? null : b.reason()));

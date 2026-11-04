@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.bookeasy.common.api.ApiResponse;
@@ -30,6 +31,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
+@RequestMapping("/api/v1")
 @Tag(name = "Payments")
 public class PaymentController {
 
@@ -57,25 +59,25 @@ public class PaymentController {
         return CurrentUser.require().id();
     }
 
-    @PostMapping("/api/v1/customer/appointments/{id}/payment-order")
+    @PostMapping("/customer/appointments/{id}/payment-order")
     @Operation(summary = "Create (or reuse) the Razorpay order for an unpaid booking")
     public ApiResponse<CheckoutOrder> order(@PathVariable long id) {
         return ApiResponse.ok(payments.createOrder(me(), id));
     }
 
-    @PostMapping("/api/v1/customer/payments/verify")
+    @PostMapping("/customer/payments/verify")
     @Operation(summary = "Verify the Razorpay Checkout signature and confirm the booking")
     public ApiResponse<Void> verify(@Valid @RequestBody VerifyBody b) {
         payments.verifyCheckout(me(), b.orderId(), b.paymentId(), b.signature());
         return ApiResponse.ok(null);
     }
 
-    @GetMapping("/api/v1/customer/appointments/{id}/receipt")
+    @GetMapping("/customer/appointments/{id}/receipt")
     public ApiResponse<Receipt> receipt(@PathVariable long id) {
         return ApiResponse.ok(payments.receipt(me(), id));
     }
 
-    @PostMapping("/api/v1/public/webhooks/razorpay")
+    @PostMapping("/public/webhooks/razorpay")
     @SecurityRequirements
     @Operation(summary = "Razorpay webhook (HMAC-signed, de-duplicated by event id)")
     public ResponseEntity<ApiResponse<Void>> webhook(@RequestBody String body,
@@ -85,28 +87,28 @@ public class PaymentController {
         return ResponseEntity.ok(ApiResponse.ok(null));
     }
 
-    @GetMapping("/api/v1/owner/organizations/{orgId}/earnings")
+    @GetMapping("/owner/organizations/{orgId}/earnings")
     public ApiResponse<Earnings> earnings(@PathVariable long orgId) {
         return ApiResponse.ok(settlements.ownerEarnings(me(), orgId));
     }
 
-    @GetMapping("/api/v1/admin/settlements")
+    @GetMapping("/admin/settlements")
     public ApiResponse<List<SettlementView>> adminSettlements(@RequestParam(required = false) String status) {
         return ApiResponse.ok(settlements.adminList(status));
     }
 
-    @PostMapping("/api/v1/admin/settlements/run")
+    @PostMapping("/admin/settlements/run")
     @Operation(summary = "Run settlement now (normally daily at 02:00 IST)")
     public ApiResponse<Integer> run() {
         return ApiResponse.ok(settlements.settle());
     }
 
-    @PostMapping("/api/v1/admin/settlements/{id}/paid")
+    @PostMapping("/admin/settlements/{id}/paid")
     public ApiResponse<SettlementView> markPaid(@PathVariable long id, @Valid @RequestBody ReferenceBody b, HttpServletRequest http) {
         return ApiResponse.ok(settlements.markPaid(CurrentUser.require(), id, b.reference(), ip.resolve(http)));
     }
 
-    @PutMapping("/api/v1/admin/organizations/{orgId}/payout-account")
+    @PutMapping("/admin/organizations/{orgId}/payout-account")
     @Operation(summary = "Set the business's Razorpay Route linked account (acc_…)")
     public ApiResponse<Void> account(@PathVariable long orgId, @Valid @RequestBody AccountBody b, HttpServletRequest http) {
         settlements.setLinkedAccount(CurrentUser.require(), orgId, b.accountId(), ip.resolve(http));

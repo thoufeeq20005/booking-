@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.bookeasy.availability.SlotService;
@@ -32,6 +33,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 /** Invitations, the staff member's own area, and the public slot endpoint. */
 @RestController
+@RequestMapping("/api/v1")
 @Tag(name = "Staff")
 public class StaffSelfController {
 
@@ -45,36 +47,36 @@ public class StaffSelfController {
         this.ip = ip;
     }
 
-    @PostMapping("/api/v1/public/staff-invitations/preview")
+    @PostMapping("/public/staff-invitations/preview")
     @Operation(summary = "Who invited me? (token in the body so it stays out of logs)")
     public ApiResponse<InvitationPreview> preview(@Valid @RequestBody TokenRequest req) {
         return ApiResponse.ok(staff.preview(req.token()));
     }
 
-    @PostMapping("/api/v1/staff-invitations/accept")
+    @PostMapping("/staff-invitations/accept")
     @Operation(summary = "Join the business; the signed-in account must use the invited email")
     public ApiResponse<Workplace> accept(@Valid @RequestBody TokenRequest req, HttpServletRequest http) {
         return ApiResponse.ok(staff.accept(CurrentUser.require().id(), req.token(), ip.resolve(http)));
     }
 
-    @GetMapping("/api/v1/staff/workplaces")
+    @GetMapping("/staff/workplaces")
     public ApiResponse<List<Workplace>> workplaces() {
         return ApiResponse.ok(staff.myWorkplaces(CurrentUser.require().id()));
     }
 
-    @PutMapping("/api/v1/staff/profiles/{staffId}/availability")
+    @PutMapping("/staff/profiles/{staffId}/availability")
     @Operation(summary = "Edit my own availability (needs CAN_EDIT_HOURS)")
     public ApiResponse<StaffView> availability(@PathVariable long staffId, @Valid @RequestBody AvailabilityRequest req) {
         return ApiResponse.ok(staff.setOwnAvailability(CurrentUser.require().id(), staffId, req));
     }
 
-    @PostMapping("/api/v1/staff/profiles/{staffId}/leaves")
+    @PostMapping("/staff/profiles/{staffId}/leaves")
     @Operation(summary = "Add my own leave (needs CAN_EDIT_HOURS)")
     public ApiResponse<StaffView> leave(@PathVariable long staffId, @Valid @RequestBody LeaveRequest req) {
         return ApiResponse.ok(staff.addOwnLeave(CurrentUser.require().id(), staffId, req));
     }
 
-    @GetMapping("/api/v1/public/branches/{branchId}/services/{serviceId}/slots")
+    @GetMapping("/public/branches/{branchId}/services/{serviceId}/slots")
     @Operation(summary = "Free slots on a date at an approved business")
     public ApiResponse<DaySlots> publicSlots(@PathVariable long branchId, @PathVariable long serviceId,
                                              @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,

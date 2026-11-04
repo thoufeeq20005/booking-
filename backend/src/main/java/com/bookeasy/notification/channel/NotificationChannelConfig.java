@@ -46,7 +46,7 @@ public class NotificationChannelConfig {
             throw new IllegalStateException("Unsupported EMAIL_PROVIDER '" + cfg.provider() + "' (supported: smtp)");
         }
         if (props.devLogDelivery()) {
-            log.warn("Email channel: no provider configured – messages are LOGGED, not sent (development only)");
+            log.info("Email channel: no provider configured – messages are LOGGED, not sent (development only)");
             return message -> log.info("[DEV EMAIL] to={} subject={}\n{}", message.to(), message.subject(),
                     message.textBody());
         }
@@ -70,7 +70,7 @@ public class NotificationChannelConfig {
             throw new IllegalStateException("Unsupported SMS_PROVIDER '" + cfg.provider() + "' (supported: msg91)");
         }
         if (props.devLogDelivery()) {
-            log.warn("SMS channel: no provider configured – OTPs are LOGGED, not sent (development only)");
+            log.info("SMS channel: no provider configured – OTPs are LOGGED, not sent (development only)");
             return (phone, code) -> log.info("[DEV SMS] OTP for {} is {}", phone, code);
         }
         log.warn("SMS channel: no provider configured – OTP delivery will fail");
