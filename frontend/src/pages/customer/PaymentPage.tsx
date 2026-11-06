@@ -2,8 +2,10 @@ import { useEffect, useState } from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
-import { CalendarClock, CreditCard, Landmark, Lock, MapPin, ShieldCheck, Smartphone, Timer, Wallet, type LucideIcon } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CalendarClock, CreditCard, Landmark, Lock, MapPin, ShieldCheck, Smartphone, Timer, Wallet,
+  type LucideIcon } from 'lucide-react';
 import clsx from 'clsx';
+import QRCode from 'qrcode';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -33,6 +35,19 @@ function useCountdown(until?: string) {
   return left;
 }
 
+/**
+ * Demo-mode QR. Deliberately NOT a upi://pay link: it carries only a readable note, so scanning it with a real UPI
+ * app can never send money to anyone. Real UPI QR codes come from Razorpay Checkout, which confirms the payment itself.
+ */
+function DemoQr({ text }: { text: string }) {
+  const [src, setSrc] = useState<string | null>(null);
+  useEffect(() => {
+    QRCode.toDataURL(text, { margin: 1, width: 220 }).then(setSrc).catch(() => setSrc(null));
+  }, [text]);
+  return src ? <img src={src} alt="" data-testid="payment-qr" className="h-52 w-52 rounded-xl border border-border bg-white p-2" />
+    : <div className="h-52 w-52 animate-pulse rounded-xl bg-surface-muted" />;
+}
+
 /** Checkout for a booking that is holding its slot: pick a payment method, see the bill, pay. */
 export function PaymentPage() {
   const { t, i18n } = useTranslation();
@@ -42,6 +57,8 @@ export function PaymentPage() {
   const form = useApiForm();
   const [method, setMethod] = useState<PaymentMethod>('upi');
   const [processing, setProcessing] = useState(false);
+  // Demo mode has two steps: choose a method, then "pay" (QR for UPI) and press Next.
+  const [step, setStep] = useState<'choose' | 'pay'>('choose');
 
   const booking = useQuery({ queryKey: ['booking', bookingId], queryFn: () => bookingApi.get(bookingId) });
   const pending = booking.data?.status === 'PENDING_PAYMENT';
@@ -67,11 +84,7 @@ export function PaymentPage() {
     const o = order.data;
     if (!o) return;
     if (o.demo) {
-      setProcessing(true);
-      await new Promise((r) => window.setTimeout(r, 900)); // feel of a gateway round-trip
-      const ok = await form.submit(() => paymentApi.demoPay(b.id, method).then(() => true));
-      setProcessing(false);
-      if (ok) done();
+      setStep('pay');
       return;
     }
     try {
@@ -86,6 +99,42 @@ export function PaymentPage() {
     }
   };
 
+  /** Demo step 2: the customer pressed Next after "paying". */
+  const confirmDemo = async () => {
+    setProcessing(true);
+    await new Promise((r) => window.setTimeout(r, 900)); // feel of a gateway round-trip
+    const ok = await form.submit(() => paymentApi.demoPay(b.id, method).then(() => true));
+    setProcessing(false);
+    if (ok) done();
+  };
+
+  const amount = formatINR(b.totalAmount);
+  const demoPayStep = order.data?.demo && step === 'pay' && (
+    <div className="space-y-5">
+      <button type="button" onClick={() => setStep('choose')} disabled={processing}
+        className="inline-flex items-center gap-1 text-sm text-fg-muted hover:text-fg">
+        <ArrowLeft className="h-4 w-4" aria-hidden="true" />{t('pay.changeMethod')}
+      </button>
+      <h2 className="text-lg font-semibold">{method === 'upi' ? t('pay.scanTitle') : t(`pay.method.${method}`)}</h2>
+      {method === 'upi' ? (
+        <div className="flex flex-col items-center gap-3 text-center">
+          <DemoQr text={`BookEasy DEMO payment – not a real UPI request.\nRef ${b.reference}\nAmount ${amount}`} />
+          <p className="text-2xl font-bold">{amount}</p>
+          <p className="max-w-sm text-sm text-fg-muted">{t('pay.scanHint', { amount })}</p>
+        </div>
+      ) : (
+        <p className="rounded-xl bg-surface-muted p-4 text-sm">{t('pay.otherMethodDemo', { method: t(`pay.method.${method}`), amount })}</p>
+      )}
+      <Alert>{t('pay.demoQrNote')}</Alert>
+      <div className="flex justify-end">
+        <Button size="lg" onClick={() => void confirmDemo()} loading={processing} disabled={expired} title={t('pay.confirmPayment')}>
+          {processing ? t('pay.processing') : t('pay.next')}
+          {!processing && <ArrowRight className="h-5 w-5" aria-hidden="true" />}
+        </Button>
+      </div>
+    </div>
+  );
+
   return (
     <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6">
       <Link to={`/customer/bookings/${b.id}`} className="text-sm text-fg-muted hover:text-fg">← {t('pay.back')}</Link>
@@ -99,6 +148,7 @@ export function PaymentPage() {
           {expired && <Alert tone="error">{t('pay.expired')}</Alert>}
           {form.formError && <Alert tone="error">{form.formError}</Alert>}
 
+          {demoPayStep || (<>
           <fieldset>
             <legend className="mb-3 font-semibold">{t('pay.chooseMethod')}</legend>
             <div role="radiogroup" className="grid gap-3 sm:grid-cols-2">
@@ -126,10 +176,12 @@ export function PaymentPage() {
           </p>
 
           <Button size="lg" className="w-full" onClick={() => void pay()}
-            loading={processing || form.submitting} disabled={!order.data || expired}>
-            <Lock className="h-4 w-4" aria-hidden="true" />
-            {processing ? t('pay.processing') : t('payment.payNow', { amount: formatINR(b.totalAmount) })}
+            loading={form.submitting} disabled={!order.data || expired}>
+            {order.data?.demo
+              ? <>{t('pay.proceed')}<ArrowRight className="h-4 w-4" aria-hidden="true" /></>
+              : <><Lock className="h-4 w-4" aria-hidden="true" />{t('payment.payNow', { amount })}</>}
           </Button>
+          </>)}
         </Card>
 
         <Card className="h-fit space-y-4 p-6">

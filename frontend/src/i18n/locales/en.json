@@ -996,6 +996,14 @@
     "holdLeft": "Slot held for {{time}}",
     "expired": "The time to pay has run out and the slot was released. Please book again.",
     "unpaid": "This booking is waiting for payment.",
+    "proceed": "Continue",
+    "changeMethod": "Change payment method",
+    "scanTitle": "Scan & pay with UPI",
+    "scanHint": "Scan this QR with any UPI app (Google Pay, PhonePe, Paytm) and approve {{amount}}. Then tap Next.",
+    "otherMethodDemo": "Demo {{method}} payment of {{amount}} – no details needed. Tap Next to complete it.",
+    "demoQrNote": "Demo mode: this QR doesn't move any money. Tap Next to confirm the payment.",
+    "next": "Next",
+    "confirmPayment": "Confirm payment and see your booking",
     "continue": "Continue to payment"
   }
 }

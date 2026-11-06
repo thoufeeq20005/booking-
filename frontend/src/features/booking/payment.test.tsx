@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { AppRoutes } from '@/routes/AppRoutes';
@@ -9,6 +9,12 @@ const booking = { id: 77, reference: 'BEABCDEFGH', status: 'PENDING_PAYMENT', st
   endsAt: '2026-11-10T04:00:00Z', timezone: 'Asia/Kolkata', organizationId: 1, organizationName: 'Smile Studio',
   organizationSlug: 'smile', branchId: 3, branchName: 'Main', serviceId: 9, serviceName: 'Check-up', servicePrice: 500,
   platformFee: 25, totalAmount: 525, rescheduleCount: 0, paid: false, createdAt: new Date().toISOString() };
+
+// Record what each QR code contains (the image itself isn't needed in tests).
+const qrTexts: string[] = [];
+vi.mock('qrcode', () => ({
+  default: { toDataURL: async (text: string) => { qrTexts.push(text); return 'data:image/png;base64,AAAA'; } },
+}));
 
 const inTenMinutes = () => new Date(Date.now() + 10 * 60000).toISOString();
 
@@ -61,15 +67,42 @@ describe('payment page', () => {
     expect(await screen.findByText('Confirmed')).toBeInTheDocument();
   });
 
-  it('demo mode simulates the payment with the chosen method (no Razorpay)', async () => {
+  it('demo UPI: Continue shows a QR, Next confirms and opens the booking details', async () => {
     const paid: unknown[] = [];
     api({ keyId: null, orderId: 'demo_order_x', amountPaise: 52500, currency: 'INR', reference: 'BEABCDEFGH',
       description: 'Check-up', expiresAt: inTenMinutes(), demo: true }, (url, body) => paid.push({ url, body }));
 
     renderWithProviders(<AppRoutes />, { route: '/customer/bookings/77/pay' });
     expect(await screen.findByText(/Demo mode/)).toBeInTheDocument();
-    await userEvent.click(screen.getByRole('radio', { name: /Net banking/ }));
-    await userEvent.click(screen.getByRole('button', { name: 'Pay ₹525' }));
+    await userEvent.click(screen.getByRole('button', { name: /Continue/ })); // UPI is pre-selected
+
+    expect(await screen.findByRole('heading', { name: 'Scan & pay with UPI' })).toBeInTheDocument();
+    expect(await screen.findByTestId('payment-qr')).toBeInTheDocument();
+    expect(qrTexts.at(-1)).toContain('DEMO');
+    expect(qrTexts.at(-1)).not.toMatch(/^upi:/i); // never a payable UPI request
+    expect(paid).toEqual([]); // nothing is paid until Next
+
+    await userEvent.click(screen.getByRole('button', { name: /Next/ }));
+    expect(await screen.findByText('Confirmed', {}, { timeout: 3000 })).toBeInTheDocument();
+    expect(screen.getByText("You're booked!")).toBeInTheDocument();
+    expect(paid).toEqual([{ url: '/customer/appointments/77/demo-payment', body: { method: 'upi' } }]);
+  });
+
+  it('demo net banking: no QR, Next completes it; Change method goes back', async () => {
+    const paid: unknown[] = [];
+    api({ keyId: null, orderId: 'demo_order_x', amountPaise: 52500, currency: 'INR', reference: 'BEABCDEFGH',
+      description: 'Check-up', expiresAt: inTenMinutes(), demo: true }, (url, body) => paid.push({ url, body }));
+
+    renderWithProviders(<AppRoutes />, { route: '/customer/bookings/77/pay' });
+    await userEvent.click(await screen.findByRole('radio', { name: /Net banking/ }));
+    await userEvent.click(screen.getByRole('button', { name: /Continue/ }));
+    expect(await screen.findByText(/Demo Net banking payment/)).toBeInTheDocument();
+    expect(screen.queryByTestId('payment-qr')).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: /Change payment method/ }));
+    expect(screen.getByRole('radio', { name: /Net banking/ })).toBeChecked();
+    await userEvent.click(screen.getByRole('button', { name: /Continue/ }));
+    await userEvent.click(screen.getByRole('button', { name: /Next/ }));
 
     expect(await screen.findByText('Confirmed', {}, { timeout: 3000 })).toBeInTheDocument();
     expect(paid).toEqual([{ url: '/customer/appointments/77/demo-payment', body: { method: 'netbanking' } }]);

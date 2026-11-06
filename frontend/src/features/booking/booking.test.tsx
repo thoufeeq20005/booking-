@@ -65,7 +65,7 @@ describe('booking wizard', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Confirm booking' }));
 
     expect(await screen.findByRole('heading', { name: 'Payment' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Pay ₹525' })).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: /Continue/ })).toBeInTheDocument(); // demo: choose a method first
   });
 
   it('asks visitors to sign in first', async () => {
