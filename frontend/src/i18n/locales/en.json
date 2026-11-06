@@ -1005,5 +1005,15 @@
     "next": "Next",
     "confirmPayment": "Confirm payment and see your booking",
     "continue": "Continue to payment"
+  },
+  "passPage": {
+    "title": "BookEasy booking pass",
+    "when": "When",
+    "where": "Where",
+    "guest": "Booked for",
+    "paid": "Paid",
+    "checkedIn": "Checked in",
+    "note": "Show this pass at the venue. Staff scan the same QR to check you in.",
+    "viewBusiness": "View business"
   }
 }

@@ -250,6 +250,17 @@ public class BookingService {
         return views(List.of(a), withQr).get(0);
     }
 
+    /** The booking behind a scanned pass (QR link or payload); unknown or forged codes are rejected. */
+    @Transactional(readOnly = true)
+    public BookingPass pass(String code) {
+        String reference = qr.verify(code);
+        Appointment a = reference == null ? null : appointments.findByReference(reference).orElse(null);
+        if (a == null) {
+            throw new ApiException(ErrorCode.INVALID_QR_CODE);
+        }
+        return BookingPass.of(views(List.of(a), false).get(0));
+    }
+
     List<AppointmentView> views(List<Appointment> list, boolean withQr) {
         if (list.isEmpty()) {
             return List.of();

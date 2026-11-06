@@ -4,6 +4,23 @@ import type { DaySlots } from './teamApi';
 export type BookingStatus = 'PENDING_PAYMENT' | 'PENDING_APPROVAL' | 'CONFIRMED' | 'CANCELLED' | 'DECLINED' | 'COMPLETED'
   | 'NO_SHOW' | 'EXPIRED';
 
+export interface BookingPass {
+  reference: string;
+  status: BookingStatus;
+  startsAt: string;
+  endsAt: string;
+  timezone: string;
+  organizationName: string;
+  organizationSlug: string;
+  branchName: string;
+  branchAddress?: string;
+  serviceName: string;
+  staffName?: string;
+  guestFirstName?: string;
+  paid: boolean;
+  checkedInAt?: string;
+}
+
 export interface Booking {
   id: number;
   reference: string;
@@ -57,6 +74,8 @@ export const bookingApi = {
     apiPost<Booking>('/customer/appointments', body),
   mine: () => apiGet<Booking[]>('/customer/appointments'),
   get: (id: number) => apiGet<Booking>(`/customer/appointments/${id}`),
+  /** Public, limited details behind a scanned booking QR. */
+  pass: (code: string) => apiGet<BookingPass>(`/public/passes/${encodeURIComponent(code)}`),
   cancelPreview: (id: number) => apiGet<CancelPreview>(`/customer/appointments/${id}/cancel-preview`),
   cancel: (id: number, reason?: string) => apiPost<Booking>(`/customer/appointments/${id}/cancel`, { reason }),
   reschedule: (id: number, startsAt: string, staffId?: number) =>

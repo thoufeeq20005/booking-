@@ -17,11 +17,16 @@ import { intlLocale } from '@/i18n';
 import { ACTIVE, bookingApi, isoDateIST, type Booking } from '@/services/bookingApi';
 import { formatDateTime, formatINR } from '@/utils/format';
 
+/** Link a phone camera opens to show the booking pass; staff can also paste it at check-in. */
+export function passLink(payload: string): string {
+  return `${window.location.origin}/pass/${encodeURIComponent(payload)}`;
+}
+
 function QrPass({ payload }: { payload: string }) {
   const { t } = useTranslation();
   const [src, setSrc] = useState<string>();
   useEffect(() => {
-    QRCode.toDataURL(payload, { margin: 1, width: 220 }).then(setSrc).catch(() => setSrc(undefined));
+    QRCode.toDataURL(passLink(payload), { margin: 1, width: 220 }).then(setSrc).catch(() => setSrc(undefined));
   }, [payload]);
   return src ? <img src={src} alt={t('booking.qrAlt')} className="h-48 w-48 rounded-xl bg-white p-2" /> : null;
 }

@@ -25,6 +25,7 @@ public class QrCodes {
 
     /** The reference inside a valid pass, or null. Accepts the bare reference only together with its signature. */
     public String verify(String scanned) {
+        scanned = fromPassLink(scanned);
         if (scanned == null || !scanned.startsWith(PREFIX)) {
             return null;
         }
@@ -33,6 +34,31 @@ public class QrCodes {
             return null;
         }
         return crypto.constantTimeEquals(signature(parts[0]), parts[1]) ? parts[0] : null;
+    }
+
+    /**
+     * The customer's QR holds a link to the public pass page ({@code https://site/pass/<payload>}) so a phone camera
+     * opens the booking details; staff can paste either the link or the bare payload at check-in.
+     */
+    static String fromPassLink(String scanned) {
+        if (scanned == null) {
+            return null;
+        }
+        String s = scanned.trim();
+        int i = s.indexOf("/pass/");
+        if (i < 0) {
+            return s;
+        }
+        String tail = s.substring(i + "/pass/".length());
+        int end = tail.indexOf('?');
+        if (end >= 0) {
+            tail = tail.substring(0, end);
+        }
+        try {
+            return java.net.URLDecoder.decode(tail, java.nio.charset.StandardCharsets.UTF_8);
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
     }
 
     private String signature(String reference) {

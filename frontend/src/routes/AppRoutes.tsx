@@ -37,6 +37,7 @@ const BookingsPage = named(() => import('@/pages/customer/BookingsPage'), 'Booki
 const BookingDetailPage = named(() => import('@/pages/customer/BookingDetailPage'), 'BookingDetailPage');
 const AppointmentsPage = named(() => import('@/pages/owner/AppointmentsPage'), 'AppointmentsPage');
 const ReceiptPage = named(() => import('@/pages/customer/ReceiptPage'), 'ReceiptPage');
+const PassPage = named(() => import('@/pages/PassPage'), 'PassPage');
 const PaymentPage = named(() => import('@/pages/customer/PaymentPage'), 'PaymentPage');
 const AdminSettlementsPage = named(() => import('@/pages/admin/AdminSettlementsPage'), 'AdminSettlementsPage');
 const NotificationsPage = named(() => import('@/pages/NotificationsPage'), 'NotificationsPage');
@@ -72,6 +73,7 @@ export function AppRoutes() {
         <Route path="search" element={<SearchPage />} />
         <Route path="b/:slug" element={<BusinessPage />} />
         <Route path="compare" element={<ComparePage />} />
+        <Route path="pass/:code" element={<PassPage />} />
         <Route path="signin" element={<SignInPage />} />
         <Route path="register" element={<RegisterPage />} />
         <Route path="forgot-password" element={<ForgotPasswordPage />} />

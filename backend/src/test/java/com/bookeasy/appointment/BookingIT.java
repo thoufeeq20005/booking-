@@ -136,7 +136,19 @@ class BookingIT extends BookingTestBase {
         String code = a.path("qrPayload").asText();
         mvc.perform(jsonRequest(post(base + "/check-in"), b.owner().token(), Map.of("code", code.substring(0, code.length() - 1) + "x")))
                 .andExpect(jsonPath("$.error.code").value("INVALID_QR_CODE"));
-        mvc.perform(jsonRequest(post(base + "/check-in"), b.owner().token(), Map.of("code", code)))
+        // The customer's QR is a link to the public pass page; anyone scanning it sees limited booking details.
+        String link = "http://192.168.1.5:5173/pass/" + java.net.URLEncoder.encode(code, java.nio.charset.StandardCharsets.UTF_8);
+        mvc.perform(get("/api/v1/public/passes/{code}", code))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.reference").value(a.path("reference").asText()))
+                .andExpect(jsonPath("$.data.status").value("CONFIRMED"))
+                .andExpect(jsonPath("$.data.guestFirstName").value("Asha"))
+                .andExpect(jsonPath("$.data.customerPhone").doesNotExist())
+                .andExpect(jsonPath("$.data.totalAmount").doesNotExist());
+        mvc.perform(get("/api/v1/public/passes/{code}", code.substring(0, code.length() - 1) + "x"))
+                .andExpect(jsonPath("$.error.code").value("INVALID_QR_CODE"));
+        // Staff can paste the scanned link at check-in.
+        mvc.perform(jsonRequest(post(base + "/check-in"), b.owner().token(), Map.of("code", link)))
                 .andExpect(jsonPath("$.data.checkedInAt").exists());
         mvc.perform(authed(post(base + "/appointments/" + id + "/complete"), b.owner().token()))
                 .andExpect(jsonPath("$.error.code").value("BOOKING_NOT_CHANGEABLE")); // not started yet

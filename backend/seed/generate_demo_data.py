@@ -334,7 +334,7 @@ for city, plan in CITY_PLAN.items():
                 stid += 1
                 spec = specs[i % len(specs)]
                 perms = '["CAN_CONFIRM","CAN_CANCEL"]' if i == 0 else '[]'
-                staff.append((stid, oid, staff_user, f"{title} {sname}" if title in ("Dr.", "Mr.", "Ms.") else sname,
+                staff.append((stid, oid, staff_user, sname,  # the title is stored (and shown) separately
                               title, spec, perms))
                 branch_for_staff = org_branch_ids if i == 0 else [org_branch_ids[i % len(org_branch_ids)]]
                 for b in branch_for_staff:
