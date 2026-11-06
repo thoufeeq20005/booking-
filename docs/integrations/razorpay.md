@@ -44,3 +44,14 @@ per business into a settlement:
 
 Use Razorpay test cards/UPI in Checkout. For webhooks in development, expose the API with a tunnel (e.g. ngrok) and
 point a test-mode webhook at it. Automated tests use a fake client and test secrets (`PaymentIT`).
+
+## Demo mode (development only)
+
+Without Razorpay keys, `PAYMENTS_DEMO_MODE=true` (the dev default) still sends bookings through the payment page:
+the customer picks UPI, card, net banking or wallet and a simulated gateway marks the booking paid (payment ids start
+with `demo_`, refunds of demo payments are settled locally). No card or UPI details are ever collected. Demo mode is
+ignored as soon as Razorpay keys are set, is forced off in the `prod` profile, and is off in tests unless a test opts in.
+Set `PAYMENTS_DEMO_MODE=false` locally to go back to "pay at the venue" (bookings confirm instantly).
+
+With keys (test keys `rzp_test_…` are free and need no KYC), the same page opens Razorpay Checkout with the chosen
+method pre-selected.

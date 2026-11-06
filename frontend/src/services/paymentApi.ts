@@ -11,7 +11,12 @@ export interface CheckoutOrder {
   customerEmail?: string;
   customerPhone?: string;
   expiresAt: string;
+  /** Development demo gateway (no Razorpay keys): pay with paymentApi.demoPay instead of Checkout. */
+  demo?: boolean;
 }
+
+/** Razorpay Checkout method names. */
+export type PaymentMethod = 'upi' | 'card' | 'netbanking' | 'wallet';
 
 export interface Receipt {
   receiptNumber: string;
@@ -45,6 +50,8 @@ export interface Settlement {
 export const paymentApi = {
   order: (appointmentId: number) => apiPost<CheckoutOrder>(`/customer/appointments/${appointmentId}/payment-order`),
   verify: (body: { orderId: string; paymentId: string; signature: string }) => apiPost<void>('/customer/payments/verify', body),
+  demoPay: (appointmentId: number, method: PaymentMethod) =>
+    apiPost<void>(`/customer/appointments/${appointmentId}/demo-payment`, { method }),
   receipt: (appointmentId: number) => apiGet<Receipt>(`/customer/appointments/${appointmentId}/receipt`),
   earnings: (orgId: number) =>
     apiGet<{ pendingPayoutPaise: number; settledPaise: number; settlements: Settlement[] }>(`/owner/organizations/${orgId}/earnings`),
@@ -94,7 +101,8 @@ function loadCheckout(): Promise<void> {
  * Opens Razorpay Checkout for the order. Resolves with the signed response, which the server then verifies;
  * resolves null if the customer closes the window.
  */
-export async function payWithRazorpay(order: CheckoutOrder): Promise<RazorpayResponse | null> {
+/** Opens Razorpay Checkout; `method` pre-selects the option the customer chose on the payment page. */
+export async function payWithRazorpay(order: CheckoutOrder, method?: PaymentMethod): Promise<RazorpayResponse | null> {
   await loadCheckout();
   return new Promise((resolve) => {
     const rzp = new window.Razorpay!({
@@ -104,7 +112,7 @@ export async function payWithRazorpay(order: CheckoutOrder): Promise<RazorpayRes
       order_id: order.orderId,
       name: 'BookEasy',
       description: order.description,
-      prefill: { name: order.customerName, email: order.customerEmail, contact: order.customerPhone },
+      prefill: { name: order.customerName, email: order.customerEmail, contact: order.customerPhone, method },
       notes: { reference: order.reference },
       theme: { color: '#2563eb' },
       handler: (res: RazorpayResponse) => resolve(res),

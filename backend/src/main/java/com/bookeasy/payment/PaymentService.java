@@ -90,19 +90,24 @@ public class PaymentService implements PaymentGate {
 
     @Override
     public boolean requiresOnlinePayment(Appointment appointment) {
-        return properties.enabled() && appointment.getTotalAmount().signum() > 0;
+        return properties.online() && appointment.getTotalAmount().signum() > 0;
     }
 
+    /** demo=true: no Razorpay; the page completes the payment with {@link #completeDemo}. */
     public record CheckoutOrder(String keyId, String orderId, long amountPaise, String currency, String reference,
                                 String description, String customerName, String customerEmail, String customerPhone,
-                                Instant expiresAt) {
+                                Instant expiresAt, boolean demo) {
     }
+
+    /** Payment methods offered on the payment page (Razorpay Checkout method names). */
+    public static final java.util.Set<String> METHODS = java.util.Set.of("upi", "card", "netbanking", "wallet");
+    static final String DEMO_PREFIX = "demo_";
 
     // ----- checkout -----
 
     @Transactional
     public CheckoutOrder createOrder(long customerId, long appointmentId) {
-        requireEnabled();
+        requireOnline();
         rateLimiter.hit("payorder:user:" + customerId, 30, Duration.ofHours(1));
         Appointment a = appointments.findByIdForUpdate(appointmentId).filter(x -> x.getCustomerId() == customerId)
                 .orElseThrow(() -> ApiException.notFound("Booking"));
@@ -115,13 +120,16 @@ public class PaymentService implements PaymentGate {
         }
         Payment p = payments.findByAppointmentIdOrderByIdDesc(a.getId()).stream()
                 .filter(x -> x.getStatus() == Payment.Status.CREATED).findFirst()
-                .orElseGet(() -> payments.save(new Payment(a.getId(), razorpay.createOrder(paise(a.getTotalAmount()),
-                        a.getReference(), Map.of("appointment_id", String.valueOf(a.getId()), "reference", a.getReference())),
+                .orElseGet(() -> payments.save(new Payment(a.getId(), properties.demo()
+                        ? DEMO_PREFIX + "order_" + randomId()
+                        : razorpay.createOrder(paise(a.getTotalAmount()), a.getReference(),
+                                Map.of("appointment_id", String.valueOf(a.getId()), "reference", a.getReference())),
                         paise(a.getTotalAmount()), clock.instant())));
         User u = users.findById(customerId).orElseThrow();
         String org = organizations.findById(a.getOrganizationId()).map(o -> o.getName()).orElse("BookEasy");
         return new CheckoutOrder(properties.razorpay().keyId(), p.getOrderId(), p.getAmountPaise(), "INR", a.getReference(),
-                a.getServiceName() + " · " + org, u.getFullName(), u.getEmail(), u.getPhone(), expires);
+                a.getServiceName() + " · " + org, u.getFullName(), u.getEmail(), u.getPhone(), expires,
+                properties.demo());
     }
 
     /** Called by the browser after Razorpay Checkout succeeds. */
@@ -135,6 +143,32 @@ public class PaymentService implements PaymentGate {
         Appointment a = appointments.findById(p.getAppointmentId()).filter(x -> x.getCustomerId() == customerId)
                 .orElseThrow(() -> ApiException.notFound("Payment"));
         capture(p, a.getId(), paymentId, null);
+    }
+
+    /**
+     * Development demo gateway: marks the booking paid with the chosen method, exactly as a captured Razorpay payment
+     * would (commission record, confirmation or approval, notifications). Refused unless demo mode is active.
+     */
+    @Transactional
+    public void completeDemo(long customerId, long appointmentId, String method) {
+        if (!properties.demo()) {
+            throw new ApiException(ErrorCode.PROVIDER_UNAVAILABLE, "Demo payments are not available");
+        }
+        if (!METHODS.contains(method)) {
+            throw ApiException.invalidField("method", "INVALID", "Choose a payment method");
+        }
+        Appointment a = appointments.findByIdForUpdate(appointmentId).filter(x -> x.getCustomerId() == customerId)
+                .orElseThrow(() -> ApiException.notFound("Booking"));
+        if (a.getStatus() != Appointment.Status.PENDING_PAYMENT) {
+            throw new ApiException(ErrorCode.PAYMENT_NOT_REQUIRED);
+        }
+        if (!a.getCreatedAt().plus(Duration.ofMinutes(properties.hold())).isAfter(clock.instant())) {
+            throw new ApiException(ErrorCode.BOOKING_EXPIRED);
+        }
+        Payment p = payments.findByAppointmentIdOrderByIdDesc(a.getId()).stream()
+                .filter(x -> x.getStatus() == Payment.Status.CREATED && x.getOrderId().startsWith(DEMO_PREFIX)).findFirst()
+                .orElseThrow(() -> ApiException.notFound("Payment"));
+        capture(p, a.getId(), DEMO_PREFIX + "pay_" + randomId(), method);
     }
 
     /** Signed, de-duplicated Razorpay webhook. Returns false when the event was already processed. */
@@ -278,7 +312,7 @@ public class PaymentService implements PaymentGate {
 
     /** Sends queued refunds to Razorpay; failures are retried up to {@value #MAX_REFUND_ATTEMPTS} times. */
     public int dispatchRefunds() {
-        if (!properties.enabled()) {
+        if (!properties.online()) {
             return 0;
         }
         Integer sent = tx.execute(s -> dispatchInTransaction());
@@ -293,8 +327,16 @@ public class PaymentService implements PaymentGate {
         int sent = 0;
         for (Map<String, Object> r : due) {
             long id = ((Number) r.get("id")).longValue();
+            String paymentId = (String) r.get("razorpay_payment_id");
+            if (paymentId != null && paymentId.startsWith(DEMO_PREFIX)) {
+                // Simulated payment: nothing to send to a gateway, the refund is settled immediately.
+                jdbc.update("UPDATE refunds SET status = 'PROCESSED', razorpay_refund_id = ?, attempts = attempts + 1, last_error = NULL WHERE id = ?",
+                        DEMO_PREFIX + "rfnd_" + id, id);
+                sent++;
+                continue;
+            }
             try {
-                String refundId = razorpay.refund((String) r.get("razorpay_payment_id"), ((Number) r.get("amount_paise")).longValue(),
+                String refundId = razorpay.refund(paymentId, ((Number) r.get("amount_paise")).longValue(),
                         Map.of("appointment_id", String.valueOf(r.get("appointment_id"))));
                 jdbc.update("UPDATE refunds SET status = 'REQUESTED', razorpay_refund_id = ?, attempts = attempts + 1, last_error = NULL WHERE id = ?",
                         refundId, id);
@@ -333,6 +375,20 @@ public class PaymentService implements PaymentGate {
     }
 
     // ----- helpers -----
+
+    private static final java.security.SecureRandom RANDOM = new java.security.SecureRandom();
+
+    private static String randomId() {
+        byte[] b = new byte[8];
+        RANDOM.nextBytes(b);
+        return java.util.HexFormat.of().formatHex(b);
+    }
+
+    private void requireOnline() {
+        if (!properties.online()) {
+            throw new ApiException(ErrorCode.PROVIDER_UNAVAILABLE, "Online payments are not configured");
+        }
+    }
 
     private void requireEnabled() {
         if (!properties.enabled()) {

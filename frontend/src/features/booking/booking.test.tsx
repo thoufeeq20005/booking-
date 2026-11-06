@@ -49,6 +49,25 @@ describe('booking wizard', () => {
     expect(screen.getByText('BEABCDEFGH')).toBeInTheDocument();
   });
 
+  it('goes to the payment page after Confirm booking when online payment is needed', async () => {
+    const pending = { ...booking, status: 'PENDING_PAYMENT', paid: false, qrPayload: undefined, createdAt: new Date().toISOString() };
+    api(sampleUser, (r) => {
+      if (r.url === '/customer/appointments' && r.method === 'POST') return reply.ok(pending);
+      if (r.url === '/customer/appointments/77') return reply.ok(pending);
+      if (r.url === '/customer/appointments/77/payment-order') {
+        return reply.ok({ orderId: 'demo_order_1', amountPaise: 52500, currency: 'INR', reference: 'BEABCDEFGH',
+          description: 'Check-up', expiresAt: new Date(Date.now() + 600000).toISOString(), demo: true });
+      }
+      return undefined;
+    });
+    renderWithProviders(<AppRoutes />, { route: '/b/smile' });
+    await userEvent.click(await screen.findByRole('radio', { name: '9:00 am' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Confirm booking' }));
+
+    expect(await screen.findByRole('heading', { name: 'Payment' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Pay ₹525' })).toBeInTheDocument();
+  });
+
   it('asks visitors to sign in first', async () => {
     api(null, () => undefined);
     renderWithProviders(<AppRoutes />, { route: '/b/smile' });

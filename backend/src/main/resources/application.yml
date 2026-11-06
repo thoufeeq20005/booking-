@@ -111,6 +111,9 @@ bookeasy:
   payments:
     # Minutes an unpaid booking holds its slot before it expires.
     hold-minutes: ${PAYMENT_HOLD_MINUTES:15}
+    # Dev only: without Razorpay keys, show the payment page with a simulated gateway (no money moves).
+    # Ignored once Razorpay keys are set; always false in prod.
+    demo-mode: ${PAYMENTS_DEMO_MODE:true}
     razorpay:
       key-id: ${RAZORPAY_KEY_ID:}
       key-secret: ${RAZORPAY_KEY_SECRET:}
@@ -167,3 +170,5 @@ bookeasy:
       secure: true
   notifications:
     dev-log-delivery: false
+  payments:
+    demo-mode: false

@@ -37,6 +37,7 @@ const BookingsPage = named(() => import('@/pages/customer/BookingsPage'), 'Booki
 const BookingDetailPage = named(() => import('@/pages/customer/BookingDetailPage'), 'BookingDetailPage');
 const AppointmentsPage = named(() => import('@/pages/owner/AppointmentsPage'), 'AppointmentsPage');
 const ReceiptPage = named(() => import('@/pages/customer/ReceiptPage'), 'ReceiptPage');
+const PaymentPage = named(() => import('@/pages/customer/PaymentPage'), 'PaymentPage');
 const AdminSettlementsPage = named(() => import('@/pages/admin/AdminSettlementsPage'), 'AdminSettlementsPage');
 const NotificationsPage = named(() => import('@/pages/NotificationsPage'), 'NotificationsPage');
 const OwnerReviewsPage = named(() => import('@/pages/owner/OwnerReviewsPage'), 'OwnerReviewsPage');
@@ -91,6 +92,7 @@ export function AppRoutes() {
           <Route path="bookings" element={<BookingsPage />} />
           <Route path="bookings/:id" element={<BookingDetailPage />} />
           <Route path="bookings/:id/receipt" element={<ReceiptPage />} />
+          <Route path="bookings/:id/pay" element={<PaymentPage />} />
           <Route path="family" element={<FamilyPage />} />
           <Route path="favourites" element={<FavouritesPage />} />
           <Route path="support" element={<SupportPage />} />

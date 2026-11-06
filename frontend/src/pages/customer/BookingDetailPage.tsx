@@ -5,12 +5,11 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import QRCode from 'qrcode';
 import { ArrowLeft } from 'lucide-react';
 import { Alert } from '@/components/ui/Alert';
-import { Button } from '@/components/ui/Button';
+import { Button, buttonClasses } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { TextAreaField } from '@/components/ui/FormFields';
 import { ErrorState, LoadingState } from '@/components/ui/StateMessage';
 import { BookingStatusBadge } from '@/features/booking/BookingStatusBadge';
-import { PayNow } from '@/features/booking/PayNow';
 import { SlotPicker } from '@/features/booking/SlotPicker';
 import { ReviewForm } from '@/features/engagement/ReviewWidgets';
 import { useApiForm } from '@/hooks/useApiForm';
@@ -116,7 +115,10 @@ export function BookingDetailPage() {
         <Card className="p-6"><ReviewForm appointmentId={b.id} onDone={() => void refetch()} /></Card>
       )}
       {b.status === 'PENDING_PAYMENT' && (
-        <Card className="p-6"><PayNow booking={b} onPaid={() => void refetch()} /></Card>
+        <Card className="flex flex-wrap items-center justify-between gap-3 p-6">
+          <p className="text-sm">{t('pay.unpaid')}</p>
+          <Link to={`/customer/bookings/${b.id}/pay`} className={buttonClasses('primary')}>{t('pay.continue')}</Link>
+        </Card>
       )}
       {b.paid && (
         <Link to={`/customer/bookings/${b.id}/receipt`} className="inline-block text-sm text-brand-700 hover:underline">{t('payment.viewReceipt')}</Link>

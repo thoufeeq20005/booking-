@@ -46,7 +46,10 @@ export function BookingWizard({ profile }: { profile: PublicProfile }) {
   const book = async () => {
     if (!startsAt) return;
     const b = await form.submit(() => bookingApi.book({ branchId: effectiveBranch, serviceId, staffId, startsAt, note: note.trim() || undefined, familyMemberId: forWhom ? Number(forWhom) : undefined }));
-    if (b) navigate(`/customer/bookings/${b.id}`, { state: { justBooked: true } });
+    if (!b) return;
+    // Online payment: go to the payment page; otherwise the booking is already confirmed (or awaiting approval).
+    if (b.status === 'PENDING_PAYMENT') navigate(`/customer/bookings/${b.id}/pay`);
+    else navigate(`/customer/bookings/${b.id}`, { state: { justBooked: true } });
   };
 
   return (

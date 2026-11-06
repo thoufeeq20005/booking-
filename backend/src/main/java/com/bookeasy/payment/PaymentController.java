@@ -65,6 +65,16 @@ public class PaymentController {
         return ApiResponse.ok(payments.createOrder(me(), id));
     }
 
+    public record DemoPayBody(@jakarta.validation.constraints.NotBlank String method) {
+    }
+
+    @PostMapping("/customer/appointments/{id}/demo-payment")
+    @Operation(summary = "Development only: complete the payment with the simulated gateway")
+    public ApiResponse<Void> demoPay(@PathVariable long id, @Valid @RequestBody DemoPayBody b) {
+        payments.completeDemo(me(), id, b.method());
+        return ApiResponse.ok(null);
+    }
+
     @PostMapping("/customer/payments/verify")
     @Operation(summary = "Verify the Razorpay Checkout signature and confirm the booking")
     public ApiResponse<Void> verify(@Valid @RequestBody VerifyBody b) {

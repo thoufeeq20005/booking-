@@ -969,5 +969,33 @@
     "later": "I'll do this later",
     "button": "Verify email",
     "done": "Your email is verified."
+  },
+  "pay": {
+    "title": "Payment",
+    "subtitle": "Choose how you'd like to pay to confirm your booking.",
+    "back": "Back to booking",
+    "chooseMethod": "Payment method",
+    "summary": "Booking summary",
+    "total": "Total to pay",
+    "method": {
+      "upi": "UPI",
+      "card": "Credit / debit card",
+      "netbanking": "Net banking",
+      "wallet": "Wallets"
+    },
+    "methodHint": {
+      "upi": "Google Pay, PhonePe, Paytm or any UPI app",
+      "card": "Visa, Mastercard, RuPay",
+      "netbanking": "All major Indian banks",
+      "wallet": "Paytm, Amazon Pay, Mobikwik and more"
+    },
+    "security": "Payments are processed securely by Razorpay. BookEasy never sees your card details or UPI PIN.",
+    "demoSecurity": "Demo payment: no money is charged and no card or UPI details are asked for.",
+    "demoBanner": "Demo mode – Razorpay isn't set up yet, so this payment is simulated. Add Razorpay keys to take real payments.",
+    "processing": "Processing payment…",
+    "holdLeft": "Slot held for {{time}}",
+    "expired": "The time to pay has run out and the slot was released. Please book again.",
+    "unpaid": "This booking is waiting for payment.",
+    "continue": "Continue to payment"
   }
 }
