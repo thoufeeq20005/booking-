@@ -41,6 +41,9 @@ public final class AuthRequests {
     public record OtpSend(@NotBlank @Size(max = 20) String phone) {
     }
 
+    public record CodeOnly(@NotBlank @Pattern(regexp = "\\d{4,8}") String code) {
+    }
+
     public record EmailCodeSend(@NotBlank @Email @Size(max = 255) String email) {
     }
 
@@ -49,12 +52,6 @@ public final class AuthRequests {
             @NotBlank @Pattern(regexp = "\\d{4,8}") String code) {
     }
 
-    public record OtpLogin(
-            @NotBlank @Size(max = 20) String phone,
-            @NotBlank @Pattern(regexp = "\\d{4,8}") String code,
-            @Size(max = 120) String fullName,
-            @Pattern(regexp = LANGUAGE_PATTERN) String preferredLanguage) {
-    }
 
     public record PhoneVerify(@NotBlank @Size(max = 20) String phone, @NotBlank @Pattern(regexp = "\\d{4,8}") String code) {
     }

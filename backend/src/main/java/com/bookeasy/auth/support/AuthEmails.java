@@ -48,6 +48,13 @@ public class AuthEmails {
                 messages.getMessage("email.reset.body", new Object[]{user.getFullName(), link, minutes}, locale)));
     }
 
+    public void sendVerificationCode(User user, String code, long minutes) {
+        Locale locale = Locale.forLanguageTag(user.getPreferredLanguage());
+        emailSender.send(new EmailMessage(user.getEmail(),
+                messages.getMessage("email.verifyCode.subject", new Object[]{code}, locale),
+                messages.getMessage("email.verifyCode.body", new Object[]{user.getFullName(), code, minutes}, locale)));
+    }
+
     public void sendLoginCode(User user, String code, long minutes) {
         Locale locale = Locale.forLanguageTag(user.getPreferredLanguage());
         emailSender.send(new EmailMessage(user.getEmail(),

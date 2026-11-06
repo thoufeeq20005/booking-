@@ -4,14 +4,20 @@
 
 | Method | Endpoints | Notes |
 |---|---|---|
-| Email + password | `POST /auth/register`, `POST /auth/login` | BCrypt cost 12. Policy: ≥ 8 chars, a letter and a digit, ≤ 72 bytes (BCrypt limit). Registration signs in immediately and emails a verification link. |
-| Mobile + SMS OTP | `POST /auth/otp/send`, `POST /auth/otp/login` | Indian mobiles only (normalised to `+91XXXXXXXXXX`). A new number becomes a customer account after the user supplies a name (`FULL_NAME_REQUIRED` is returned first, without consuming the code). |
+| Email + password | `POST /auth/register`, `POST /auth/login` | BCrypt cost 12. Policy: ≥ 8 chars, ≤ 72 bytes (BCrypt limit). Registration signs in immediately and emails a 6-digit verification code (`POST /account/email/verify`). |
+| Email + code | `POST /auth/email-code/send`, `POST /auth/email-code/login` | Passwordless sign-in for existing accounts. Unknown addresses get the same response and no email. Signing in this way also verifies the email. |
 | Google | `POST /auth/google` | Frontend uses Google Identity Services; the backend verifies the ID token signature (Google JWKS), issuer, audience = `GOOGLE_OAUTH_CLIENT_ID`, and expiry. It links to an existing account only if Google says the email is verified. |
 | Two-step (TOTP) | `POST /auth/login/two-factor` | Any sign-in method returns `TWO_FACTOR_REQUIRED` + a 5-minute challenge token when 2FA is on. RFC 6238, ±30 s drift, replay of a used code is rejected. |
 
-Account self-service (signed in, `/api/v1/account/**`): profile, resend verification, add/verify mobile, change/set password, 2FA setup/enable/disable, sign out everywhere.
+Account self-service (signed in, `/api/v1/account/**`): profile, verify email with a code (`/email/send-code`, `/email/verify`), add/verify a mobile number with an SMS code (`/phone/send-code`, `/phone/verify`), change/set password, 2FA setup/enable/disable, sign out everywhere.
 
 Recovery: `POST /auth/password/forgot` (always 202, so it can't be used to discover accounts) → emailed link (30 min, single use) → `POST /auth/password/reset`. A reset signs out every session.
+
+Mobile-number sign-in was removed: a mobile number is only added to and verified on a signed-in account.
+
+All one-time codes (email sign-in, email verification, phone verification) share the same rules: 6 digits, 5-minute expiry,
+5 attempts, 60 s resend cooldown, 5 sends per hour per address/number. In development without an email/SMS provider the
+API also returns the code as `demoCode` so the UI can show it; with a real provider or in production it never does.
 
 ## Tokens and sessions
 

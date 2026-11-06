@@ -64,11 +64,16 @@ public class AccountController {
         return ApiResponse.ok(accounts.updateProfile(CurrentUser.require().id(), req));
     }
 
-    @PostMapping("/email/resend-verification")
-    @Operation(summary = "Send the email verification link again")
-    public ApiResponse<Void> resendVerification() {
-        emailVerification.resend(CurrentUser.require().id());
-        return ApiResponse.ok(null);
+    @PostMapping("/email/send-code")
+    @Operation(summary = "Email a new 6-digit code to verify the account's email address")
+    public ApiResponse<OtpSent> sendEmailCode() {
+        return ApiResponse.ok(emailVerification.resend(CurrentUser.require().id()));
+    }
+
+    @PostMapping("/email/verify")
+    @Operation(summary = "Confirm the email address with the emailed code")
+    public ApiResponse<UserView> verifyEmail(@Valid @RequestBody AuthRequests.CodeOnly req) {
+        return ApiResponse.ok(emailVerification.verify(CurrentUser.require().id(), req.code()));
     }
 
     @PostMapping("/password")

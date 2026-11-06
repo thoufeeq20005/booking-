@@ -1,7 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import clsx from 'clsx';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { TextField } from '@/components/ui/TextField';
@@ -9,14 +8,11 @@ import { useAuth } from '@/contexts/AuthContext';
 import { AuthCard, Divider } from '@/features/auth/AuthCard';
 import { GoogleSignInButton, googleSignInAvailable } from '@/features/auth/GoogleSignInButton';
 import { EmailCodeForm } from '@/features/auth/EmailCodeForm';
-import { PhoneOtpForm } from '@/features/auth/PhoneOtpForm';
 import { TwoFactorStep } from '@/features/auth/TwoFactorStep';
 import { useApiForm } from '@/hooks/useApiForm';
 import { safeNext } from '@/routes/RequireAuth';
 import type { Session } from '@/services/apiClient';
 import { authApi } from '@/services/authApi';
-
-type Method = 'email' | 'phone';
 
 export function SignInPage() {
   const { t } = useTranslation();
@@ -24,7 +20,6 @@ export function SignInPage() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const next = safeNext(params.get('next'), '/dashboard');
-  const [method, setMethod] = useState<Method>('email');
   // Email sign-in uses a code from the inbox by default; the password form stays available as a fallback.
   const [usePassword, setUsePassword] = useState(false);
   const [email, setEmail] = useState('');
@@ -75,27 +70,10 @@ export function SignInPage() {
         </>
       }
     >
-      <div role="tablist" aria-label={t('auth.signInMethod')} className="mb-6 grid grid-cols-2 rounded-xl bg-surface-muted p-1 text-sm font-medium">
-        {(['email', 'phone'] as const).map((m) => (
-          <button
-            key={m}
-            role="tab"
-            type="button"
-            aria-selected={method === m}
-            onClick={() => {
-              setMethod(m);
-              form.setFormError(null);
-            }}
-            className={clsx('rounded-lg py-2 transition', method === m ? 'bg-surface text-fg shadow-sm' : 'text-fg-muted hover:text-fg')}
-          >
-            {m === 'email' ? t('auth.withEmail') : t('auth.withMobile')}
-          </button>
-        ))}
-      </div>
 
-      {/* Errors from email sign-in and from Google; the phone form shows its own. */}
+      {/* Errors from password sign-in and from Google; the code form shows its own. */}
       {form.formError && <Alert tone="error" className="mb-4">{form.formError}</Alert>}
-      {method === 'email' && !usePassword ? (
+      {!usePassword ? (
         <div className="space-y-3">
           <EmailCodeForm onSession={handleSession} />
           <button type="button" className="w-full text-center text-sm font-medium text-brand-700 hover:underline"
@@ -103,7 +81,7 @@ export function SignInPage() {
             {t('auth.usePassword')}
           </button>
         </div>
-      ) : method === 'email' ? (
+      ) : (
         <form onSubmit={onEmailSubmit} className="space-y-4" noValidate>
           <TextField
             label={t('auth.email')}
@@ -136,8 +114,6 @@ export function SignInPage() {
             {t('auth.useEmailCode')}
           </button>
         </form>
-      ) : (
-        <PhoneOtpForm onSession={handleSession} />
       )}
 
       {googleSignInAvailable && (

@@ -60,7 +60,9 @@ describe('customer overview', () => {
     api({ ...sampleUser, emailVerified: true });
     renderWithProviders(<AppRoutes />, { route: '/customer' });
     expect(await screen.findByRole('heading', { name: 'Hello, Asha Kumar' })).toBeInTheDocument();
-    expect(screen.getByText('Steps left: 2')).toBeInTheDocument();
+    // Only two-step verification is left; email/phone verification are no longer checklist items.
+    expect(screen.getByText('Steps left: 1')).toBeInTheDocument();
+    expect(screen.queryByText('Mobile number verified')).not.toBeInTheDocument();
     expect(screen.getByText('You have no upcoming appointments.')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'List your business' })).toHaveAttribute('href', '/business/register');
   });

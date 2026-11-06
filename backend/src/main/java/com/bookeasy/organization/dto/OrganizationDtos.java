@@ -158,7 +158,7 @@ public final class OrganizationDtos {
     }
 
     /** Steps still missing before the application can be submitted. */
-    public enum MissingStep { CONTACT, BRANCH, WORKING_HOURS, DOCUMENTS, ACCOUNT_VERIFICATION }
+    public enum MissingStep { CONTACT, BRANCH, WORKING_HOURS, DOCUMENTS }
 
     public record OrganizationDetail(
             OrganizationSummary summary,

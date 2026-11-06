@@ -47,14 +47,14 @@ class OrganizationLifecycleIT extends OrganizationTestBase {
     @Test
     void submissionListsEveryMissingStepThenSucceeds() throws Exception {
         Person p = verifiedCustomer();
-        jdbc.update("UPDATE users SET email_verified_at = NULL WHERE id = ?", p.id());
+        jdbc.update("UPDATE users SET email_verified_at = NULL WHERE id = ?", p.id()); // unverified owners may submit
         long orgId = createDraft(p, subcategoryId("general-clinic"), "Asha Clinic").path("summary").path("id").asLong();
 
         mvc.perform(authed(post("/api/v1/owner/organizations/" + orgId + "/submit"), p.token()))
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.error.code").value("ORGANIZATION_INCOMPLETE"))
                 .andExpect(jsonPath("$.error.fieldErrors[*].code").value(
-                        org.hamcrest.Matchers.containsInAnyOrder("BRANCH", "DOCUMENTS", "ACCOUNT_VERIFICATION")));
+                        org.hamcrest.Matchers.containsInAnyOrder("BRANCH", "DOCUMENTS")));
 
         long branchId = read(mvc.perform(jsonRequest(post("/api/v1/owner/organizations/" + orgId + "/branches"),
                 p.token(), branchBody("Main"))).andExpect(status().isOk()).andReturn()).path("data").path("id").asLong();
@@ -64,7 +64,6 @@ class OrganizationLifecycleIT extends OrganizationTestBase {
                 p.token(), weekdayHours())).andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.hours.length()").value(6));
         uploadMandatoryDocuments(p, orgId);
-        jdbc.update("UPDATE users SET email_verified_at = UTC_TIMESTAMP(6) WHERE id = ?", p.id());
 
         channels.clear();
         mvc.perform(authed(post("/api/v1/owner/organizations/" + orgId + "/submit"), p.token()))

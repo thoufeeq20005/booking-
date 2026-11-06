@@ -1,5 +1,5 @@
 import { useState, type FormEvent, type ReactNode } from 'react';
-import { useLocation, useNavigate } from 'react-router';
+import { useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
@@ -59,8 +59,6 @@ export function AccountPage() {
   const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
-  const state = location.state as { justRegistered?: boolean; emailSent?: boolean } | null;
   const form = useApiForm();
 
   if (!user) return null;
@@ -82,11 +80,6 @@ export function AccountPage() {
         <h1 className="text-3xl font-bold tracking-tight">{t('account.title')}</h1>
         <p className="mt-1 text-fg-muted">{t('account.greeting', { name: user.fullName })}</p>
       </div>
-      {state?.justRegistered && (
-        <Alert tone={state.emailSent ? 'success' : 'info'}>
-          {state.emailSent ? t('account.welcomeCheckEmail') : t('account.welcomeEmailNotSent')}
-        </Alert>
-      )}
       <Section title={t('account.profile')}>
         <ProfileSection />
       </Section>

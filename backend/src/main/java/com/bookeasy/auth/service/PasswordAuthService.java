@@ -41,7 +41,6 @@ public class PasswordAuthService {
     private final JwtTokenService jwtTokenService;
     private final RefreshTokenService refreshTokenService;
     private final TwoFactorService twoFactorService;
-    private final EmailVerificationService emailVerificationService;
     private final RateLimiter rateLimiter;
     private final AuthProperties properties;
     private final Clock clock;
@@ -51,7 +50,7 @@ public class PasswordAuthService {
     public PasswordAuthService(UserRepository users, PasswordEncoder passwordEncoder, PasswordPolicy passwordPolicy,
                                SessionIssuer sessionIssuer, JwtTokenService jwtTokenService,
                                RefreshTokenService refreshTokenService, TwoFactorService twoFactorService,
-                               EmailVerificationService emailVerificationService, RateLimiter rateLimiter,
+                               RateLimiter rateLimiter,
                                AuthProperties properties, Clock clock) {
         this.users = users;
         this.passwordEncoder = passwordEncoder;
@@ -60,7 +59,6 @@ public class PasswordAuthService {
         this.jwtTokenService = jwtTokenService;
         this.refreshTokenService = refreshTokenService;
         this.twoFactorService = twoFactorService;
-        this.emailVerificationService = emailVerificationService;
         this.rateLimiter = rateLimiter;
         this.properties = properties;
         this.clock = clock;
@@ -84,9 +82,8 @@ public class PasswordAuthService {
         user.addRole(RoleCode.CUSTOMER);
         users.saveAndFlush(user);
 
-        boolean sent = emailVerificationService.issueAndSend(user);
         AuthResult result = sessionIssuer.complete(user, ctx);
-        return new RegisterResult(new Registered(result.session(), sent), result.refreshToken());
+        return new RegisterResult(new Registered(result.session()), result.refreshToken());
     }
 
     /** Failed attempts are committed even though the call fails; that is what makes lockout work. */

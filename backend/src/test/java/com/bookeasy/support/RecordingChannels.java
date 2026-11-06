@@ -51,6 +51,19 @@ public class RecordingChannels implements EmailSender, SmsSender {
         return java.net.URLDecoder.decode(m.group(1), java.nio.charset.StandardCharsets.UTF_8);
     }
 
+    /** The 6-digit code in the most recent email to the address. */
+    public String lastEmailedCodeFor(String address) {
+        List<EmailMessage> mine = emailsTo(address);
+        if (mine.isEmpty()) {
+            throw new AssertionError("No email sent to " + address);
+        }
+        Matcher m = Pattern.compile("\\b(\\d{6})\\b").matcher(mine.get(mine.size() - 1).textBody());
+        if (!m.find()) {
+            throw new AssertionError("No code in email to " + address);
+        }
+        return m.group(1);
+    }
+
     public String lastCodeFor(String phone) {
         return sms.stream().filter(s -> s.phone().equals(phone)).reduce((a, b) -> b)
                 .orElseThrow(() -> new AssertionError("No SMS sent to " + phone)).code();

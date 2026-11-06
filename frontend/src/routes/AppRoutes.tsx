@@ -16,7 +16,6 @@ const named = <K extends string>(load: () => Promise<Record<K, React.ComponentTy
 
 const SignInPage = named(() => import('@/pages/auth/SignInPage'), 'SignInPage');
 const RegisterPage = named(() => import('@/pages/auth/RegisterPage'), 'RegisterPage');
-const VerifyEmailPage = named(() => import('@/pages/auth/VerifyEmailPage'), 'VerifyEmailPage');
 const ForgotPasswordPage = named(() => import('@/pages/auth/ForgotPasswordPage'), 'ForgotPasswordPage');
 const ResetPasswordPage = named(() => import('@/pages/auth/ResetPasswordPage'), 'ResetPasswordPage');
 const AccountPage = named(() => import('@/pages/account/AccountPage'), 'AccountPage');
@@ -74,7 +73,6 @@ export function AppRoutes() {
         <Route path="compare" element={<ComparePage />} />
         <Route path="signin" element={<SignInPage />} />
         <Route path="register" element={<RegisterPage />} />
-        <Route path="verify-email" element={<VerifyEmailPage />} />
         <Route path="forgot-password" element={<ForgotPasswordPage />} />
         <Route path="reset-password" element={<ResetPasswordPage />} />
         <Route

@@ -91,12 +91,12 @@ class BookingIT extends BookingTestBase {
     }
 
     @Test
-    void unverifiedCustomersCannotBookAndRescheduleMovesTheSlot() throws Exception {
+    void unverifiedCustomersCanBookAndRescheduleMovesTheSlot() throws Exception {
         Biz b = approvedClinic("INSTANT");
-        Session unverified = register(uniqueEmail());
+        Session unverified = register(uniqueEmail()); // no email or phone verification
         mvc.perform(jsonRequest(post("/api/v1/customer/appointments"), unverified.accessToken(), Map.of("branchId", b.branchId(),
-                "serviceId", b.serviceId(), "startsAt", b.at("09:00").toString())))
-                .andExpect(status().isForbidden()).andExpect(jsonPath("$.error.code").value("VERIFICATION_REQUIRED"));
+                "serviceId", b.serviceId(), "startsAt", b.at("11:30").toString())))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.data.status").value("CONFIRMED"));
 
         Person c = verifiedCustomer();
         long id = read(book(c, b, "09:00").andReturn()).path("data").path("id").asLong();

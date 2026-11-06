@@ -62,32 +62,6 @@ describe('sign in', () => {
     });
   });
 
-  it('mobile OTP asks for a name only when the number is new', async () => {
-    const requests = installFakeApi((r) => {
-      if (r.url === '/auth/otp/send') return reply.ok({ expiresInSeconds: 300, resendAfterSeconds: 60 });
-      if (r.url === '/auth/otp/login') {
-        return r.body?.fullName ? reply.ok(authenticated()) : reply.fail(400, 'FULL_NAME_REQUIRED');
-      }
-      return undefined;
-    });
-    renderWithProviders(<AppRoutes />, { route: '/signin' });
-
-    await userEvent.click(await screen.findByRole('tab', { name: 'Mobile OTP' }));
-    await userEvent.type(screen.getByLabelText('Mobile number'), '98765 43210');
-    await userEvent.click(screen.getByRole('button', { name: 'Send code' }));
-    await userEvent.type(await screen.findByLabelText('Code from SMS'), '482913');
-    await userEvent.click(screen.getByRole('button', { name: 'Verify and continue' }));
-
-    await userEvent.type(await screen.findByLabelText('Full name'), 'Ravi');
-    await userEvent.click(screen.getByRole('button', { name: 'Verify and continue' }));
-
-    expect(await screen.findByRole('heading', { name: 'Hello, Asha Kumar' })).toBeInTheDocument();
-    expect(requests.filter((r) => r.url === '/auth/otp/login').at(-1)!.body).toMatchObject({
-      phone: '98765 43210',
-      code: '482913',
-      fullName: 'Ravi',
-    });
-  });
 });
 
 describe('email code sign-in', () => {
@@ -113,61 +87,7 @@ describe('email code sign-in', () => {
   });
 });
 
-describe('mobile OTP demo mode', () => {
-  it('shows the demo code on screen and fills it in', async () => {
-    installFakeApi((r) => {
-      if (r.url === '/auth/otp/send') return reply.ok({ expiresInSeconds: 300, resendAfterSeconds: 60, demoCode: '482913' });
-      if (r.url === '/auth/otp/login') return reply.ok(authenticated());
-      return undefined;
-    });
-    renderWithProviders(<AppRoutes />, { route: '/signin' });
-
-    await userEvent.click(await screen.findByRole('tab', { name: 'Mobile OTP' }));
-    await userEvent.type(screen.getByLabelText('Mobile number'), '98765 43210');
-    await userEvent.click(screen.getByRole('button', { name: 'Send code' }));
-
-    expect(await screen.findByTestId('demo-code')).toHaveTextContent('482913');
-    await userEvent.click(screen.getByRole('button', { name: 'Fill in' }));
-    expect(screen.getByLabelText('Code from SMS')).toHaveValue('482913');
-  });
-
-  it('without a demo code (real SMS) shows only the "code sent" message', async () => {
-    installFakeApi((r) => (r.url === '/auth/otp/send' ? reply.ok({ expiresInSeconds: 300, resendAfterSeconds: 60 }) : undefined));
-    renderWithProviders(<AppRoutes />, { route: '/signin' });
-
-    await userEvent.click(await screen.findByRole('tab', { name: 'Mobile OTP' }));
-    await userEvent.type(screen.getByLabelText('Mobile number'), '98765 43210');
-    await userEvent.click(screen.getByRole('button', { name: 'Send code' }));
-
-    expect(await screen.findByLabelText('Code from SMS')).toBeInTheDocument();
-    expect(screen.queryByTestId('demo-code')).not.toBeInTheDocument();
-  });
-});
-
 describe('register', () => {
-  it('signs up with a mobile number: name first, then the code', async () => {
-    const requests = installFakeApi((r) => {
-      if (r.url === '/auth/otp/send') return reply.ok({ expiresInSeconds: 300, resendAfterSeconds: 60, demoCode: '135790' });
-      if (r.url === '/auth/otp/login') return reply.ok(authenticated());
-      return undefined;
-    });
-    renderWithProviders(<AppRoutes />, { route: '/register' });
-
-    await userEvent.click(await screen.findByRole('tab', { name: 'Mobile OTP' }));
-    await userEvent.type(screen.getByLabelText('Full name'), 'Ravi');
-    await userEvent.type(screen.getByLabelText('Mobile number'), '98765 43210');
-    await userEvent.click(screen.getByRole('button', { name: 'Send code' }));
-    await userEvent.click(await screen.findByRole('button', { name: 'Fill in' }));
-    await userEvent.click(screen.getByRole('button', { name: 'Verify and continue' }));
-
-    await waitFor(() => expect(requests.some((r) => r.url === '/auth/otp/login')).toBe(true));
-    expect(requests.find((r) => r.url === '/auth/otp/login')!.body).toMatchObject({
-      phone: '98765 43210',
-      code: '135790',
-      fullName: 'Ravi',
-    });
-  });
-
   it('checks the password locally before calling the API', async () => {
     const requests = installFakeApi(() => undefined);
     renderWithProviders(<AppRoutes />, { route: '/register' });
@@ -194,6 +114,41 @@ describe('register', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Create account' }));
 
     expect(await screen.findByText('Enter a valid email address.')).toBeInTheDocument();
+  });
+});
+
+describe('verification codes', () => {
+  it('offers no mobile sign-in or sign-up', async () => {
+    renderWithProviders(<AppRoutes />, { route: '/signin' });
+    expect(await screen.findByRole('heading', { name: 'Welcome back' })).toBeInTheDocument();
+    expect(screen.queryByRole('tab', { name: 'Mobile OTP' })).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Mobile number')).not.toBeInTheDocument();
+  });
+
+  it('sign-up goes straight in: no verification step', async () => {
+    const requests = installFakeApi((r) =>
+      r.url === '/auth/register' ? reply.ok({ session: authenticated() }) : undefined);
+    renderWithProviders(<AppRoutes />, { route: '/register?next=%2Faccount' });
+
+    await userEvent.type(await screen.findByLabelText('Full name'), 'Asha');
+    await userEvent.type(screen.getByLabelText('Email address'), 'asha@example.test');
+    await userEvent.type(screen.getByLabelText('Password'), 'sunshine');
+    await userEvent.click(screen.getByRole('button', { name: 'Create account' }));
+
+    expect(await screen.findByRole('heading', { name: 'My account' })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Verify your email' })).not.toBeInTheDocument();
+    expect(requests.some((r) => r.url.startsWith('/account/email'))).toBe(false);
+  });
+
+  it('profile shows only the email: no verify button and no mobile number', async () => {
+    installFakeApi((r) => (r.url === '/auth/refresh' ? reply.ok(authenticated()) : undefined));
+    renderWithProviders(<AppRoutes />, { route: '/account' });
+
+    expect(await screen.findByText('asha@example.test')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Verify email' })).not.toBeInTheDocument();
+    expect(screen.queryByText('Not verified')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Mobile number')).not.toBeInTheDocument();
+    expect(screen.queryByText('No mobile number')).not.toBeInTheDocument();
   });
 });
 

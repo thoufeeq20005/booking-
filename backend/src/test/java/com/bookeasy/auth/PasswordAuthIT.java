@@ -22,7 +22,7 @@ import com.bookeasy.support.AuthTestBase;
 class PasswordAuthIT extends AuthTestBase {
 
     @Test
-    void registrationSignsInWithHttpOnlyRefreshCookieAndSendsVerificationEmail() throws Exception {
+    void registrationSignsInWithHttpOnlyRefreshCookieAndNoVerificationStep() throws Exception {
         String email = uniqueEmail();
         MvcResult r = mvc.perform(postJson("/api/v1/auth/register",
                         Map.of("fullName", "Asha", "email", email.toUpperCase(), "password", PASSWORD,
@@ -32,32 +32,24 @@ class PasswordAuthIT extends AuthTestBase {
                 .andExpect(jsonPath("$.data.session.user.email").value(email))
                 .andExpect(jsonPath("$.data.session.user.roles[0]").value("CUSTOMER"))
                 .andExpect(jsonPath("$.data.session.user.emailVerified").value(false))
-                .andExpect(jsonPath("$.data.verificationEmailSent").value(true))
                 .andExpect(jsonPath("$.data.session.refreshToken").doesNotExist())
                 .andReturn();
 
         String setCookie = r.getResponse().getHeader(HttpHeaders.SET_COOKIE);
         assertThat(setCookie).contains("be_rt=", "HttpOnly", "Secure", "SameSite=Strict", "Path=/api/v1/auth");
-        // Email is rendered in the preferred language.
-        assertThat(channels.emailsTo(email).get(0).subject()).contains("BookEasy").doesNotContain("Verify");
-
-        String token = channels.lastTokenFor(email);
-        mvc.perform(postJson("/api/v1/auth/email/verify", Map.of("token", token))).andExpect(status().isOk());
-        String access = read(r).path("data").path("session").path("accessToken").asText();
-        mvc.perform(me(access)).andExpect(jsonPath("$.data.emailVerified").value(true));
-        // Single use.
-        mvc.perform(postJson("/api/v1/auth/email/verify", Map.of("token", token)))
-                .andExpect(jsonPath("$.error.code").value("INVALID_TOKEN"));
+        // No verification step: nothing is emailed at sign-up.
+        assertThat(channels.emailsTo(email)).isEmpty();
     }
 
     @Test
-    void expiredVerificationLinkIsRejected() throws Exception {
+    void expiredVerificationCodeIsRejected() throws Exception {
         String email = uniqueEmail();
-        register(email);
-        clock.advance(Duration.ofHours(25));
-        mvc.perform(postJson("/api/v1/auth/email/verify", Map.of("token", channels.lastTokenFor(email))))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error.code").value("TOKEN_EXPIRED"));
+        Session s = register(email);
+        mvc.perform(authed(post("/api/v1/account/email/send-code"), s.accessToken())).andExpect(status().isOk());
+        clock.advance(Duration.ofMinutes(6));
+        mvc.perform(authed(postJson("/api/v1/account/email/verify", Map.of("code", channels.lastEmailedCodeFor(email))),
+                        s.accessToken()))
+                .andExpect(jsonPath("$.error.code").value("OTP_EXPIRED"));
     }
 
     @Test

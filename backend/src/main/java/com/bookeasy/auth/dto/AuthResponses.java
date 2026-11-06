@@ -49,7 +49,7 @@ public final class AuthResponses {
     }
 
     /** Registration signs the user in immediately; verification can happen later. */
-    public record Registered(Session session, boolean verificationEmailSent) {
+    public record Registered(Session session) {
     }
 
     /** demoCode is only present in development when no SMS provider is configured (see SmsSender#deliversToPhone). */

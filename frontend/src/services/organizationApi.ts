@@ -8,7 +8,7 @@ export type BookingWorkflow = 'HEALTHCARE' | 'SALON' | 'EDUCATION' | 'GENERIC';
 export type OrganizationStatus = 'DRAFT' | 'PENDING' | 'APPROVED' | 'REJECTED' | 'SUSPENDED';
 export type DocumentStatus = 'SUBMITTED' | 'ACCEPTED' | 'REJECTED';
 export type ConfirmationMode = 'INSTANT' | 'APPROVAL';
-export type MissingStep = 'CONTACT' | 'BRANCH' | 'WORKING_HOURS' | 'DOCUMENTS' | 'ACCOUNT_VERIFICATION';
+export type MissingStep = 'CONTACT' | 'BRANCH' | 'WORKING_HOURS' | 'DOCUMENTS';
 export type VerificationAction = 'SUBMITTED' | 'APPROVED' | 'REJECTED' | 'SUSPENDED' | 'REINSTATED';
 
 export interface Subcategory {

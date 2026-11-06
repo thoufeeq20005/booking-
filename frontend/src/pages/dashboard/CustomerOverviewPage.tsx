@@ -44,8 +44,6 @@ export function CustomerOverviewPage() {
   if (!user) return null;
 
   const checks = [
-    { done: Boolean(user.email) && user.emailVerified, label: t('dashboard.check.email') },
-    { done: Boolean(user.phone) && user.phoneVerified, label: t('dashboard.check.phone') },
     { done: user.twoFactorEnabled, label: t('dashboard.check.twoFactor') },
   ];
   const remaining = checks.filter((c) => !c.done).length;

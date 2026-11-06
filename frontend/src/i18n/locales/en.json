@@ -213,13 +213,13 @@
     "title": "My account",
     "greeting": "Signed in as {{name}}",
     "profile": "Profile",
-    "contact": "Email and mobile",
+    "contact": "Email",
     "password": "Password",
     "twoFactor": "Two-step verification",
     "sessions": "Signed-in devices",
     "saved": "Saved.",
     "languageHint": "Your language choice in the header is saved to your account automatically.",
-    "welcomeCheckEmail": "Welcome to BookEasy! We've sent a link to verify your email address.",
+    "welcomeCheckEmail": "Welcome to BookEasy! Verify your email below with the 6-digit code we sent you.",
     "welcomeEmailNotSent": "Welcome to BookEasy! We couldn't send the verification email right now – you can resend it below.",
     "logoutAllDescription": "Signs you out of BookEasy on every phone, tablet and computer, including this one.",
     "logoutAll": "Sign out everywhere",
@@ -960,5 +960,14 @@
     "routeFailed": "Couldn't load a road route right now – the dashed line shows the direction. Use Google Maps for turn-by-turn directions.",
     "privacy": "Your location is only used in your browser to draw the route; BookEasy doesn't store it.",
     "close": "Close"
+  },
+  "verifyEmail": {
+    "title": "Verify your email",
+    "subtitle": "We've emailed a 6-digit code to {{email}}. Enter it below.",
+    "sent": "Code sent to {{email}}. Check your inbox (and spam).",
+    "verify": "Verify email",
+    "later": "I'll do this later",
+    "button": "Verify email",
+    "done": "Your email is verified."
   }
 }

@@ -94,12 +94,17 @@ class PasswordResetIT extends AuthTestBase {
 
     @Test
     void resendVerificationIsLimited() throws Exception {
-        Session s = register(uniqueEmail());
-        for (int i = 0; i < 3; i++) {
-            mvc.perform(authed(post("/api/v1/account/email/resend-verification"), s.accessToken()))
-                    .andExpect(status().isOk());
-        }
-        mvc.perform(authed(post("/api/v1/account/email/resend-verification"), s.accessToken()))
-                .andExpect(status().isTooManyRequests());
+        String email = uniqueEmail();
+        Session s = register(email);
+        mvc.perform(authed(post("/api/v1/account/email/send-code"), s.accessToken())).andExpect(status().isOk());
+        mvc.perform(authed(post("/api/v1/account/email/send-code"), s.accessToken()))
+                .andExpect(jsonPath("$.error.code").value("OTP_RESEND_TOO_SOON"));
+        clock.advance(java.time.Duration.ofSeconds(61));
+        mvc.perform(authed(post("/api/v1/account/email/send-code"), s.accessToken())).andExpect(status().isOk());
+        clock.advance(java.time.Duration.ofSeconds(61));
+        mvc.perform(authed(post("/api/v1/account/email/send-code"), s.accessToken()))
+                .andExpect(status().isTooManyRequests())
+                .andExpect(jsonPath("$.error.code").value("RATE_LIMITED"));
+        assertThat(channels.emailsTo(email)).hasSize(2);
     }
 }

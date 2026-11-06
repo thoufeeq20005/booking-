@@ -30,7 +30,8 @@ Recommended options (confirm current pricing and limits when you sign up):
 
 | Event | Link target | Expiry |
 |---|---|---|
-| Email verification | `{FRONTEND_URL}/verify-email?token=…` | 24 h |
+| Email verification | 6-digit code, entered on the website | 5 min |
+| Email sign-in code | 6-digit code, entered on the website | 5 min |
 | Password reset | `{FRONTEND_URL}/reset-password?token=…` | 30 min |
 
 Texts live in `backend/src/main/resources/i18n/messages_{en,ta,hi,ml,te,kn}.properties` and are rendered in the

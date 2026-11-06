@@ -94,10 +94,8 @@ public class BookingService {
     @Transactional
     public AppointmentView book(long customerId, BookRequest req) {
         rateLimiter.hit("book:user:" + customerId, 20, Duration.ofHours(1));
+        // Any signed-in customer may book; email/phone verification is not required.
         User customer = users.findById(customerId).orElseThrow(() -> new ApiException(ErrorCode.UNAUTHENTICATED));
-        if (customer.getEmailVerifiedAt() == null && customer.getPhoneVerifiedAt() == null) {
-            throw new ApiException(ErrorCode.VERIFICATION_REQUIRED);
-        }
         Branch branch = branches.findById(req.branchId()).orElseThrow(() -> ApiException.notFound("Branch"));
         ServiceOffering service = services.findById(req.serviceId()).orElseThrow(() -> ApiException.notFound("Service"));
         Chosen chosen = choose(branch, service, req.startsAt(), req.staffId());

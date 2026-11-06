@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -146,8 +145,6 @@ public class OrganizationViews {
                             u.getEmailVerifiedAt() != null, u.getPhoneVerifiedAt() != null, r.getRole());
                 }).toList() : null;
 
-        Optional<User> primary = ownerRows.stream().filter(r -> r.getRole() == OrganizationOwner.Role.PRIMARY)
-                .map(r -> ownerUsers.get(r.getUserId())).filter(java.util.Objects::nonNull).findFirst();
 
         List<HistoryEntry> history = verifications.findByOrganizationIdOrderByCreatedAtAscIdAsc(org.getId()).stream()
                 .map(HistoryEntry::of).toList();
@@ -155,7 +152,7 @@ public class OrganizationViews {
         return new OrganizationDetail(summary, org.getDescription(), org.getContactEmail(), org.getContactPhone(),
                 org.getWebsite(), org.getGstin(), org.getConfirmationMode(),
                 new Editable(org.getStatus().identityEditable(), org.getStatus().operationsEditable()),
-                missingSteps(org, branchViews, slots, primary.orElse(null)), branchViews, slots, history,
+                missingSteps(org, branchViews, slots), branchViews, slots, history,
                 ownerViews);
     }
 
@@ -166,14 +163,11 @@ public class OrganizationViews {
         Map<Long, List<DayHoursView>> hoursByBranch = hoursByBranch(branchList);
         List<BranchView> branchViews = branchList.stream()
                 .map(b -> branchView(b, hoursByBranch.getOrDefault(b.getId(), List.of()))).toList();
-        User primary = owners.findByOrganizationId(org.getId()).stream()
-                .filter(r -> r.getRole() == OrganizationOwner.Role.PRIMARY).findFirst()
-                .flatMap(r -> users.findById(r.getUserId())).orElse(null);
-        return missingSteps(org, branchViews, documentSlots(org, categoryId), primary);
+        return missingSteps(org, branchViews, documentSlots(org, categoryId));
     }
 
     private static List<MissingStep> missingSteps(Organization org, List<BranchView> branchViews,
-                                                  List<DocumentSlot> slots, User primaryOwner) {
+                                                  List<DocumentSlot> slots) {
         List<MissingStep> missing = new ArrayList<>();
         if (org.getContactEmail() == null && org.getContactPhone() == null) {
             missing.add(MissingStep.CONTACT);
@@ -188,10 +182,6 @@ public class OrganizationViews {
                 && (s.document() == null || s.document().status() == OrganizationDocument.Status.REJECTED));
         if (docsMissing) {
             missing.add(MissingStep.DOCUMENTS);
-        }
-        if (primaryOwner == null
-                || (primaryOwner.getEmailVerifiedAt() == null && primaryOwner.getPhoneVerifiedAt() == null)) {
-            missing.add(MissingStep.ACCOUNT_VERIFICATION);
         }
         return missing;
     }

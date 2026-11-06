@@ -16,12 +16,10 @@ import com.bookeasy.auth.dto.AuthRequests;
 import com.bookeasy.auth.dto.AuthResponses.OtpSent;
 import com.bookeasy.auth.dto.AuthResponses.Registered;
 import com.bookeasy.auth.dto.AuthResponses.Session;
-import com.bookeasy.auth.service.EmailVerificationService;
 import com.bookeasy.auth.service.GoogleAuthService;
 import com.bookeasy.auth.service.PasswordAuthService;
 import com.bookeasy.auth.service.PasswordResetService;
 import com.bookeasy.auth.service.EmailCodeAuthService;
-import com.bookeasy.auth.service.PhoneAuthService;
 import com.bookeasy.common.api.ApiError;
 import com.bookeasy.common.api.ApiResponse;
 import com.bookeasy.common.exception.ApiException;
@@ -38,21 +36,17 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 public class AuthController {
 
     private final PasswordAuthService passwordAuth;
-    private final PhoneAuthService phoneAuth;
     private final EmailCodeAuthService emailCodeAuth;
     private final GoogleAuthService googleAuth;
-    private final EmailVerificationService emailVerification;
     private final PasswordResetService passwordReset;
     private final AuthWebSupport web;
 
-    public AuthController(PasswordAuthService passwordAuth, PhoneAuthService phoneAuth, GoogleAuthService googleAuth,
-                          EmailVerificationService emailVerification, PasswordResetService passwordReset,
+    public AuthController(PasswordAuthService passwordAuth, GoogleAuthService googleAuth,
+                          PasswordResetService passwordReset,
                           AuthWebSupport web, EmailCodeAuthService emailCodeAuth) {
         this.passwordAuth = passwordAuth;
-        this.phoneAuth = phoneAuth;
         this.emailCodeAuth = emailCodeAuth;
         this.googleAuth = googleAuth;
-        this.emailVerification = emailVerification;
         this.passwordReset = passwordReset;
         this.web = web;
     }
@@ -77,19 +71,6 @@ public class AuthController {
     public ResponseEntity<ApiResponse<Session>> twoFactor(@Valid @RequestBody AuthRequests.TwoFactorLogin req,
                                                           HttpServletRequest http) {
         return web.sessionResponse(passwordAuth.completeTwoFactor(req, web.context(http)));
-    }
-
-    @PostMapping("/otp/send")
-    @Operation(summary = "Send a sign-in code to an Indian mobile number")
-    public ApiResponse<OtpSent> sendOtp(@Valid @RequestBody AuthRequests.OtpSend req, HttpServletRequest http) {
-        return ApiResponse.ok(phoneAuth.sendLoginCode(req.phone(), web.context(http)));
-    }
-
-    @PostMapping("/otp/login")
-    @Operation(summary = "Sign in (or sign up, with fullName) using the SMS code")
-    public ResponseEntity<ApiResponse<Session>> otpLogin(@Valid @RequestBody AuthRequests.OtpLogin req,
-                                                         HttpServletRequest http) {
-        return web.sessionResponse(phoneAuth.login(req, web.context(http)));
     }
 
     @PostMapping("/email-code/send")
@@ -131,13 +112,6 @@ public class AuthController {
     public ResponseEntity<Void> logout(HttpServletRequest http) {
         passwordAuth.logout(web.refreshTokenFrom(http));
         return ResponseEntity.noContent().header(HttpHeaders.SET_COOKIE, web.clearCookieHeader()).build();
-    }
-
-    @PostMapping("/email/verify")
-    @Operation(summary = "Confirm an email address using the emailed token")
-    public ApiResponse<Void> verifyEmail(@Valid @RequestBody AuthRequests.Token req) {
-        emailVerification.verify(req.token());
-        return ApiResponse.ok(null);
     }
 
     @PostMapping("/password/forgot")

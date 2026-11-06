@@ -28,12 +28,11 @@ const STEPS = ['details', 'branches', 'documents', 'services', 'staff', 'review'
 type Step = (typeof STEPS)[number];
 
 /** Which tab fixes each missing step. */
-const STEP_FOR: Record<MissingStep, Step | 'account'> = {
+const STEP_FOR: Record<MissingStep, Step> = {
   CONTACT: 'details',
   BRANCH: 'branches',
   WORKING_HOURS: 'branches',
   DOCUMENTS: 'documents',
-  ACCOUNT_VERIFICATION: 'account',
 };
 
 function LogoField({ org }: { org: OrganizationDetail }) {
@@ -108,7 +107,7 @@ function ReviewStep({ org, goTo }: { org: OrganizationDetail; goTo: (s: Step) =>
   const qc = useQueryClient();
   const form = useApiForm();
   const canSubmit = org.editable.identity;
-  const checks: MissingStep[] = ['CONTACT', 'BRANCH', 'WORKING_HOURS', 'DOCUMENTS', 'ACCOUNT_VERIFICATION'];
+  const checks: MissingStep[] = ['CONTACT', 'BRANCH', 'WORKING_HOURS', 'DOCUMENTS'];
 
   const submit = async () => {
     const d = await form.submit(() => api.submit(org.summary.id));
@@ -135,16 +134,12 @@ function ReviewStep({ org, goTo }: { org: OrganizationDetail; goTo: (s: Step) =>
                     <CheckCircle2 className="h-5 w-5 text-success" aria-hidden="true" />
                   )}
                   <span className={missing ? '' : 'text-fg-muted'}>{t(`business.missing.${c}`)}</span>
-                  {missing && (target === 'account' ? (
-                    <Link to="/account" className="ml-auto text-sm font-medium text-brand-700 hover:underline">
-                      {t('business.fix')}
-                    </Link>
-                  ) : (
+                  {missing && (
                     <button type="button" onClick={() => goTo(target)}
                       className="ml-auto text-sm font-medium text-brand-700 hover:underline">
                       {t('business.fix')}
                     </button>
-                  ))}
+                  )}
                 </li>
               );
             })}
