@@ -26,7 +26,8 @@ class PhoneOtpAuthIT extends AuthTestBase {
         mvc.perform(postJson("/api/v1/auth/otp/send", Map.of("phone", "0" + mobile)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.expiresInSeconds").value(300))
-                .andExpect(jsonPath("$.data.resendAfterSeconds").value(60));
+                .andExpect(jsonPath("$.data.resendAfterSeconds").value(60))
+                .andExpect(jsonPath("$.data.demoCode").doesNotExist());
         String code = channels.lastCodeFor(e164);
         assertThat(code).matches("\\d{6}");
 

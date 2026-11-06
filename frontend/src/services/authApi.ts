@@ -3,6 +3,8 @@ import { apiGet, apiPatch, apiPost, CLIENT_HEADER, type Session, type UserView }
 export interface OtpSent {
   expiresInSeconds: number;
   resendAfterSeconds: number;
+  /** Only in development without an SMS provider: the code, shown on screen instead of an SMS. */
+  demoCode?: string;
 }
 
 export interface TwoFactorSetup {
@@ -17,6 +19,8 @@ export const authApi = {
   completeTwoFactor: (challengeToken: string, code: string) =>
     apiPost<Session>('/auth/login/two-factor', { challengeToken, code }),
   sendOtp: (phone: string) => apiPost<OtpSent>('/auth/otp/send', { phone }),
+  sendEmailCode: (email: string) => apiPost<OtpSent>('/auth/email-code/send', { email }),
+  emailCodeLogin: (email: string, code: string) => apiPost<Session>('/auth/email-code/login', { email, code }),
   otpLogin: (body: { phone: string; code: string; fullName?: string; preferredLanguage?: string }) =>
     apiPost<Session>('/auth/otp/login', body),
   google: (idToken: string) => apiPost<Session>('/auth/google', { idToken }),

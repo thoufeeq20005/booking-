@@ -68,10 +68,10 @@ class PasswordAuthIT extends AuthTestBase {
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.error.code").value("EMAIL_ALREADY_REGISTERED"));
         mvc.perform(postJson("/api/v1/auth/register",
-                        Map.of("fullName", "X", "email", uniqueEmail(), "password", "onlyletters")))
+                        Map.of("fullName", "X", "email", uniqueEmail(), "password", "short1")))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error.fieldErrors[0].field").value("password"))
-                .andExpect(jsonPath("$.error.fieldErrors[0].code").value("PASSWORD_TOO_WEAK"));
+                .andExpect(jsonPath("$.error.fieldErrors[0].code").value("PASSWORD_TOO_SHORT"));
         mvc.perform(postJson("/api/v1/auth/register", Map.of("fullName", "", "email", "not-an-email", "password", "")))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error.code").value("VALIDATION_FAILED"));

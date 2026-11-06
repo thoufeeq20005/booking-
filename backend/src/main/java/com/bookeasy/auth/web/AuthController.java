@@ -20,6 +20,7 @@ import com.bookeasy.auth.service.EmailVerificationService;
 import com.bookeasy.auth.service.GoogleAuthService;
 import com.bookeasy.auth.service.PasswordAuthService;
 import com.bookeasy.auth.service.PasswordResetService;
+import com.bookeasy.auth.service.EmailCodeAuthService;
 import com.bookeasy.auth.service.PhoneAuthService;
 import com.bookeasy.common.api.ApiError;
 import com.bookeasy.common.api.ApiResponse;
@@ -38,6 +39,7 @@ public class AuthController {
 
     private final PasswordAuthService passwordAuth;
     private final PhoneAuthService phoneAuth;
+    private final EmailCodeAuthService emailCodeAuth;
     private final GoogleAuthService googleAuth;
     private final EmailVerificationService emailVerification;
     private final PasswordResetService passwordReset;
@@ -45,9 +47,10 @@ public class AuthController {
 
     public AuthController(PasswordAuthService passwordAuth, PhoneAuthService phoneAuth, GoogleAuthService googleAuth,
                           EmailVerificationService emailVerification, PasswordResetService passwordReset,
-                          AuthWebSupport web) {
+                          AuthWebSupport web, EmailCodeAuthService emailCodeAuth) {
         this.passwordAuth = passwordAuth;
         this.phoneAuth = phoneAuth;
+        this.emailCodeAuth = emailCodeAuth;
         this.googleAuth = googleAuth;
         this.emailVerification = emailVerification;
         this.passwordReset = passwordReset;
@@ -87,6 +90,19 @@ public class AuthController {
     public ResponseEntity<ApiResponse<Session>> otpLogin(@Valid @RequestBody AuthRequests.OtpLogin req,
                                                          HttpServletRequest http) {
         return web.sessionResponse(phoneAuth.login(req, web.context(http)));
+    }
+
+    @PostMapping("/email-code/send")
+    @Operation(summary = "Email a sign-in code to an existing account (same response whether or not it exists)")
+    public ApiResponse<OtpSent> sendEmailCode(@Valid @RequestBody AuthRequests.EmailCodeSend req, HttpServletRequest http) {
+        return ApiResponse.ok(emailCodeAuth.sendLoginCode(req.email(), web.context(http)));
+    }
+
+    @PostMapping("/email-code/login")
+    @Operation(summary = "Sign in with the code from the email")
+    public ResponseEntity<ApiResponse<Session>> emailCodeLogin(@Valid @RequestBody AuthRequests.EmailCodeLogin req,
+                                                               HttpServletRequest http) {
+        return web.sessionResponse(emailCodeAuth.login(req, web.context(http)));
     }
 
     @PostMapping("/google")

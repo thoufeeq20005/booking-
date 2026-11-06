@@ -106,7 +106,7 @@ export async function payWithRazorpay(order: CheckoutOrder): Promise<RazorpayRes
       description: order.description,
       prefill: { name: order.customerName, email: order.customerEmail, contact: order.customerPhone },
       notes: { reference: order.reference },
-      theme: { color: '#6d28d9' },
+      theme: { color: '#2563eb' },
       handler: (res: RazorpayResponse) => resolve(res),
       modal: { ondismiss: () => resolve(null) },
     });

@@ -14,9 +14,9 @@ import jakarta.persistence.LockModeType;
 public interface OtpVerificationRepository extends JpaRepository<OtpVerification, Long> {
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    Optional<OtpVerification> findFirstByPhoneAndPurposeOrderByCreatedAtDesc(String phone, OtpPurpose purpose);
+    Optional<OtpVerification> findFirstByTargetAndPurposeOrderByCreatedAtDesc(String target, OtpPurpose purpose);
 
-    long countByPhoneAndPurposeAndCreatedAtAfter(String phone, OtpPurpose purpose, Instant after);
+    long countByTargetAndPurposeAndCreatedAtAfter(String target, OtpPurpose purpose, Instant after);
 
     @Modifying
     @Query("delete from OtpVerification o where o.expiresAt < :cutoff")

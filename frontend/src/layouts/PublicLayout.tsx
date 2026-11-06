@@ -9,7 +9,6 @@ import { LoadingState } from '@/components/ui/StateMessage';
 import { useAuth } from '@/contexts/AuthContext';
 import { NotificationBell } from '@/features/engagement/NotificationBell';
 import { LanguageSelector } from '@/components/common/LanguageSelector';
-import { ThemeToggle } from '@/components/common/ThemeToggle';
 import { usePublicConfig } from '@/services/platformApi';
 import { formatWallTime } from '@/utils/format';
 import { intlLocale } from '@/i18n';
@@ -107,7 +106,6 @@ function SiteHeader() {
         </nav>
         <div className="ml-auto hidden items-center gap-2 md:flex">
           <LanguageSelector />
-          <ThemeToggle />
           <span className="mx-1 h-6 w-px bg-border" aria-hidden="true" />
           <AuthControls />
         </div>
@@ -135,7 +133,6 @@ function SiteHeader() {
           </nav>
           <div className="mt-3 flex items-center gap-2">
             <LanguageSelector />
-            <ThemeToggle />
           </div>
           <div className="mt-3 border-t border-border pt-3">
             <AuthControls onNavigate={() => setOpen(false)} />

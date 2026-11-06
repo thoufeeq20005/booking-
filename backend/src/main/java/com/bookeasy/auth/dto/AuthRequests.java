@@ -41,6 +41,14 @@ public final class AuthRequests {
     public record OtpSend(@NotBlank @Size(max = 20) String phone) {
     }
 
+    public record EmailCodeSend(@NotBlank @Email @Size(max = 255) String email) {
+    }
+
+    public record EmailCodeLogin(
+            @NotBlank @Email @Size(max = 255) String email,
+            @NotBlank @Pattern(regexp = "\\d{4,8}") String code) {
+    }
+
     public record OtpLogin(
             @NotBlank @Size(max = 20) String phone,
             @NotBlank @Pattern(regexp = "\\d{4,8}") String code,

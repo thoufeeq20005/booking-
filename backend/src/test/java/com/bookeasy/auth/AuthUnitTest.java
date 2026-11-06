@@ -71,10 +71,9 @@ class AuthUnitTest {
     void passwordPolicy() {
         PasswordPolicy policy = new PasswordPolicy();
         policy.validate("p", "Sunrise2026");
-        policy.validate("p", "சூரியன்2026"); // Unicode letters count as letters
+        policy.validate("p", "சூரியன்2026");
+        policy.validate("p", "allletters"); // only length is required, no forced character mix
         assertThatThrownBy(() -> policy.validate("p", "Short1")).isInstanceOf(ApiException.class);
-        assertThatThrownBy(() -> policy.validate("p", "allletters")).isInstanceOf(ApiException.class);
-        assertThatThrownBy(() -> policy.validate("p", "12345678")).isInstanceOf(ApiException.class);
         assertThatThrownBy(() -> policy.validate("p", "a1" + "x".repeat(71))).isInstanceOf(ApiException.class);
     }
 

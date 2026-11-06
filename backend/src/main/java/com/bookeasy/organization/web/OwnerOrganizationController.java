@@ -91,6 +91,17 @@ public class OwnerOrganizationController {
         return ApiResponse.ok(organizations.setLogo(me(), id, file));
     }
 
+    @PostMapping(path = "/{id}/cover", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "Upload a cover photo of the shop (PNG, JPEG or WebP, up to 5 MB; public)")
+    public ApiResponse<OrganizationDetail> uploadCover(@PathVariable long id, @RequestPart("file") MultipartFile file) {
+        return ApiResponse.ok(organizations.setCover(me(), id, file));
+    }
+
+    @DeleteMapping("/{id}/cover")
+    public ApiResponse<OrganizationDetail> removeCover(@PathVariable long id) {
+        return ApiResponse.ok(organizations.removeCover(me(), id));
+    }
+
     @DeleteMapping("/{id}/logo")
     public ApiResponse<OrganizationDetail> removeLogo(@PathVariable long id) {
         return ApiResponse.ok(organizations.removeLogo(me(), id));

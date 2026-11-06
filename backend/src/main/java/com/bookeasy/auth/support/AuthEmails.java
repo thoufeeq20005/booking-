@@ -48,6 +48,18 @@ public class AuthEmails {
                 messages.getMessage("email.reset.body", new Object[]{user.getFullName(), link, minutes}, locale)));
     }
 
+    public void sendLoginCode(User user, String code, long minutes) {
+        Locale locale = Locale.forLanguageTag(user.getPreferredLanguage());
+        emailSender.send(new EmailMessage(user.getEmail(),
+                messages.getMessage("email.loginCode.subject", new Object[]{code}, locale),
+                messages.getMessage("email.loginCode.body", new Object[]{user.getFullName(), code, minutes}, locale)));
+    }
+
+    /** True when emails only go to the development log, so the API may show a sign-in code on screen. */
+    public boolean codesVisibleOnScreen() {
+        return !emailSender.deliversToInbox();
+    }
+
     /** Security notice after a Super Admin switched off the user's two-step verification. */
     public void sendTwoFactorReset(User user) {
         if (user.getEmail() == null) {

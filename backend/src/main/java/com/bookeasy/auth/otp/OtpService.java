@@ -44,28 +44,61 @@ public class OtpService {
         this.clock = clock;
     }
 
+    /** How a code reaches the person: SMS, email … {@code visible} = the dev stand-in, so the API may show it. */
+    public interface CodeDelivery {
+        void deliver(String code);
+
+        boolean visible();
+    }
+
+    /** SMS delivery for phone purposes. */
     @Transactional
     public OtpSent send(String phone, OtpPurpose purpose) {
+        return send(phone, purpose, new CodeDelivery() {
+            @Override
+            public void deliver(String code) {
+                smsSender.sendOtp(phone, code);
+            }
+
+            @Override
+            public boolean visible() {
+                return !smsSender.deliversToPhone();
+            }
+        });
+    }
+
+    /** The response for a request that was accepted but deliberately not sent (e.g. unknown email). */
+    public OtpSent notSent() {
+        return new OtpSent(config.ttl().toSeconds(), config.resendCooldown().toSeconds(), null);
+    }
+
+    public long ttlMinutes() {
+        return config.ttl().toMinutes();
+    }
+
+    @Transactional
+    public OtpSent send(String phone, OtpPurpose purpose, CodeDelivery delivery) {
         Instant now = clock.instant();
-        repository.findFirstByPhoneAndPurposeOrderByCreatedAtDesc(phone, purpose).ifPresent(last -> {
+        repository.findFirstByTargetAndPurposeOrderByCreatedAtDesc(phone, purpose).ifPresent(last -> {
             if (last.getCreatedAt().plus(config.resendCooldown()).isAfter(now)) {
                 throw new ApiException(ErrorCode.OTP_RESEND_TOO_SOON);
             }
         });
-        if (repository.countByPhoneAndPurposeAndCreatedAtAfter(phone, purpose, now.minus(Duration.ofHours(1)))
+        if (repository.countByTargetAndPurposeAndCreatedAtAfter(phone, purpose, now.minus(Duration.ofHours(1)))
                 >= config.maxSendsPerHour()) {
             throw new ApiException(ErrorCode.RATE_LIMITED);
         }
         String code = crypto.randomDigits(config.length());
         repository.save(new OtpVerification(phone, purpose, hash(phone, purpose, code), now.plus(config.ttl()), now));
         try {
-            smsSender.sendOtp(phone, code);
+            delivery.deliver(code);
         } catch (DeliveryException e) {
             // Roll back the stored code so the user isn't blocked by a cooldown for a message never sent.
             log.error("OTP delivery failed: {}", e.getMessage());
             throw new ApiException(ErrorCode.PROVIDER_UNAVAILABLE, "We couldn't send the code. Please try again later");
         }
-        return new OtpSent(config.ttl().toSeconds(), config.resendCooldown().toSeconds());
+        return new OtpSent(config.ttl().toSeconds(), config.resendCooldown().toSeconds(),
+                delivery.visible() ? code : null);
     }
 
     /**
@@ -75,7 +108,7 @@ public class OtpService {
     @Transactional(noRollbackFor = ApiException.class)
     public void verify(String phone, OtpPurpose purpose, String code) {
         Instant now = clock.instant();
-        OtpVerification otp = repository.findFirstByPhoneAndPurposeOrderByCreatedAtDesc(phone, purpose)
+        OtpVerification otp = repository.findFirstByTargetAndPurposeOrderByCreatedAtDesc(phone, purpose)
                 .orElseThrow(() -> new ApiException(ErrorCode.OTP_INVALID));
         if (otp.getConsumedAt() != null) {
             throw new ApiException(ErrorCode.OTP_INVALID);

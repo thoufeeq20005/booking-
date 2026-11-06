@@ -42,7 +42,19 @@
     "exampleTitle": "Example price breakdown",
     "exampleService": "Service fee",
     "examplePlatform": "BookEasy platform fee ({{percent}}%)",
-    "exampleTotal": "You pay"
+    "exampleTotal": "You pay",
+    "searchWhat": "What are you looking for?",
+    "searchWhatPlaceholder": "Doctor, dentist, haircut, yoga, tuition…",
+    "searchCity": "City",
+    "searchButton": "Search",
+    "typesTitle": "Browse by type",
+    "citiesTitle": "Explore Tamil Nadu",
+    "citiesSubtitle": "Clinics, salons, tutors and gyms you can book today",
+    "placesCount": "{{count}} places",
+    "placesMany": "{{count}}+ places",
+    "topTitle": "Top-rated in {{city}}",
+    "topSubtitle": "Highest rated by customers who booked through BookEasy",
+    "seeAll": "See all"
   },
   "footer": {
     "support": "Customer support",
@@ -172,7 +184,17 @@
     "codeSent": "Code sent. It's valid for 5 minutes.",
     "registerTitle": "Create your account",
     "registerSubtitle": "Book trusted services near you in a few taps.",
-    "passwordHint": "At least 8 characters, with letters and numbers.",
+    "passwordHint": "At least 8 characters.",
+    "emailCodeHint": "We'll email you a 6-digit sign-in code. No password needed.",
+    "emailCode": "Code from email",
+    "codeEmailed": "If an account exists for this email, we've sent it a code. Check your inbox (and spam).",
+    "changeEmail": "Change email",
+    "usePassword": "Sign in with password instead",
+    "useEmailCode": "Sign in with an email code instead",
+    "demoCode": "Demo mode – no SMS is sent. Your code is",
+    "demoCodeHint": "Shown here because no SMS provider is set up (development only).",
+    "useCode": "Fill in",
+    "registerWithMobileHint": "We'll text you a 6-digit code. No password needed.",
     "businessLater": "Running a business? You can register it after creating your account.",
     "verifyEmailTitle": "Email verification",
     "emailVerified": "Your email address is verified. Thank you!",
@@ -719,6 +741,10 @@
       "pune": "Pune",
       "kochi": "Kochi",
       "coimbatore": "Coimbatore",
+      "madurai": "Madurai",
+      "tiruchirappalli": "Tiruchirappalli",
+      "salem": "Salem",
+      "thoothukudi": "Thoothukudi",
       "thiruvananthapuram": "Thiruvananthapuram",
       "visakhapatnam": "Visakhapatnam",
       "mysuru": "Mysuru"
@@ -916,5 +942,23 @@
     "runRetention": "Run now",
     "retentionIntro": "Nightly, bookings older than the history window lose personal notes (amounts are kept for accounts), and old read notifications, sent emails, webhook ids and rate-limit counters are deleted.",
     "retentionResult": "{{anonymised}} bookings anonymised, {{deleted}} records deleted"
+  },
+  "photo": {
+    "shop": "Shop photo",
+    "shopHint": "A wide photo of your shop or your work (PNG, JPG or WebP, up to 5 MB). Shown on search results and your business page.",
+    "upload": "Upload photo",
+    "change": "Change photo",
+    "remove": "Remove photo"
+  },
+  "maps": {
+    "seeLocation": "See location",
+    "showRoute": "Show route from my location",
+    "openGoogle": "Open in Google Maps",
+    "you": "You",
+    "summary": "{{km}} km · about {{minutes}} min by road",
+    "locationDenied": "We couldn't get your location. Allow location access in your browser and try again.",
+    "routeFailed": "Couldn't load a road route right now – the dashed line shows the direction. Use Google Maps for turn-by-turn directions.",
+    "privacy": "Your location is only used in your browser to draw the route; BookEasy doesn't store it.",
+    "close": "Close"
   }
 }

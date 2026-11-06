@@ -59,7 +59,7 @@ export function GoogleSignInButton({ onCredential }: { onCredential: (idToken: s
         });
         ref.current.innerHTML = '';
         window.google.accounts.id.renderButton(ref.current, {
-          theme: theme === 'dark' ? 'filled_black' : 'outline',
+          theme: 'outline',
           size: 'large',
           shape: 'pill',
           text: 'continue_with',

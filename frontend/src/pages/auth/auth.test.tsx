@@ -14,7 +14,8 @@ describe('sign in', () => {
     });
     renderWithProviders(<AppRoutes />, { route: '/signin?next=%2Faccount' });
 
-    await userEvent.type(await screen.findByLabelText('Email address'), 'asha@example.test');
+    await userEvent.click(await screen.findByRole('button', { name: 'Sign in with password instead' }));
+    await userEvent.type(screen.getByLabelText('Email address'), 'asha@example.test');
     await userEvent.type(screen.getByLabelText('Password'), 'Sunrise2026');
     await userEvent.click(screen.getByRole('button', { name: 'Sign in' }));
 
@@ -30,7 +31,8 @@ describe('sign in', () => {
     installFakeApi((r) => (r.url === '/auth/login' ? reply.fail(401, 'INVALID_CREDENTIALS') : undefined));
     renderWithProviders(<AppRoutes />, { route: '/signin' });
 
-    await userEvent.type(await screen.findByLabelText('Email address'), 'a@b.test');
+    await userEvent.click(await screen.findByRole('button', { name: 'Sign in with password instead' }));
+    await userEvent.type(screen.getByLabelText('Email address'), 'a@b.test');
     await userEvent.type(screen.getByLabelText('Password'), 'Wrong12345');
     await userEvent.click(screen.getByRole('button', { name: 'Sign in' }));
 
@@ -45,7 +47,8 @@ describe('sign in', () => {
     });
     renderWithProviders(<AppRoutes />, { route: '/signin' });
 
-    await userEvent.type(await screen.findByLabelText('Email address'), 'a@b.test');
+    await userEvent.click(await screen.findByRole('button', { name: 'Sign in with password instead' }));
+    await userEvent.type(screen.getByLabelText('Email address'), 'a@b.test');
     await userEvent.type(screen.getByLabelText('Password'), 'Sunrise2026');
     await userEvent.click(screen.getByRole('button', { name: 'Sign in' }));
 
@@ -87,17 +90,94 @@ describe('sign in', () => {
   });
 });
 
+describe('email code sign-in', () => {
+  it('signs in with a code from the inbox (no password)', async () => {
+    const requests = installFakeApi((r) => {
+      if (r.url === '/auth/email-code/send') return reply.ok({ expiresInSeconds: 300, resendAfterSeconds: 60, demoCode: '246810' });
+      if (r.url === '/auth/email-code/login') return reply.ok(authenticated());
+      return undefined;
+    });
+    renderWithProviders(<AppRoutes />, { route: '/signin?next=%2Faccount' });
+
+    await userEvent.type(await screen.findByLabelText('Email address'), 'asha@example.test');
+    await userEvent.click(screen.getByRole('button', { name: 'Send code' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Fill in' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Verify and continue' }));
+
+    expect(await screen.findByRole('heading', { name: 'My account' })).toBeInTheDocument();
+    expect(requests.find((r) => r.url === '/auth/email-code/login')!.body).toEqual({
+      email: 'asha@example.test',
+      code: '246810',
+    });
+    expect(requests.some((r) => r.url === '/auth/login')).toBe(false);
+  });
+});
+
+describe('mobile OTP demo mode', () => {
+  it('shows the demo code on screen and fills it in', async () => {
+    installFakeApi((r) => {
+      if (r.url === '/auth/otp/send') return reply.ok({ expiresInSeconds: 300, resendAfterSeconds: 60, demoCode: '482913' });
+      if (r.url === '/auth/otp/login') return reply.ok(authenticated());
+      return undefined;
+    });
+    renderWithProviders(<AppRoutes />, { route: '/signin' });
+
+    await userEvent.click(await screen.findByRole('tab', { name: 'Mobile OTP' }));
+    await userEvent.type(screen.getByLabelText('Mobile number'), '98765 43210');
+    await userEvent.click(screen.getByRole('button', { name: 'Send code' }));
+
+    expect(await screen.findByTestId('demo-code')).toHaveTextContent('482913');
+    await userEvent.click(screen.getByRole('button', { name: 'Fill in' }));
+    expect(screen.getByLabelText('Code from SMS')).toHaveValue('482913');
+  });
+
+  it('without a demo code (real SMS) shows only the "code sent" message', async () => {
+    installFakeApi((r) => (r.url === '/auth/otp/send' ? reply.ok({ expiresInSeconds: 300, resendAfterSeconds: 60 }) : undefined));
+    renderWithProviders(<AppRoutes />, { route: '/signin' });
+
+    await userEvent.click(await screen.findByRole('tab', { name: 'Mobile OTP' }));
+    await userEvent.type(screen.getByLabelText('Mobile number'), '98765 43210');
+    await userEvent.click(screen.getByRole('button', { name: 'Send code' }));
+
+    expect(await screen.findByLabelText('Code from SMS')).toBeInTheDocument();
+    expect(screen.queryByTestId('demo-code')).not.toBeInTheDocument();
+  });
+});
+
 describe('register', () => {
+  it('signs up with a mobile number: name first, then the code', async () => {
+    const requests = installFakeApi((r) => {
+      if (r.url === '/auth/otp/send') return reply.ok({ expiresInSeconds: 300, resendAfterSeconds: 60, demoCode: '135790' });
+      if (r.url === '/auth/otp/login') return reply.ok(authenticated());
+      return undefined;
+    });
+    renderWithProviders(<AppRoutes />, { route: '/register' });
+
+    await userEvent.click(await screen.findByRole('tab', { name: 'Mobile OTP' }));
+    await userEvent.type(screen.getByLabelText('Full name'), 'Ravi');
+    await userEvent.type(screen.getByLabelText('Mobile number'), '98765 43210');
+    await userEvent.click(screen.getByRole('button', { name: 'Send code' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Fill in' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Verify and continue' }));
+
+    await waitFor(() => expect(requests.some((r) => r.url === '/auth/otp/login')).toBe(true));
+    expect(requests.find((r) => r.url === '/auth/otp/login')!.body).toMatchObject({
+      phone: '98765 43210',
+      code: '135790',
+      fullName: 'Ravi',
+    });
+  });
+
   it('checks the password locally before calling the API', async () => {
     const requests = installFakeApi(() => undefined);
     renderWithProviders(<AppRoutes />, { route: '/register' });
 
     await userEvent.type(await screen.findByLabelText('Full name'), 'Asha');
     await userEvent.type(screen.getByLabelText('Email address'), 'asha@example.test');
-    await userEvent.type(screen.getByLabelText('Password'), 'onlyletters');
+    await userEvent.type(screen.getByLabelText('Password'), 'short');
     await userEvent.click(screen.getByRole('button', { name: 'Create account' }));
 
-    expect(await screen.findByText('Use both letters and numbers.')).toBeInTheDocument();
+    expect(await screen.findByText(/at least 8 characters/i)).toBeInTheDocument();
     expect(requests.some((r) => r.url === '/auth/register')).toBe(false);
   });
 

@@ -39,6 +39,9 @@ public class Organization {
     @Column(name = "logo_file_id")
     private Long logoFileId;
 
+    @Column(name = "cover_file_id")
+    private Long coverFileId;
+
     @Column(name = "contact_email")
     private String contactEmail;
 
@@ -164,6 +167,15 @@ public class Organization {
     public void setLogoFileId(Long logoFileId, Instant now) {
         this.logoFileId = logoFileId;
         this.updatedAt = now;
+    }
+
+    public void setCoverFileId(Long coverFileId, Instant now) {
+        this.coverFileId = coverFileId;
+        this.updatedAt = now;
+    }
+
+    public Long getCoverFileId() {
+        return coverFileId;
     }
 
     public void touch(Instant now) {

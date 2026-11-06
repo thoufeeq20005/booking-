@@ -6,15 +6,20 @@ import { TextField } from '@/components/ui/TextField';
 import { useApiForm } from '@/hooks/useApiForm';
 import { toApiError, type Session } from '@/services/apiClient';
 import { authApi } from '@/services/authApi';
+import { DemoCodeNotice } from './DemoCodeNotice';
 
-/** Two steps: send a code to the number, then sign in with it (asking for a name only for new numbers). */
-export function PhoneOtpForm({ onSession }: { onSession: (s: Session) => void }) {
+/**
+ * Two steps: send a code to the number, then sign in with it. Sign-in asks for a name only for new numbers;
+ * sign-up (askName) asks for it up front. An existing number simply signs in.
+ */
+export function PhoneOtpForm({ onSession, askName = false }: { onSession: (s: Session) => void; askName?: boolean }) {
   const { t, i18n } = useTranslation();
   const [phone, setPhone] = useState('');
   const [code, setCode] = useState('');
   const [fullName, setFullName] = useState('');
   const [sent, setSent] = useState(false);
-  const [needsName, setNeedsName] = useState(false);
+  const [needsName, setNeedsName] = useState(askName);
+  const [demoCode, setDemoCode] = useState<string | null>(null);
   const [cooldown, setCooldown] = useState(0);
   const form = useApiForm();
 
@@ -29,6 +34,7 @@ export function PhoneOtpForm({ onSession }: { onSession: (s: Session) => void })
     if (res) {
       setSent(true);
       setCooldown(res.resendAfterSeconds);
+      setDemoCode(res.demoCode ?? null);
     }
   };
 
@@ -56,7 +62,18 @@ export function PhoneOtpForm({ onSession }: { onSession: (s: Session) => void })
   return (
     <form onSubmit={onSubmit} className="space-y-4" noValidate>
       {form.formError && <Alert tone="error">{form.formError}</Alert>}
-      {sent && !form.formError && <Alert tone="success">{t('auth.codeSent')}</Alert>}
+      {sent && !form.formError && !demoCode && <Alert tone="success">{t('auth.codeSent')}</Alert>}
+      {sent && demoCode && <DemoCodeNotice code={demoCode} onUse={() => setCode(demoCode)} />}
+      {askName && !sent && (
+        <TextField
+          label={t('auth.fullName')}
+          value={fullName}
+          onChange={(e) => setFullName(e.target.value)}
+          autoComplete="name"
+          maxLength={120}
+          required
+        />
+      )}
       <TextField
         label={t('auth.mobileNumber')}
         value={phone}
@@ -81,7 +98,7 @@ export function PhoneOtpForm({ onSession }: { onSession: (s: Session) => void })
             autoFocus
             required
           />
-          {needsName && (
+          {needsName && !askName && (
             <TextField
               label={t('auth.fullName')}
               value={fullName}
@@ -97,7 +114,7 @@ export function PhoneOtpForm({ onSession }: { onSession: (s: Session) => void })
         type="submit"
         className="w-full"
         loading={form.submitting}
-        disabled={sent ? code.length !== 6 || (needsName && !fullName.trim()) : !phone.trim()}
+        disabled={sent ? code.length !== 6 || (needsName && !fullName.trim()) : !phone.trim() || (askName && !fullName.trim())}
       >
         {sent ? t('auth.verifyAndContinue') : t('auth.sendCode')}
       </Button>
@@ -109,7 +126,8 @@ export function PhoneOtpForm({ onSession }: { onSession: (s: Session) => void })
             onClick={() => {
               setSent(false);
               setCode('');
-              setNeedsName(false);
+              setDemoCode(null);
+              setNeedsName(askName);
             }}
           >
             {t('auth.changeNumber')}

@@ -12,6 +12,7 @@ import { BranchesSection } from '@/features/organization/BranchesSection';
 import { DocumentsSection } from '@/features/organization/DocumentsSection';
 import { HistoryList } from '@/features/organization/HistoryList';
 import { OrganizationForm } from '@/features/organization/OrganizationForm';
+import { PhotoField } from '@/features/organization/PhotoField';
 import { ServicesSection } from '@/features/organization/ServicesSection';
 import { StaffSection } from '@/features/organization/StaffSection';
 import { fileUrl, StatusBadge, useLocalized } from '@/features/organization/shared';
@@ -76,6 +77,28 @@ function LogoField({ org }: { org: OrganizationDetail }) {
           {form.formError && <p className="text-xs text-danger">{form.formError}</p>}
         </div>
       )}
+    </div>
+  );
+}
+
+function CoverField({ org }: { org: OrganizationDetail }) {
+  const { t } = useTranslation();
+  const qc = useQueryClient();
+  const id = org.summary.id;
+  if (!org.editable.operations && !org.summary.coverUrl) return null;
+  return (
+    <div className="space-y-2">
+      <h2 className="text-sm font-semibold">{t('photo.shop')}</h2>
+      <PhotoField
+        url={org.summary.coverUrl}
+        alt={t('photo.shop')}
+        editable={org.editable.operations}
+        shape="wide"
+        hint={t('photo.shopHint')}
+        upload={(f) => api.uploadCover(id, f)}
+        remove={() => api.removeCover(id)}
+        onChange={(d) => qc.setQueryData(orgKeys.detail(id), d)}
+      />
     </div>
   );
 }
@@ -211,6 +234,7 @@ export function OrganizationSetupPage() {
         {step === 'details' && (
           <Card className="space-y-6 p-6">
             <LogoField org={org} />
+            <CoverField org={org} />
             {org.editable.operations ? (
               <OrganizationForm
                 key={org.summary.updatedAt}

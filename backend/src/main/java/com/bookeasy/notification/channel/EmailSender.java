@@ -7,4 +7,9 @@ public interface EmailSender {
     }
 
     void send(EmailMessage message);
+
+    /** False only for the development stand-in that writes emails to the log (enables on-screen demo codes). */
+    default boolean deliversToInbox() {
+        return true;
+    }
 }

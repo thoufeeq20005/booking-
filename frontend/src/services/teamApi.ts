@@ -1,4 +1,4 @@
-import { apiDelete, apiGet, apiPost, apiPut } from './apiClient';
+import { apiDelete, apiGet, apiPost, apiPut, apiUpload } from './apiClient';
 
 export type ConsultationType = 'IN_PERSON' | 'ONLINE';
 export type Permission = 'CAN_CONFIRM' | 'CAN_CANCEL' | 'CAN_EDIT_HOURS';
@@ -23,9 +23,10 @@ export interface ServiceView {
   minNoticeMinutes: number;
   active: boolean;
   branches: BranchOffer[];
+  imageUrl?: string;
 }
 
-export type ServiceInput = Omit<ServiceView, 'id'>;
+export type ServiceInput = Omit<ServiceView, 'id' | 'imageUrl'>;
 
 export interface Window {
   branchId: number;
@@ -91,6 +92,9 @@ export const teamApi = {
   createService: (orgId: number, body: ServiceInput) => apiPost<ServiceView>(`${base(orgId)}/services`, body),
   updateService: (orgId: number, id: number, body: ServiceInput) => apiPut<ServiceView>(`${base(orgId)}/services/${id}`, body),
   deleteService: (orgId: number, id: number) => apiDelete(`${base(orgId)}/services/${id}`),
+  uploadServiceImage: (orgId: number, id: number, file: File) =>
+    apiUpload<ServiceView>(`${base(orgId)}/services/${id}/image`, file),
+  removeServiceImage: (orgId: number, id: number) => apiDelete<ServiceView>(`${base(orgId)}/services/${id}/image`),
   staff: (orgId: number) => apiGet<StaffView[]>(`${base(orgId)}/staff`),
   invite: (orgId: number, email: string, profile: StaffInput) =>
     apiPost<StaffView>(`${base(orgId)}/staff/invitations`, { email, profile }),

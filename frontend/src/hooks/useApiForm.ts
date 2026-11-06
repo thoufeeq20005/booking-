@@ -59,6 +59,5 @@ export function useApiForm() {
 export function passwordProblem(pw: string): string | null {
   if (pw.length < 8) return 'PASSWORD_TOO_SHORT';
   if (new TextEncoder().encode(pw).length > 72) return 'PASSWORD_TOO_LONG';
-  if (!/\p{L}/u.test(pw) || !/\p{N}/u.test(pw)) return 'PASSWORD_TOO_WEAK';
   return null;
 }

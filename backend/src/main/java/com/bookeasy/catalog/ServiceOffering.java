@@ -61,6 +61,9 @@ public class ServiceOffering {
     @Column(name = "is_active", nullable = false)
     private boolean active = true;
 
+    @Column(name = "image_file_id")
+    private Long imageFileId;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
@@ -97,6 +100,12 @@ public class ServiceOffering {
         this.updatedAt = now;
     }
 
+    public void setImageFileId(Long imageFileId, Instant now) {
+        this.imageFileId = imageFileId;
+        this.updatedAt = now;
+    }
+
+    public Long getImageFileId() { return imageFileId; }
     public Long getId() { return id; }
     public Long getOrganizationId() { return organizationId; }
     public String getName() { return name; }

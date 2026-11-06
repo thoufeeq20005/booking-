@@ -46,7 +46,7 @@ class DiscoveryIT extends OrganizationTestBase {
     void findsNearbyApprovedBranchesWithDistanceFiltersAndSorting() throws Exception {
         String tag = UUID.randomUUID().toString().substring(0, 6);
         String near = approved("Near Dental " + tag, 13.0418, 80.2341, "Root canal " + tag, "2500.00");
-        approved("Close Dental " + tag, 13.0600, 80.2500, "Cleaning " + tag, "800.00");
+        String close = approved("Close Dental " + tag, 13.0600, 80.2500, "Cleaning " + tag, "800.00");
         approved("Far Dental " + tag, 12.9716, 77.5946, "Braces " + tag, "40000.00"); // Bengaluru
         createDraft(verifiedCustomer(), subcategoryId("dental-clinic"), "Draft Dental " + tag); // never listed
 
@@ -60,6 +60,9 @@ class DiscoveryIT extends OrganizationTestBase {
         assertThat(first.path("subcategoryName").path("en").asText()).isEqualTo("Dental clinic");
 
         assertThat(search("lat=13.04&lng=80.23&radiusKm=10&sort=PRICE&q=" + tag).path("items"))
+                .extracting(h -> h.path("name").asText()).first().isEqualTo("Close Dental " + tag);
+        jdbc.update("UPDATE organizations SET rating_avg = 4.80, review_count = 12 WHERE slug = ?", close);
+        assertThat(search("lat=13.04&lng=80.23&radiusKm=10&sort=RATING&q=" + tag).path("items"))
                 .extracting(h -> h.path("name").asText()).first().isEqualTo("Close Dental " + tag);
         assertThat(search("lat=13.04&lng=80.23&radiusKm=10&q=cleaning " + tag).path("items"))
                 .extracting(h -> h.path("name").asText()).containsExactly("Close Dental " + tag);

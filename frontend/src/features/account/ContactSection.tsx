@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/Button';
 import { TextField } from '@/components/ui/TextField';
 import { useAuth } from '@/contexts/AuthContext';
 import { useApiForm } from '@/hooks/useApiForm';
+import { DemoCodeNotice } from '@/features/auth/DemoCodeNotice';
 import { accountApi } from '@/services/authApi';
 
 function VerifiedBadge({ verified }: { verified: boolean }) {
@@ -26,6 +27,7 @@ export function ContactSection() {
   const [phone, setPhone] = useState('');
   const [code, setCode] = useState('');
   const [codeSent, setCodeSent] = useState(false);
+  const [demoCode, setDemoCode] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const form = useApiForm();
 
@@ -44,7 +46,11 @@ export function ContactSection() {
     e.preventDefault();
     setMessage(null);
     if (!codeSent) {
-      if (await form.submit(() => accountApi.sendPhoneCode(phone))) setCodeSent(true);
+      const sent = await form.submit(() => accountApi.sendPhoneCode(phone));
+      if (sent) {
+        setCodeSent(true);
+        setDemoCode(sent.demoCode ?? null);
+      }
       return;
     }
     const u = await form.submit(() => accountApi.verifyPhone(phone, code));
@@ -89,6 +95,7 @@ export function ContactSection() {
         <p className="text-sm font-medium">{user.phone ? t('account.changePhone') : t('account.addPhone')}</p>
         <TextField label={t('auth.mobileNumber')} type="tel" value={phone} onChange={(e) => setPhone(e.target.value)}
           disabled={codeSent} error={form.fieldErrors.phone} placeholder="98765 43210" />
+        {codeSent && demoCode && <DemoCodeNotice code={demoCode} onUse={() => setCode(demoCode)} />}
         {codeSent && (
           <TextField label={t('auth.smsCode')} value={code} inputMode="numeric" autoComplete="one-time-code"
             onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))} />

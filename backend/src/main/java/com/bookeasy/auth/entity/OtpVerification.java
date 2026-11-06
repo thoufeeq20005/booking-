@@ -19,8 +19,9 @@ public class OtpVerification {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "phone_e164", nullable = false, length = 16)
-    private String phone;
+    /** Normalised mobile number (E.164) or email address, depending on the purpose. */
+    @Column(name = "target", nullable = false, length = 255)
+    private String target;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 24)
@@ -44,8 +45,8 @@ public class OtpVerification {
     protected OtpVerification() {
     }
 
-    public OtpVerification(String phone, OtpPurpose purpose, String codeHash, Instant expiresAt, Instant createdAt) {
-        this.phone = phone;
+    public OtpVerification(String target, OtpPurpose purpose, String codeHash, Instant expiresAt, Instant createdAt) {
+        this.target = target;
         this.purpose = purpose;
         this.codeHash = codeHash;
         this.expiresAt = expiresAt;

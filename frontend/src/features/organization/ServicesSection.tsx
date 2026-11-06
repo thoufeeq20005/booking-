@@ -9,6 +9,7 @@ import { CheckboxField, SelectField, TextAreaField } from '@/components/ui/FormF
 import { EmptyState, LoadingState } from '@/components/ui/StateMessage';
 import { TextField } from '@/components/ui/TextField';
 import { useApiForm } from '@/hooks/useApiForm';
+import { PhotoField } from './PhotoField';
 import type { OrganizationDetail } from '@/services/organizationApi';
 import { teamApi, type ServiceInput, type ServiceView } from '@/services/teamApi';
 import { formatINR } from '@/utils/format';
@@ -194,7 +195,16 @@ export function ServicesSection({ org }: { org: OrganizationDetail }) {
             <ServiceForm org={org} service={s} onDone={done} />
           ) : (
             <div className="flex flex-wrap items-start justify-between gap-3">
-              <div>
+              <PhotoField
+                url={s.imageUrl}
+                alt={s.name}
+                editable={editable}
+                shape="thumb"
+                upload={(f) => teamApi.uploadServiceImage(org.summary.id, s.id, f)}
+                remove={() => teamApi.removeServiceImage(org.summary.id, s.id)}
+                onChange={() => void qc.invalidateQueries({ queryKey: key })}
+              />
+              <div className="min-w-0 flex-1">
                 <p className="font-semibold">{s.name}{!s.active && <span className="ml-2 text-xs text-fg-muted">({t('business.inactive')})</span>}</p>
                 <p className="text-sm text-fg-muted">
                   {t('team.summary', { minutes: s.durationMinutes, price: formatINR(s.price) })}

@@ -4,20 +4,6 @@ import userEvent from '@testing-library/user-event';
 import i18n, { LANGUAGE_STORAGE_KEY } from '@/i18n';
 import { renderWithProviders } from '@/test/renderWithProviders';
 import { LanguageSelector } from './LanguageSelector';
-import { ThemeToggle } from './ThemeToggle';
-
-describe('ThemeToggle', () => {
-  it('switches theme on the document and remembers the choice', async () => {
-    renderWithProviders(<ThemeToggle />);
-    expect(document.documentElement.dataset.theme).toBe('light');
-
-    await userEvent.click(screen.getByRole('button', { name: 'Switch to dark theme' }));
-
-    expect(document.documentElement.dataset.theme).toBe('dark');
-    expect(localStorage.getItem('bookeasy.theme')).toBe('dark');
-    expect(screen.getByRole('button', { name: 'Switch to light theme' })).toBeInTheDocument();
-  });
-});
 
 describe('LanguageSelector', () => {
   it('offers exactly the six supported languages', () => {

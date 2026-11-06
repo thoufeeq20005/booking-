@@ -94,7 +94,9 @@ public class OrganizationViews {
         }
         Map<Long, Long> logoIds = orgs.stream().filter(o -> o.getLogoFileId() != null)
                 .collect(Collectors.toMap(Organization::getId, Organization::getLogoFileId));
-        Map<Long, UploadedFile> logos = byId(files.findAllById(logoIds.values()), UploadedFile::getId);
+        java.util.Set<Long> imageIds = new java.util.HashSet<>(logoIds.values());
+        orgs.stream().map(Organization::getCoverFileId).filter(java.util.Objects::nonNull).forEach(imageIds::add);
+        Map<Long, UploadedFile> logos = byId(files.findAllById(imageIds), UploadedFile::getId);
 
         Map<Long, User> primaryOwner = Map.of();
         if (withOwner) {
@@ -112,11 +114,12 @@ public class OrganizationViews {
             Subcategory sub = subs.get(o.getSubcategoryId());
             Category cat = sub == null ? null : cats.get(sub.getCategoryId());
             UploadedFile logo = o.getLogoFileId() == null ? null : logos.get(o.getLogoFileId());
+            UploadedFile cover = o.getCoverFileId() == null ? null : logos.get(o.getCoverFileId());
             User owner = primaryOwner.get(o.getId());
             out.add(new OrganizationSummary(o.getId(), o.getName(), o.getSlug(), o.getStatus(), o.getStatusReason(),
                     cat == null ? null : cat.getId(), cat == null ? null : cat.getName(), o.getSubcategoryId(),
                     sub == null ? null : sub.getName(), logo == null ? null : logo.publicUrl(),
-                    cityByOrg.get(o.getId()), owner == null ? null : owner.getFullName(),
+                    cover == null ? null : cover.publicUrl(), cityByOrg.get(o.getId()), owner == null ? null : owner.getFullName(),
                     owner == null ? null : owner.getEmail(), o.getSubmittedAt(), o.getApprovedAt(),
                     o.getCreatedAt(), o.getUpdatedAt()));
         }

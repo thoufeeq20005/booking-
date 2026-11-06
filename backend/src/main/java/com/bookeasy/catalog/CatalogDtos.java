@@ -41,12 +41,12 @@ public final class CatalogDtos {
     public record ServiceView(long id, String name, String description, int durationMinutes, BigDecimal price,
                               ServiceOffering.ConsultationType consultationType, boolean requiresStaff,
                               int bufferMinutes, int slotIntervalMinutes, int maxAdvanceDays, int minNoticeMinutes,
-                              boolean active, List<BranchOffer> branches) {
+                              boolean active, List<BranchOffer> branches, String imageUrl) {
 
-        public static ServiceView of(ServiceOffering s, List<BranchOffer> branches) {
+        public static ServiceView of(ServiceOffering s, List<BranchOffer> branches, String imageUrl) {
             return new ServiceView(s.getId(), s.getName(), s.getDescription(), s.getDurationMinutes(), s.getPrice(),
                     s.getConsultationType(), s.isRequiresStaff(), s.getBufferMinutes(), s.getSlotIntervalMinutes(),
-                    s.getMaxAdvanceDays(), s.getMinNoticeMinutes(), s.isActive(), branches);
+                    s.getMaxAdvanceDays(), s.getMinNoticeMinutes(), s.isActive(), branches, imageUrl);
         }
     }
 }

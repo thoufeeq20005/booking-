@@ -78,7 +78,7 @@ public class DiscoveryService {
     }
 
     public record SearchHit(long organizationId, String slug, String name, BigDecimal ratingAvg, int reviewCount,
-                            String logoUrl, long categoryId, long subcategoryId, Map<String, String> subcategoryName,
+                            String logoUrl, String coverUrl, long categoryId, long subcategoryId, Map<String, String> subcategoryName,
                             long branchId, String branchName, String locality, String city, BigDecimal latitude,
                             BigDecimal longitude, double distanceKm, BigDecimal fromPrice) {
     }
@@ -129,13 +129,14 @@ public class DiscoveryService {
             p.addValue("q", "%" + query.q().trim().toLowerCase().replace("%", "\\%").replace("_", "\\_") + "%");
         }
         String order = switch (query.sort() == null ? Sort.DISTANCE : query.sort()) {
-            case RATING -> "o.rating_avg DESC, o.review_count DESC, distance_m ASC";
+            // The ORDER BY sits outside the derived table, so it must use the derived table's column names.
+            case RATING -> "rating_avg DESC, review_count DESC, distance_m ASC";
             case PRICE -> "min_price IS NULL, min_price ASC, distance_m ASC";
             case DISTANCE -> "distance_m ASC";
         };
         String sql = """
                 SELECT * FROM (
-                  SELECT o.id AS org_id, o.slug, o.name, o.rating_avg, o.review_count, o.logo_file_id,
+                  SELECT o.id AS org_id, o.slug, o.name, o.rating_avg, o.review_count, o.logo_file_id, o.cover_file_id,
                          s.category_id, o.subcategory_id, CAST(s.name_i18n AS CHAR) AS sub_name,
                          b.id AS branch_id, b.name AS branch_name, b.locality, b.city, b.latitude, b.longitude,
                          ST_Distance_Sphere(b.location, ST_SRID(POINT(:lng, :lat), 4326)) AS distance_m,
@@ -156,14 +157,16 @@ public class DiscoveryService {
                     rs.getLong("category_id"), rs.getLong("subcategory_id"), rs.getString("sub_name"),
                     rs.getLong("branch_id"), rs.getString("branch_name"), rs.getString("locality"), rs.getString("city"),
                     rs.getBigDecimal("latitude"), rs.getBigDecimal("longitude"), rs.getDouble("distance_m"),
-                    rs.getBigDecimal("min_price")});
+                    rs.getBigDecimal("min_price"), (Long) rs.getObject("cover_file_id", Long.class)});
         });
         boolean hasMore = raw.size() > size;
         List<Object[]> rows = hasMore ? raw.subList(0, size) : raw;
-        Map<Long, String> logos = files.findAllById(rows.stream().map(r -> (Long) r[5]).filter(java.util.Objects::nonNull)
-                .toList()).stream().collect(Collectors.toMap(UploadedFile::getId, UploadedFile::publicUrl));
+        Map<Long, String> logos = files.findAllById(rows.stream()
+                .flatMap(r -> java.util.stream.Stream.of((Long) r[5], (Long) r[17]))
+                .filter(java.util.Objects::nonNull).distinct().toList()).stream().collect(Collectors.toMap(UploadedFile::getId, UploadedFile::publicUrl));
         List<SearchHit> hits = rows.stream().map(r -> new SearchHit((Long) r[0], (String) r[1], (String) r[2],
-                (BigDecimal) r[3], (Integer) r[4], r[5] == null ? null : logos.get((Long) r[5]), (Long) r[6], (Long) r[7],
+                (BigDecimal) r[3], (Integer) r[4], r[5] == null ? null : logos.get((Long) r[5]),
+                r[17] == null ? null : logos.get((Long) r[17]), (Long) r[6], (Long) r[7],
                 parseNames((String) r[8]), (Long) r[9], (String) r[10], (String) r[11], (String) r[12],
                 (BigDecimal) r[13], (BigDecimal) r[14],
                 BigDecimal.valueOf((Double) r[15] / 1000).setScale(1, RoundingMode.HALF_UP).doubleValue(),
@@ -197,7 +200,7 @@ public class DiscoveryService {
 
     public record PublicService(long id, String name, String description, int durationMinutes, BigDecimal price,
                                 ServiceOffering.ConsultationType consultationType, boolean requiresStaff,
-                                Map<Long, BigDecimal> branchPrices) {
+                                Map<Long, BigDecimal> branchPrices, String imageUrl) {
     }
 
     public record PublicStaff(long id, String displayName, String title, String specialisation, List<Long> branchIds,
@@ -209,7 +212,7 @@ public class DiscoveryService {
                                String timezone, List<DayHoursView> hours) {
     }
 
-    public record PublicProfile(long id, String slug, String name, String description, String logoUrl,
+    public record PublicProfile(long id, String slug, String name, String description, String logoUrl, String coverUrl,
                                 Map<String, String> categoryName, Map<String, String> subcategoryName, long categoryId,
                                 String bookingWorkflow, BigDecimal ratingAvg, int reviewCount, String contactPhone,
                                 String contactEmail, String website, ConfirmationMode confirmationMode,
@@ -235,18 +238,32 @@ public class DiscoveryService {
         Map<Long, List<BranchService>> offers = branchServices.findByServiceIdIn(svc.stream().map(ServiceOffering::getId).toList())
                 .stream().filter(o -> activeBranchIds.contains(o.getBranchId()))
                 .collect(Collectors.groupingBy(BranchService::getServiceId));
+        java.util.Set<Long> photoIds = new java.util.HashSet<>();
+        svc.stream().map(ServiceOffering::getImageFileId).filter(java.util.Objects::nonNull).forEach(photoIds::add);
+        if (org.getLogoFileId() != null) {
+            photoIds.add(org.getLogoFileId());
+        }
+        if (org.getCoverFileId() != null) {
+            photoIds.add(org.getCoverFileId());
+        }
+        Map<Long, String> photos = files.findAllById(photoIds).stream()
+                .filter(f -> f.publicUrl() != null)
+                .collect(Collectors.toMap(UploadedFile::getId, UploadedFile::publicUrl));
         List<PublicService> publicServices = svc.stream().filter(s -> offers.containsKey(s.getId()))
                 .map(s -> new PublicService(s.getId(), s.getName(), s.getDescription(), s.getDurationMinutes(), s.getPrice(),
                         s.getConsultationType(), s.isRequiresStaff(), offers.get(s.getId()).stream().collect(Collectors.toMap(
-                        BranchService::getBranchId, o -> o.getPriceOverride() != null ? o.getPriceOverride() : s.getPrice()))))
+                        BranchService::getBranchId, o -> o.getPriceOverride() != null ? o.getPriceOverride() : s.getPrice())),
+                        s.getImageFileId() == null ? null : photos.get(s.getImageFileId())))
                 .toList();
         List<PublicStaff> people = staff.findByOrganizationIdAndStatusIn(org.getId(), List.of(StaffProfile.Status.ACTIVE))
                 .stream().sorted(Comparator.comparing(StaffProfile::getDisplayName))
                 .map(s -> new PublicStaff(s.getId(), s.getDisplayName(), s.getTitle(), s.getSpecialisation(),
                         s.getBranchIds().stream().sorted().toList(), s.getServiceIds().stream().sorted().toList()))
                 .toList();
-        String logo = org.getLogoFileId() == null ? null : files.findById(org.getLogoFileId()).map(UploadedFile::publicUrl).orElse(null);
-        return new PublicProfile(org.getId(), org.getSlug(), org.getName(), org.getDescription(), logo, cat.getName(),
+        String logo = org.getLogoFileId() == null ? null : photos.get(org.getLogoFileId());
+        String cover = org.getCoverFileId() == null ? null : photos.get(org.getCoverFileId());
+        return new PublicProfile(org.getId(), org.getSlug(), org.getName(), org.getDescription(), logo, cover,
+                cat.getName(),
                 sub.getName(), cat.getId(), cat.getBookingWorkflow().name(), org.getRatingAvg(), org.getReviewCount(),
                 org.getContactPhone(), org.getContactEmail(), org.getWebsite(), org.getConfirmationMode(),
                 active.stream().map(b -> new PublicBranch(b.getId(), b.getName(), b.getAddressLine1(), b.getAddressLine2(),

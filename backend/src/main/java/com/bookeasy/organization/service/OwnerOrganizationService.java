@@ -53,6 +53,8 @@ public class OwnerOrganizationService {
     static final int MAX_IN_PROGRESS = 3;
     static final UploadRules LOGO_RULES = new UploadRules(
             Set.of(ContentSniffer.PNG, ContentSniffer.JPEG, ContentSniffer.WEBP), 2L * 1024 * 1024);
+    static final UploadRules PHOTO_RULES = new UploadRules(
+            Set.of(ContentSniffer.PNG, ContentSniffer.JPEG, ContentSniffer.WEBP), 5L * 1024 * 1024);
 
     private final OrganizationRepository organizations;
     private final OrganizationOwnerRepository owners;
@@ -178,6 +180,32 @@ public class OwnerOrganizationService {
         Long previous = org.getLogoFileId();
         if (previous != null) {
             org.setLogoFileId(null, clock.instant());
+            organizations.flush();
+            files.findById(previous).ifPresent(fileService::delete);
+        }
+        return views.detail(org, false);
+    }
+
+    /** Replaces the business's cover photo (the shop photo shown on search cards and the business page). */
+    @Transactional
+    public OrganizationDetail setCover(long userId, long organizationId, MultipartFile upload) {
+        Organization org = access.ownedForOperationsEdit(userId, organizationId);
+        UploadedFile stored = fileService.store(upload, PHOTO_RULES, FileVisibility.PUBLIC,
+                FilePurpose.ORGANIZATION_COVER, userId);
+        Long previous = org.getCoverFileId();
+        org.setCoverFileId(stored.getId(), clock.instant());
+        if (previous != null) {
+            files.findById(previous).ifPresent(fileService::delete);
+        }
+        return views.detail(org, false);
+    }
+
+    @Transactional
+    public OrganizationDetail removeCover(long userId, long organizationId) {
+        Organization org = access.ownedForOperationsEdit(userId, organizationId);
+        Long previous = org.getCoverFileId();
+        if (previous != null) {
+            org.setCoverFileId(null, clock.instant());
             organizations.flush();
             files.findById(previous).ifPresent(fileService::delete);
         }

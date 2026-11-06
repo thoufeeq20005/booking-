@@ -6,7 +6,10 @@ import org.springframework.stereotype.Component;
 
 import com.bookeasy.common.exception.ApiException;
 
-/** Minimum 8 characters with a letter and a digit; at most 72 bytes because BCrypt ignores anything longer. */
+/**
+ * Minimum 8 characters (length matters more than forced character mixes, as NIST SP 800-63B recommends);
+ * at most 72 bytes because BCrypt ignores anything longer.
+ */
 @Component
 public class PasswordPolicy {
 
@@ -19,11 +22,6 @@ public class PasswordPolicy {
         }
         if (password.getBytes(StandardCharsets.UTF_8).length > MAX_BYTES) {
             throw ApiException.invalidField(field, "PASSWORD_TOO_LONG", "Use at most 72 bytes");
-        }
-        boolean letter = password.codePoints().anyMatch(Character::isLetter);
-        boolean digit = password.codePoints().anyMatch(Character::isDigit);
-        if (!letter || !digit) {
-            throw ApiException.invalidField(field, "PASSWORD_TOO_WEAK", "Use letters and numbers");
         }
     }
 }

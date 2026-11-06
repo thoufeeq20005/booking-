@@ -9,7 +9,8 @@ import { SelectField } from '@/components/ui/FormFields';
 import { EmptyState, ErrorState, LoadingState } from '@/components/ui/StateMessage';
 import { CategoryIcon, fileUrl, useLocalized } from '@/features/organization/shared';
 import { usePublicCategories } from '@/services/organizationApi';
-import { CITIES, discoveryApi, mapsLink, type SortKey } from '@/services/discoveryApi';
+import { CITIES, discoveryApi, type SortKey } from '@/services/discoveryApi';
+import { LocationButton } from '@/features/maps/LocationButton';
 import { formatINR } from '@/utils/format';
 import { storage } from '@/utils/storage';
 import { useAuth } from '@/contexts/AuthContext';
@@ -33,7 +34,10 @@ export function SearchPage() {
   const pick = useLocalized();
   const categories = usePublicCategories();
   const [params, setParams] = useSearchParams();
-  const [loc, setLoc] = useState<Loc>(savedLocation);
+  const [loc, setLoc] = useState<Loc>(() => {
+    const c = CITIES.find((x) => x.key === params.get('city'));
+    return c ? { lat: c.lat, lng: c.lng, label: c.key } : savedLocation();
+  });
   const [locating, setLocating] = useState(false);
   const [text, setText] = useState(params.get('q') ?? '');
   const { status } = useAuth();
@@ -127,9 +131,13 @@ export function SearchPage() {
       <ul className="grid gap-4 md:grid-cols-2">
         {query.data?.items.map((h) => (
           <li key={h.branchId}>
-            <Card className="flex h-full gap-4 p-5">
-              {h.logoUrl ? <img src={fileUrl(h.logoUrl)} alt="" className="h-14 w-14 rounded-xl object-cover" />
-                : <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-xl font-bold text-brand-700">{h.name.charAt(0)}</span>}
+            <Card className="flex h-full flex-col overflow-hidden">
+              <Link to={`/b/${h.slug}`} tabIndex={-1} aria-hidden="true" className="block aspect-[16/9] bg-surface-muted">
+                {h.coverUrl ? <img src={fileUrl(h.coverUrl)} alt="" loading="lazy" className="h-full w-full object-cover transition duration-300 hover:scale-[1.02]" />
+                  : <span className="flex h-full w-full items-center justify-center text-4xl font-bold text-brand-300">{h.name.charAt(0)}</span>}
+              </Link>
+              <div className="flex flex-1 gap-4 p-5">
+              {h.logoUrl && <img src={fileUrl(h.logoUrl)} alt="" className="h-12 w-12 rounded-xl object-cover" />}
               <div className="min-w-0 flex-1">
                 <Link to={`/b/${h.slug}`} className="font-semibold hover:text-brand-700">{h.name}</Link>
                 <p className="text-sm text-fg-muted">{pick(h.subcategoryName)} · {h.branchName}</p>
@@ -140,14 +148,13 @@ export function SearchPage() {
                   {h.fromPrice != null && <span>{t('search.from', { price: formatINR(h.fromPrice) })}</span>}
                 </p>
                 <span className="mt-1 flex flex-wrap items-center gap-3 text-xs">
-                  <a href={mapsLink(h.latitude, h.longitude)} target="_blank" rel="noopener noreferrer" className="text-brand-700 hover:underline">
-                    {t('search.openMap')}
-                  </a>
+                  <LocationButton place={{ name: h.name, address: [h.branchName, h.locality, h.city].filter(Boolean).join(', '), latitude: Number(h.latitude), longitude: Number(h.longitude) }} />
                   <label className="inline-flex items-center gap-1">
                     <input type="checkbox" checked={compare.includes(h.slug)} onChange={() => setCompare(compareList.toggle(h.slug))} />
                     {t('extras.compare')}
                   </label>
                 </span>
+              </div>
               </div>
             </Card>
           </li>

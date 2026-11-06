@@ -52,7 +52,8 @@ public final class AuthResponses {
     public record Registered(Session session, boolean verificationEmailSent) {
     }
 
-    public record OtpSent(long expiresInSeconds, long resendAfterSeconds) {
+    /** demoCode is only present in development when no SMS provider is configured (see SmsSender#deliversToPhone). */
+    public record OtpSent(long expiresInSeconds, long resendAfterSeconds, String demoCode) {
     }
 
     public record TwoFactorSetup(String secret, String otpauthUri) {

@@ -45,8 +45,8 @@ export default {
       },
       borderRadius: { xl: '0.875rem', '2xl': '1.25rem' },
       boxShadow: {
-        card: '0 1px 2px rgb(16 24 40 / 0.04), 0 4px 16px -4px rgb(16 24 40 / 0.08)',
-        lift: '0 12px 32px -8px rgb(76 29 149 / 0.25)',
+        card: '0 1px 2px rgb(16 24 40 / 0.04), 0 2px 8px -2px rgb(16 24 40 / 0.06)',
+        lift: '0 12px 28px -10px rgb(17 24 39 / 0.18)',
       },
       keyframes: {
         'fade-up': { from: { opacity: '0', transform: 'translateY(8px)' }, to: { opacity: '1', transform: 'none' } },

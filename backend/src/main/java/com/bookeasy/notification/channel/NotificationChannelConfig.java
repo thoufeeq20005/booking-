@@ -47,8 +47,17 @@ public class NotificationChannelConfig {
         }
         if (props.devLogDelivery()) {
             log.info("Email channel: no provider configured – messages are LOGGED, not sent (development only)");
-            return message -> log.info("[DEV EMAIL] to={} subject={}\n{}", message.to(), message.subject(),
-                    message.textBody());
+            return new EmailSender() {
+                @Override
+                public void send(EmailMessage message) {
+                    log.info("[DEV EMAIL] to={} subject={}\n{}", message.to(), message.subject(), message.textBody());
+                }
+
+                @Override
+                public boolean deliversToInbox() {
+                    return false;
+                }
+            };
         }
         log.warn("Email channel: no provider configured – email delivery will fail");
         return message -> {
@@ -71,7 +80,17 @@ public class NotificationChannelConfig {
         }
         if (props.devLogDelivery()) {
             log.info("SMS channel: no provider configured – OTPs are LOGGED, not sent (development only)");
-            return (phone, code) -> log.info("[DEV SMS] OTP for {} is {}", phone, code);
+            return new SmsSender() {
+                @Override
+                public void sendOtp(String phone, String code) {
+                    log.info("[DEV SMS] OTP for {} is {}", phone, code);
+                }
+
+                @Override
+                public boolean deliversToPhone() {
+                    return false;
+                }
+            };
         }
         log.warn("SMS channel: no provider configured – OTP delivery will fail");
         return (phone, code) -> {

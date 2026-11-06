@@ -98,6 +98,7 @@ public final class OrganizationDtos {
             long subcategoryId,
             Map<String, String> subcategoryName,
             String logoUrl,
+            String coverUrl,
             String city,
             String ownerName,
             String ownerEmail,

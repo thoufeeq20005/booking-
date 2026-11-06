@@ -1,5 +1,8 @@
 package com.bookeasy.staff;
 
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.http.MediaType;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -79,6 +82,18 @@ public class OwnerTeamController {
     public ApiResponse<Void> deleteService(@PathVariable long orgId, @PathVariable long serviceId) {
         catalog.delete(me(), orgId, serviceId);
         return ApiResponse.ok(null);
+    }
+
+    @PostMapping(path = "/services/{serviceId}/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "Upload a service photo (PNG, JPEG or WebP, up to 5 MB; public)")
+    public ApiResponse<ServiceView> uploadServiceImage(@PathVariable long orgId, @PathVariable long serviceId,
+                                                       @RequestPart("file") MultipartFile file) {
+        return ApiResponse.ok(catalog.setImage(me(), orgId, serviceId, file));
+    }
+
+    @DeleteMapping("/services/{serviceId}/image")
+    public ApiResponse<ServiceView> removeServiceImage(@PathVariable long orgId, @PathVariable long serviceId) {
+        return ApiResponse.ok(catalog.removeImage(me(), orgId, serviceId));
     }
 
     // ----- staff -----

@@ -1,46 +1,22 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { storage } from '@/utils/storage';
+import { createContext, useContext, useEffect, type ReactNode } from 'react';
 
-export type Theme = 'light' | 'dark';
-
-const STORAGE_KEY = 'bookeasy.theme';
+/** BookEasy has one clean white theme. The context stays so components can ask which theme is active. */
+export type Theme = 'light';
 
 interface ThemeContextValue {
   theme: Theme;
-  setTheme: (theme: Theme) => void;
-  toggleTheme: () => void;
 }
 
-const ThemeContext = createContext<ThemeContextValue | null>(null);
-
-function initialTheme(): Theme {
-  const saved = storage.get(STORAGE_KEY);
-  if (saved === 'light' || saved === 'dark') return saved;
-  return typeof window !== 'undefined' && window.matchMedia?.('(prefers-color-scheme: dark)').matches
-    ? 'dark'
-    : 'light';
-}
+const VALUE: ThemeContextValue = { theme: 'light' };
+const ThemeContext = createContext<ThemeContextValue>(VALUE);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>(initialTheme);
-
   useEffect(() => {
-    document.documentElement.dataset.theme = theme;
-  }, [theme]);
-
-  const setTheme = useCallback((next: Theme) => {
-    setThemeState(next);
-    storage.set(STORAGE_KEY, next);
+    document.documentElement.dataset.theme = 'light';
   }, []);
-
-  const toggleTheme = useCallback(() => setTheme(theme === 'dark' ? 'light' : 'dark'), [theme, setTheme]);
-
-  const value = useMemo(() => ({ theme, setTheme, toggleTheme }), [theme, setTheme, toggleTheme]);
-  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
+  return <ThemeContext.Provider value={VALUE}>{children}</ThemeContext.Provider>;
 }
 
 export function useTheme(): ThemeContextValue {
-  const ctx = useContext(ThemeContext);
-  if (!ctx) throw new Error('useTheme must be used inside ThemeProvider');
-  return ctx;
+  return useContext(ThemeContext);
 }

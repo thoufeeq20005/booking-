@@ -70,3 +70,23 @@ The frontend reads `VITE_*` variables from the root `.env`.
 | `Access denied for user` | check `DB_USERNAME` / `DB_PASSWORD` in `.env` |
 | Browser shows CORS error | add the page origin to `CORS_ALLOWED_ORIGINS` |
 | `Found non-empty schema(s) without schema history table` | `DB_NAME` points at a database not created by Flyway (e.g. the old `booking_db`); use a fresh name |
+
+## Demo data (Tamil Nadu)
+
+To fill an empty dev database with sample businesses in Chennai, Coimbatore, Madurai, Thoothukudi,
+Tiruchirappalli and Salem (clinics, dentists, salons, spas, tuition, gyms, yoga, with services, staff,
+opening hours, past bookings and reviews):
+
+```bash
+mysql -uroot -p --default-character-set=utf8mb4 bookeasy < backend/seed/demo-tamilnadu.sql
+python backend/seed/install_demo_photos.py   # copies the shop and service photos into file storage
+```
+
+Start the backend once first so the database schema (including the photo columns) exists.
+The photos are CC0 stock photos from StockSnap (via Openverse); sources are listed in
+`backend/seed/photos/CREDITS.json`.
+
+All names, phone numbers and reviews are fictional; localities, PIN codes and map coordinates are real.
+Every demo login is `demo.<role>.<name><n>@example.com` with password `Demo@1234`. Re-running the file
+replaces the earlier demo rows. To change the data, edit `backend/seed/generate_demo_data.py` and run it
+to regenerate the SQL. Never run it against production.

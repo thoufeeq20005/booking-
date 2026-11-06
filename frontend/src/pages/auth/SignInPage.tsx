@@ -8,6 +8,7 @@ import { TextField } from '@/components/ui/TextField';
 import { useAuth } from '@/contexts/AuthContext';
 import { AuthCard, Divider } from '@/features/auth/AuthCard';
 import { GoogleSignInButton, googleSignInAvailable } from '@/features/auth/GoogleSignInButton';
+import { EmailCodeForm } from '@/features/auth/EmailCodeForm';
 import { PhoneOtpForm } from '@/features/auth/PhoneOtpForm';
 import { TwoFactorStep } from '@/features/auth/TwoFactorStep';
 import { useApiForm } from '@/hooks/useApiForm';
@@ -24,6 +25,8 @@ export function SignInPage() {
   const [params] = useSearchParams();
   const next = safeNext(params.get('next'), '/dashboard');
   const [method, setMethod] = useState<Method>('email');
+  // Email sign-in uses a code from the inbox by default; the password form stays available as a fallback.
+  const [usePassword, setUsePassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [challenge, setChallenge] = useState<string | null>(null);
@@ -92,7 +95,15 @@ export function SignInPage() {
 
       {/* Errors from email sign-in and from Google; the phone form shows its own. */}
       {form.formError && <Alert tone="error" className="mb-4">{form.formError}</Alert>}
-      {method === 'email' ? (
+      {method === 'email' && !usePassword ? (
+        <div className="space-y-3">
+          <EmailCodeForm onSession={handleSession} />
+          <button type="button" className="w-full text-center text-sm font-medium text-brand-700 hover:underline"
+            onClick={() => { setUsePassword(true); form.setFormError(null); }}>
+            {t('auth.usePassword')}
+          </button>
+        </div>
+      ) : method === 'email' ? (
         <form onSubmit={onEmailSubmit} className="space-y-4" noValidate>
           <TextField
             label={t('auth.email')}
@@ -120,6 +131,10 @@ export function SignInPage() {
           <Button type="submit" className="w-full" loading={form.submitting} disabled={!email || !password}>
             {t('nav.signIn')}
           </Button>
+          <button type="button" className="w-full text-center text-sm font-medium text-brand-700 hover:underline"
+            onClick={() => { setUsePassword(false); form.setFormError(null); }}>
+            {t('auth.useEmailCode')}
+          </button>
         </form>
       ) : (
         <PhoneOtpForm onSession={handleSession} />

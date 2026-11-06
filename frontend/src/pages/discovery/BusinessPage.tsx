@@ -6,10 +6,11 @@ import { Card } from '@/components/ui/Card';
 import { ErrorState, LoadingState } from '@/components/ui/StateMessage';
 import { DAY_KEYS, fileUrl, useLocalized } from '@/features/organization/shared';
 import { intlLocale } from '@/i18n';
+import { LocationButton } from '@/features/maps/LocationButton';
 import { BookingWizard } from '@/features/booking/BookingWizard';
 import { BusinessReviews } from '@/features/engagement/ReviewWidgets';
 import { FavouriteButton } from '@/features/engagement/FavouriteButton';
-import { discoveryApi, mapsLink } from '@/services/discoveryApi';
+import { discoveryApi } from '@/services/discoveryApi';
 import { formatINR, formatWallTime } from '@/utils/format';
 
 export function BusinessPage() {
@@ -31,6 +32,10 @@ export function BusinessPage() {
 
   return (
     <div className="mx-auto max-w-6xl space-y-6 px-4 py-10 sm:px-6">
+      {p.coverUrl && (
+        <img src={fileUrl(p.coverUrl)} alt={p.name}
+          className="aspect-[16/9] w-full rounded-2xl border border-border object-cover sm:aspect-[21/8]" />
+      )}
       <div className="flex flex-wrap items-center gap-4">
         {p.logoUrl ? <img src={fileUrl(p.logoUrl)} alt="" className="h-16 w-16 rounded-2xl object-cover" />
           : <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-brand-50 text-2xl font-bold text-brand-700">{p.name.charAt(0)}</span>}
@@ -53,8 +58,9 @@ export function BusinessPage() {
             <h2 className="text-lg font-semibold">{t('business.tab.services')}</h2>
             <ul className="mt-3 divide-y divide-border">
               {p.services.map((s) => (
-                <li key={s.id} className="flex flex-wrap justify-between gap-2 py-3 text-sm">
-                  <div>
+                <li key={s.id} className="flex gap-4 py-3 text-sm">
+                  {s.imageUrl && <img src={fileUrl(s.imageUrl)} alt="" loading="lazy" className="h-16 w-24 shrink-0 rounded-xl object-cover" />}
+                  <div className="min-w-0">
                     <p className="font-medium">{s.name}</p>
                     <p className="text-fg-muted">{t('team.summary', { minutes: s.durationMinutes, price: priceRange(Object.values(s.branchPrices)) })}
                       {s.consultationType === 'ONLINE' && ` · ${t('team.typeName.ONLINE')}`}</p>
@@ -83,8 +89,8 @@ export function BusinessPage() {
             <Card key={b.id} className="p-6 text-sm">
               <h2 className="text-lg font-semibold">{b.name}</h2>
               <p className="mt-2 flex items-start gap-2"><MapPin className="mt-0.5 h-4 w-4 text-brand-600" aria-hidden="true" />
-                <span>{[b.addressLine1, b.addressLine2, b.locality, b.city, b.state, b.pincode].filter(Boolean).join(', ')}{' '}
-                  <a className="text-brand-700 hover:underline" href={mapsLink(b.latitude, b.longitude)} target="_blank" rel="noopener noreferrer">{t('search.openMap')}</a></span></p>
+                <span>{[b.addressLine1, b.addressLine2, b.locality, b.city, b.state, b.pincode].filter(Boolean).join(', ')}</span></p>
+              <LocationButton className="mt-3" place={{ name: `${p.name} – ${b.name}`, address: [b.addressLine1, b.addressLine2, b.locality, b.city, b.pincode].filter(Boolean).join(', '), latitude: Number(b.latitude), longitude: Number(b.longitude) }} />
               {b.phone && <p className="mt-1 flex items-center gap-2"><Phone className="h-4 w-4 text-brand-600" aria-hidden="true" /><a href={`tel:${b.phone}`}>{b.phone}</a></p>}
               <div className="mt-3 flex items-start gap-2"><Clock className="mt-0.5 h-4 w-4 text-brand-600" aria-hidden="true" />
                 <ul>

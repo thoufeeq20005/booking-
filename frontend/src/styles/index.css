@@ -4,51 +4,28 @@
 
 /* Design tokens as RGB triplets so Tailwind opacity modifiers work (bg-brand-600/10). */
 @layer base {
-  :root,
-  [data-theme='light'] {
+  /* One clean light theme: white pages, soft grey dividers, a calm blue accent. */
+  :root {
     color-scheme: light;
-    --brand-50: 245 243 255;
-    --brand-100: 237 233 254;
-    --brand-200: 221 214 254;
-    --brand-300: 196 181 253;
-    --brand-400: 167 139 250;
-    --brand-500: 139 92 246;
-    --brand-600: 124 58 237;
-    --brand-700: 109 40 217;
-    --brand-800: 91 33 182;
-    --brand-900: 76 29 149;
-    --canvas: 248 247 252;
+    --brand-50: 239 246 255;
+    --brand-100: 219 234 254;
+    --brand-200: 191 219 254;
+    --brand-300: 147 197 253;
+    --brand-400: 96 165 250;
+    --brand-500: 59 130 246;
+    --brand-600: 37 99 235;
+    --brand-700: 29 78 216;
+    --brand-800: 30 64 175;
+    --brand-900: 30 58 138;
+    --canvas: 255 255 255;
     --surface: 255 255 255;
-    --surface-muted: 243 242 248;
-    --border: 228 226 238;
-    --fg: 22 20 40;
-    --fg-muted: 98 94 120;
+    --surface-muted: 248 250 252;
+    --border: 229 231 235;
+    --fg: 17 24 39;
+    --fg-muted: 87 96 111;
     --success: 22 163 74;
     --warning: 217 119 6;
     --danger: 220 38 38;
-  }
-
-  [data-theme='dark'] {
-    color-scheme: dark;
-    --brand-50: 30 27 75;
-    --brand-100: 46 38 107;
-    --brand-200: 67 56 150;
-    --brand-300: 109 92 210;
-    --brand-400: 147 122 245;
-    --brand-500: 167 139 250;
-    --brand-600: 139 92 246;
-    --brand-700: 167 139 250;
-    --brand-800: 196 181 253;
-    --brand-900: 221 214 254;
-    --canvas: 11 15 33;
-    --surface: 19 24 48;
-    --surface-muted: 27 33 62;
-    --border: 43 50 86;
-    --fg: 236 236 248;
-    --fg-muted: 160 164 196;
-    --success: 74 222 128;
-    --warning: 251 191 36;
-    --danger: 248 113 113;
   }
 
   html {

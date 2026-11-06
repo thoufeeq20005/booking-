@@ -57,6 +57,7 @@ export interface OrganizationSummary {
   subcategoryId: number;
   subcategoryName?: LocalizedText;
   logoUrl?: string;
+  coverUrl?: string;
   city?: string;
   ownerName?: string;
   ownerEmail?: string;
@@ -181,6 +182,8 @@ export const ownerOrganizationApi = {
   update: (id: number, body: OrganizationInput) => apiPut<OrganizationDetail>(owner(id), body),
   uploadLogo: (id: number, file: File) => apiUpload<OrganizationDetail>(`${owner(id)}/logo`, file),
   removeLogo: (id: number) => apiDelete<OrganizationDetail>(`${owner(id)}/logo`),
+  uploadCover: (id: number, file: File) => apiUpload<OrganizationDetail>(`${owner(id)}/cover`, file),
+  removeCover: (id: number) => apiDelete<OrganizationDetail>(`${owner(id)}/cover`),
   submit: (id: number) => apiPost<OrganizationDetail>(`${owner(id)}/submit`),
   createBranch: (id: number, body: BranchInput) => apiPost<Branch>(`${owner(id)}/branches`, body),
   updateBranch: (id: number, branchId: number, body: BranchInput) =>
