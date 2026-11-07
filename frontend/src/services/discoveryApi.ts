@@ -59,12 +59,29 @@ export interface Suggestion {
   labels?: LocalizedText;
 }
 
+/** One row of the search window: a movie, a business or an event a business published. */
+export interface QuickItem {
+  kind: 'MOVIE' | 'BUSINESS' | 'EVENT';
+  title: string;
+  /** A business's subcategory name by language. */
+  category?: Record<string, string> | null;
+  detail?: string | null;
+  imageUrl?: string | null;
+  href: string;
+  posterFrom?: string | null;
+  posterTo?: string | null;
+  /** An event's last day (yyyy-mm-dd). */
+  until?: string | null;
+}
+
 export type SortKey = 'DISTANCE' | 'RATING' | 'PRICE';
 
 export const discoveryApi = {
   search: (params: { lat: number; lng: number; radiusKm: number; categoryId?: number; subcategoryId?: number; q?: string;
     sort: SortKey; page?: number }) =>
     apiGet<{ items: SearchHit[]; page: number; size: number; hasMore: boolean }>('/public/search', { params }),
+  quickSearch: (params: { lat: number; lng: number; q?: string; tab?: string }) =>
+    apiGet<{ trending: boolean; items: QuickItem[] }>('/public/quick-search', { params }),
   suggest: (q: string) => apiGet<Suggestion[]>('/public/suggest', { params: { q } }),
   profile: (slug: string) => apiGet<PublicProfile>(`/public/organizations/${encodeURIComponent(slug)}`),
 };

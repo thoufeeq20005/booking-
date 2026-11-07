@@ -274,7 +274,7 @@ public class DiscoveryService {
 
     private static final com.fasterxml.jackson.databind.ObjectMapper JSON = new com.fasterxml.jackson.databind.ObjectMapper();
 
-    private static Map<String, String> parseNames(String json) {
+    static Map<String, String> parseNames(String json) {
         try {
             return JSON.readValue(json,
                     new com.fasterxml.jackson.core.type.TypeReference<Map<String, String>>() { });
