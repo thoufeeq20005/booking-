@@ -1,0 +1,24 @@
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Dependencies / build output
+node_modules/
+frontend/dist/
+backend/target/
+*.tsbuildinfo
+
+# Uploaded files and local data (never commit customer documents)
+data/
+backend/data/
+
+# Old Node/Express implementation kept locally for reference only
+legacy/
+
+# IDE / OS
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db

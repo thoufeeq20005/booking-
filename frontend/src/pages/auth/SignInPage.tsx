@@ -1,0 +1,127 @@
+import { useState, type FormEvent } from 'react';
+import { Link, Navigate, useNavigate, useSearchParams } from 'react-router';
+import { useTranslation } from 'react-i18next';
+import { Alert } from '@/components/ui/Alert';
+import { Button } from '@/components/ui/Button';
+import { TextField } from '@/components/ui/TextField';
+import { useAuth } from '@/contexts/AuthContext';
+import { AuthCard, Divider } from '@/features/auth/AuthCard';
+import { GoogleSignInButton, googleSignInAvailable } from '@/features/auth/GoogleSignInButton';
+import { EmailCodeForm } from '@/features/auth/EmailCodeForm';
+import { TwoFactorStep } from '@/features/auth/TwoFactorStep';
+import { useApiForm } from '@/hooks/useApiForm';
+import { safeNext } from '@/routes/RequireAuth';
+import type { Session } from '@/services/apiClient';
+import { authApi } from '@/services/authApi';
+
+export function SignInPage() {
+  const { t } = useTranslation();
+  const { status, signIn } = useAuth();
+  const navigate = useNavigate();
+  const [params] = useSearchParams();
+  const next = safeNext(params.get('next'), '/dashboard');
+  // Email sign-in uses a code from the inbox by default; the password form stays available as a fallback.
+  const [usePassword, setUsePassword] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [challenge, setChallenge] = useState<string | null>(null);
+  const form = useApiForm();
+
+  if (status === 'authenticated' && !challenge) return <Navigate to={next} replace />;
+
+  const handleSession = (s: Session) => {
+    if (s.status === 'TWO_FACTOR_REQUIRED' && s.challengeToken) {
+      setChallenge(s.challengeToken);
+      return;
+    }
+    signIn(s);
+    navigate(next, { replace: true });
+  };
+
+  const onEmailSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    const s = await form.submit(() => authApi.login(email, password));
+    if (s) handleSession(s);
+  };
+
+  const onGoogle = async (idToken: string) => {
+    const s = await form.submit(() => authApi.google(idToken));
+    if (s) handleSession(s);
+  };
+
+  if (challenge) {
+    return (
+      <AuthCard title={t('auth.twoFactorTitle')}>
+        <TwoFactorStep challengeToken={challenge} onDone={handleSession} />
+      </AuthCard>
+    );
+  }
+
+  return (
+    <AuthCard
+      title={t('auth.signInTitle')}
+      subtitle={t('auth.signInSubtitle')}
+      footer={
+        <>
+          {t('auth.noAccount')}{' '}
+          <Link to={`/register${params.get('next') ? `?next=${encodeURIComponent(next)}` : ''}`} className="font-semibold text-brand-700">
+            {t('nav.register')}
+          </Link>
+        </>
+      }
+    >
+
+      {/* Errors from password sign-in and from Google; the code form shows its own. */}
+      {form.formError && <Alert tone="error" className="mb-4">{form.formError}</Alert>}
+      {!usePassword ? (
+        <div className="space-y-3">
+          <EmailCodeForm onSession={handleSession} />
+          <button type="button" className="w-full text-center text-sm font-medium text-brand-700 hover:underline"
+            onClick={() => { setUsePassword(true); form.setFormError(null); }}>
+            {t('auth.usePassword')}
+          </button>
+        </div>
+      ) : (
+        <form onSubmit={onEmailSubmit} className="space-y-4" noValidate>
+          <TextField
+            label={t('auth.email')}
+            type="email"
+            autoComplete="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            error={form.fieldErrors.email}
+            required
+          />
+          <TextField
+            label={t('auth.password')}
+            type="password"
+            autoComplete="current-password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            error={form.fieldErrors.password}
+            required
+          />
+          <div className="flex justify-end">
+            <Link to="/forgot-password" className="text-sm font-medium text-brand-700">
+              {t('auth.forgotPassword')}
+            </Link>
+          </div>
+          <Button type="submit" className="w-full" loading={form.submitting} disabled={!email || !password}>
+            {t('nav.signIn')}
+          </Button>
+          <button type="button" className="w-full text-center text-sm font-medium text-brand-700 hover:underline"
+            onClick={() => { setUsePassword(false); form.setFormError(null); }}>
+            {t('auth.useEmailCode')}
+          </button>
+        </form>
+      )}
+
+      {googleSignInAvailable && (
+        <>
+          <Divider label={t('auth.or')} />
+          <GoogleSignInButton onCredential={(token) => void onGoogle(token)} />
+        </>
+      )}
+    </AuthCard>
+  );
+}

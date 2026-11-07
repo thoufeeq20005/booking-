@@ -1,0 +1,452 @@
+"""Generates demo-movies-dining.sql: sample cinemas (with showtimes) and restaurants/cafés (with menus).
+
+Load it after demo-tamilnadu.sql. Every movie, theatre, restaurant and person is fictional; localities and
+coordinates are real so nearby search works. Output is deterministic (fixed random seed).
+
+    python backend/seed/generate_movies_dining.py     # rewrites backend/seed/demo-movies-dining.sql
+
+Photos (CC0, from Openverse; see photos/CREDITS.json) come from photos/movies and photos/venues and are copied
+into file storage by install_demo_photos.py, using demo-venue-photo-files.json written by this script.
+
+Showtimes are created for the 21 days after the file is loaded. Load it again to get fresh ones (this also
+removes bookings made at the demo cinemas and restaurants). Demo owners sign in as demo.venue.*@example.com
+with the password Demo@1234. Never run it in production.
+"""
+import hashlib
+import json
+import random
+import unicodedata
+import uuid
+from pathlib import Path
+
+random.seed(1407)
+
+PASSWORD_HASH = "$2a$12$.hqQmqoWu/3C6Q8L8h8cDuJcOinee8qIFn/Yu2qkPufDIGFSzx62K"  # Demo@1234
+SHOW_DAYS = 21
+CINEMA_SUB, RESTAURANT_SUB, CAFE_SUB = 12, 13, 14
+
+# Invented titles; posters are drawn from the two colours, so no artwork is copied.
+MOVIES = [
+    ("Signal Thirteen", "Tamil, Telugu", "UA", "Thriller, Mystery", 142, "#0f766e", "#022c22",
+     "A railway signalman in Tiruchirappalli notices a train that isn't on any timetable.", "Arjun Selvan, Meera Nandakumar"),
+    ("Pearl City Nights", "Tamil", "U", "Romance, Drama", 136, "#be185d", "#4c0519",
+     "Two pearl divers' children meet again at the Thoothukudi harbour festival.", "Kavin Raj, Ishaani Prabhu"),
+    ("Rockfort Diaries", "Tamil, English", "UA", "Comedy, Drama", 128, "#c2410c", "#431407",
+     "Five college friends reunite to save the tea shop where they used to bunk classes.", "Surya Prakash, Diya Menon"),
+    ("The Monsoon Ferry", "Tamil, Malayalam", "U", "Family, Drama", 122, "#1d4ed8", "#172554",
+     "A grandmother's last ferry ride across the backwaters brings a scattered family together.", "Lakshmi Iyer, Vetri Maran"),
+    ("Starling and the Kite", "Tamil, Telugu, Hindi", "U", "Animation, Adventure", 104, "#7c3aed", "#2e1065",
+     "A young starling teams up with a runaway kite to find its way home before Pongal.", "Voice cast: Nila Arun, Hari Kumar"),
+    ("Midnight Toll Plaza", "Tamil, Telugu", "A", "Action, Crime", 158, "#b91c1c", "#1c1917",
+     "One night at a highway toll plaza, a booth operator becomes the only witness to a heist.", "Dhruv Shankar, Anaya Pillai"),
+    ("Boundary Line Boys", "Tamil", "U", "Sports, Drama", 145, "#15803d", "#052e16",
+     "A village cricket team from Salem gets one shot at the state tournament.", "Mithran Das, Keerthi Ravi"),
+    ("Orbit Café", "English, Tamil, Hindi", "UA", "Sci-fi, Comedy", 118, "#0369a1", "#082f49",
+     "A Chennai café accidentally starts serving coffee to visitors from the future.", "Rohan Varma, Sana Iqbal"),
+]
+
+# Releasing after the file is loaded: listed under "Coming soon", no shows yet. (title, ..., days until release)
+UPCOMING = [
+    ("Kaveri Kingdom", "Tamil, Telugu, Hindi", "UA", "Historical, Action", 168, "#a16207", "#1c1917",
+     "A river-port queen defends her kingdom when traders arrive with an army.", "Nandhini Varma, Adhitya Ram", 12),
+    ("The Lighthouse Choir", "Tamil, English", "U", "Musical, Family", 126, "#0e7490", "#083344",
+     "A lighthouse keeper in Rameswaram trains a choir of fishermen for a national contest.", "Selvi Arun, Joseph Mathew", 19),
+    ("Zero Hour Delta", "Tamil, Hindi", "UA", "Thriller, Heist", 139, "#4d7c0f", "#1a2e05",
+     "A Coimbatore bank's night shift becomes a hostage negotiation.", "Karthik Raja, Pooja Venkat", 26),
+]
+
+LAYOUTS = {
+    "large": [*({"row": r, "tier": "CLASSIC", "seats": 18, "gapsAfter": [4, 14]} for r in "ABCDEFG"),
+              *({"row": r, "tier": "PRIME", "seats": 18, "gapsAfter": [4, 14]} for r in "HIJK"),
+              {"row": "L", "tier": "RECLINER", "seats": 10, "gapsAfter": [5]}],
+    "medium": [*({"row": r, "tier": "CLASSIC", "seats": 14, "gapsAfter": [3, 11]} for r in "ABCDEF"),
+               *({"row": r, "tier": "PRIME", "seats": 14, "gapsAfter": [3, 11]} for r in "GHI")],
+    "small": [*({"row": r, "tier": "CLASSIC", "seats": 12, "gapsAfter": [6]} for r in "ABCD"),
+              *({"row": r, "tier": "PRIME", "seats": 12, "gapsAfter": [6]} for r in "EFG")],
+}
+PRICES = {"CLASSIC": 160, "PRIME": 220, "RECLINER": 420}
+SHOW_TIMES = ["10:30", "14:00", "18:00", "21:30"]  # India time; every film fits in a 3h15 gap
+
+# (name, city, locality, lat, lng, [(screen name, layout, format)])
+CINEMAS = [
+    ("Marina Screens", "Chennai", "T. Nagar", 13.0412, 80.2335, [("Screen 1", "large", "2D"), ("Screen 2", "medium", "3D"), ("Screen 3", "small", "2D")]),
+    ("Adyar Talkies", "Chennai", "Adyar", 13.0020, 80.2570, [("Audi 1", "medium", "2D"), ("Audi 2", "small", "2D")]),
+    ("Anna Nagar Picture House", "Chennai", "Anna Nagar", 13.0862, 80.2110, [("Gold", "large", "IMAX"), ("Silver", "medium", "2D")]),
+    ("Kovai Cinemas", "Coimbatore", "Gandhipuram", 11.0190, 76.9690, [("Screen 1", "large", "2D"), ("Screen 2", "medium", "2D")]),
+    ("Vaigai Theatre", "Madurai", "Tallakulam", 9.9380, 78.1345, [("Main", "large", "2D"), ("Mini", "small", "2D")]),
+    ("Rockfort Cineplex", "Tiruchirappalli", "Thillai Nagar", 10.8275, 78.6845, [("Screen 1", "medium", "2D"), ("Screen 2", "small", "3D")]),
+    ("Steel City Screens", "Salem", "Fairlands", 11.6745, 78.1355, [("Screen 1", "medium", "2D"), ("Screen 2", "small", "2D")]),
+    ("Pearl Talkies", "Thoothukudi", "Millerpuram", 8.7835, 78.1255, [("Screen 1", "medium", "2D")]),
+]
+
+MENUS = {
+    "south": [("Tiffin", [("Ghee roast dosa", 120, True, True, "Crisp dosa roasted in ghee, with three chutneys"),
+                          ("Mini idli sambar", 90, True, False, "Fourteen button idlis soaked in sambar"),
+                          ("Pongal vada combo", 110, True, False, None)]),
+              ("Meals", [("South Indian thali", 220, True, True, "Rice, sambar, rasam, two poriyal, kootu, curd, payasam"),
+                         ("Chettinad chicken meals", 320, False, False, "Thali with Chettinad chicken gravy"),
+                         ("Curd rice", 110, True, False, None)]),
+              ("Sweets & drinks", [("Filter coffee", 40, True, True, None), ("Rava kesari", 70, True, False, None)])],
+    "chettinad": [("Starters", [("Pepper chicken", 280, False, True, "Dry roast with black pepper and curry leaves"),
+                                ("Kola urundai", 240, False, False, "Spiced minced mutton balls"),
+                                ("Mushroom 65", 210, True, False, None)]),
+                  ("Mains", [("Chettinad mutton curry", 380, False, True, None),
+                             ("Nattu kozhi kuzhambu", 340, False, False, "Country chicken in a tamarind-pepper gravy"),
+                             ("Kara kuzhambu", 190, True, False, None),
+                             ("Kothu parotta", 220, False, False, None)]),
+                  ("Desserts", [("Elaneer payasam", 140, True, False, "Tender coconut payasam")])],
+    "biryani": [("Biryani", [("Seeraga samba chicken biryani", 290, False, True, "Dindigul style, with brinjal curry and raita"),
+                             ("Mutton biryani", 380, False, True, None),
+                             ("Vegetable biryani", 210, True, False, None)]),
+                ("Sides", [("Chicken 65", 220, False, False, None), ("Bread halwa", 90, True, False, None)])],
+    "seafood": [("From the sea", [("Vanjiram fish fry", 420, False, True, "Seer fish, masala-coated and pan fried"),
+                                  ("Nethili fry", 260, False, False, "Crisp anchovies"),
+                                  ("Prawn thokku", 360, False, True, None),
+                                  ("Crab rasam", 180, False, False, None)]),
+                ("Meals", [("Fish curry meals", 260, False, False, None), ("Veg meals", 170, True, False, None)])],
+    "bar": [("Mocktails", [("Kokum cooler", 220, True, True, "Kokum, mint and soda"), ("Tender coconut mojito", 240, True, False, None),
+                           ("Spiced guava fizz", 230, True, False, None)]),
+            ("Small plates", [("Chettinad chicken lollipop", 360, False, True, None), ("Paneer tikka", 320, True, False, None),
+                              ("Prawn koliwada", 420, False, False, None), ("Masala peanuts", 180, True, False, None)]),
+            ("Grills", [("Tandoori pomfret", 690, False, True, None), ("Mutton seekh kebab", 520, False, False, None),
+                        ("Tandoori broccoli", 340, True, False, None)])],
+    "cafe": [("Coffee", [("Filter coffee", 50, True, True, None), ("Cappuccino", 160, True, False, None),
+                         ("Cold coffee", 180, True, False, None)]),
+             ("Bites", [("Paneer tikka sandwich", 190, True, True, None), ("Masala fries", 140, True, False, None),
+                        ("Chicken puff", 70, False, False, None)]),
+             ("Desserts", [("Jigarthanda", 120, True, True, "Madurai's chilled milk, almond gum and ice cream"),
+                           ("Brownie with ice cream", 180, True, False, None)])],
+}
+
+# (name, sub, city, locality, lat, lng, cuisines, menu, cost for two, veg only, capacity, offer, features, hours)
+RESTAURANTS = [
+    ("Mylapore Tiffin Room", RESTAURANT_SUB, "Chennai", "Mylapore", 13.0372, 80.2680, "South Indian, Tiffin", "south", 350, True, 40,
+     "Free filter coffee with any tiffin before 9 am", "Family seating, Air conditioned, Takeaway", "early"),
+    ("Anna Nagar Chettinad Kitchen", RESTAURANT_SUB, "Chennai", "Anna Nagar", 13.0845, 80.2095, "Chettinad, South Indian", "chettinad", 900, False, 50,
+     "15% off on weekday lunch", "Air conditioned, Parking, Private dining", "restaurant"),
+    ("Velachery Biryani Point", RESTAURANT_SUB, "Chennai", "Velachery", 12.9820, 80.2185, "Biryani, Mughlai", "biryani", 700, False, 36,
+     None, "Air conditioned, Home delivery", "restaurant"),
+    ("Besant Brew Café", CAFE_SUB, "Chennai", "Adyar", 13.0005, 80.2560, "Café, Desserts, Coffee", "cafe", 500, False, 24,
+     "Buy one get one on cold coffee after 4 pm", "Wi-Fi, Outdoor seating, Pet friendly", "cafe"),
+    ("Kovai Kongunadu Mess", RESTAURANT_SUB, "Coimbatore", "R.S. Puram", 11.0085, 76.9510, "Kongunadu, South Indian", "chettinad", 600, False, 40,
+     None, "Family seating, Parking", "restaurant"),
+    ("Race Course Coffee House", CAFE_SUB, "Coimbatore", "Race Course", 11.0005, 76.9755, "Café, Bakery", "cafe", 450, True, 20,
+     None, "Wi-Fi, Outdoor seating", "cafe"),
+    ("Koodal Jigarthanda Café", CAFE_SUB, "Madurai", "Simmakkal", 9.9262, 78.1202, "Café, Desserts", "cafe", 300, True, 24,
+     "Second jigarthanda half price", "Takeaway, Family seating", "cafe"),
+    ("Vaigai Parotta Hall", RESTAURANT_SUB, "Madurai", "Goripalayam", 9.9334, 78.1265, "Madurai, Chettinad", "chettinad", 500, False, 60,
+     None, "Late night, Family seating", "restaurant"),
+    ("Pearl City Seafood Kitchen", RESTAURANT_SUB, "Thoothukudi", "Bryant Nagar", 8.7905, 78.1305, "Seafood, South Indian", "seafood", 800, False, 36,
+     "Catch of the day at 10% off", "Air conditioned, Sea-facing terrace", "restaurant"),
+    ("Rockfort Tiffin Centre", RESTAURANT_SUB, "Tiruchirappalli", "Cantonment", 10.8005, 78.6905, "South Indian, Tiffin", "south", 300, True, 30,
+     None, "Takeaway, Family seating", "early"),
+    ("Mango City Biryani House", RESTAURANT_SUB, "Salem", "Hasthampatti", 11.6705, 78.1555, "Biryani, Salem style", "biryani", 600, False, 40,
+     None, "Air conditioned, Parking", "restaurant"),
+    ("Shevaroy Hills Café", CAFE_SUB, "Salem", "Alagapuram", 11.6755, 78.1425, "Café, Coffee", "cafe", 400, True, 20,
+     None, "Wi-Fi, Board games", "cafe"),
+    ("Marina Skyline Bistro & Bar", RESTAURANT_SUB, "Chennai", "Nungambakkam", 13.0575, 80.2430, "Grills, Coastal, Mocktails", "bar",
+     1800, False, 60, "Live music on Fridays", "Live music, Bar seating, Valet parking, Air conditioned", "bar"),
+    ("Kovai Terrace Grill", RESTAURANT_SUB, "Coimbatore", "Saibaba Colony", 11.0265, 76.9425, "Grills, North Indian, Coastal", "bar",
+     1500, False, 50, None, "Rooftop, Outdoor seating, Live music, Parking", "bar"),
+]
+# Restro-bars, high-end cafés and restaurants pay the premium cover charge (₹25 per guest); the rest are cafés (₹10).
+PREMIUM = {"Anna Nagar Chettinad Kitchen", "Race Course Coffee House", "Pearl City Seafood Kitchen",
+           "Marina Skyline Bistro & Bar", "Kovai Terrace Grill"}
+# Discounts on the final bill: (title, percent, meal)
+OFFERS = {
+    "Mylapore Tiffin Room": [("Flat 10% off", 10, "ALL_DAY")],
+    "Anna Nagar Chettinad Kitchen": [("Flat 20% off", 20, "ALL_DAY"), ("Lunch special: 30% off", 30, "LUNCH")],
+    "Velachery Biryani Point": [("Flat 15% off", 15, "ALL_DAY")],
+    "Besant Brew Café": [("Flat 10% off", 10, "ALL_DAY"), ("Evening treat: 20% off", 20, "DINNER")],
+    "Kovai Kongunadu Mess": [("Flat 15% off", 15, "ALL_DAY")],
+    "Race Course Coffee House": [("Flat 20% off", 20, "ALL_DAY")],
+    "Koodal Jigarthanda Café": [("Flat 10% off", 10, "ALL_DAY")],
+    "Vaigai Parotta Hall": [("Flat 15% off", 15, "ALL_DAY"), ("Late dinner: 25% off", 25, "DINNER")],
+    "Pearl City Seafood Kitchen": [("Flat 25% off", 25, "ALL_DAY")],
+    "Rockfort Tiffin Centre": [("Flat 10% off", 10, "ALL_DAY")],
+    "Mango City Biryani House": [("Flat 15% off", 15, "ALL_DAY")],
+    "Shevaroy Hills Café": [("Flat 10% off", 10, "ALL_DAY")],
+    "Marina Skyline Bistro & Bar": [("Flat 30% off", 30, "ALL_DAY"), ("Happy hours: 40% off", 40, "LUNCH")],
+    "Kovai Terrace Grill": [("Flat 25% off", 25, "ALL_DAY"), ("Sunset dinner: 35% off", 35, "DINNER")],
+}
+DINERS = ["Aarthi Raman", "Bharath Kumar", "Charu Natarajan", "Dinesh Pandian", "Elakkiya Murugan", "Farhan Basha",
+          "Gowri Shankar", "Harini Venkatesh"]
+DINING_REVIEWS = {
+    5: ["Loved the food and the offer was applied without any fuss. Will come again!",
+        "Table was ready when we walked in. Lovely ambience and quick service.",
+        "Booked for a family lunch, everything was perfect. The staff were very warm."],
+    4: ["Tasty food and good portions. Slightly crowded at peak time but worth it.",
+        "Nice place, the discount on the bill made it great value.",
+        "Good service and clean tables. Parking was a little tricky."],
+    3: ["Food was okay, service was a bit slow on a busy evening."],
+}
+HOURS = {
+    "restaurant": ("11:30", "23:00", "15:30", "18:30"),
+    "early": ("06:30", "22:00", None, None),
+    "cafe": ("08:00", "22:30", None, None),
+    "bar": ("12:00", "23:30", None, None),
+    "cinema": ("09:30", "23:59", None, None),
+}
+PINS = {"Nungambakkam": "600034", "Saibaba Colony": "641011", "T. Nagar": "600017", "Adyar": "600020", "Anna Nagar": "600040", "Mylapore": "600004", "Velachery": "600042",
+        "Gandhipuram": "641012", "R.S. Puram": "641002", "Race Course": "641018", "Tallakulam": "625002",
+        "Simmakkal": "625001", "Goripalayam": "625002", "Thillai Nagar": "620018", "Cantonment": "620001",
+        "Fairlands": "636016", "Hasthampatti": "636007", "Alagapuram": "636004", "Millerpuram": "628008",
+        "Bryant Nagar": "628008"}
+FIRST = ["Arun", "Priya", "Karthik", "Lakshmi", "Senthil", "Divya", "Vignesh", "Meena", "Prakash", "Kavitha", "Balaji",
+         "Revathi", "Ganesh", "Nandhini", "Hari", "Saranya", "Mohan", "Janani", "Ramesh", "Uma"]
+LAST = ["Kumar", "Rajan", "Krishnan", "Natarajan", "Sundaram", "Pandian", "Iyer", "Pillai", "Selvaraj", "Durai"]
+
+
+def q(s):
+    if s is None:
+        return "NULL"
+    if isinstance(s, bool):
+        return "TRUE" if s else "FALSE"
+    if isinstance(s, (int, float)):
+        return str(s)
+    return "'" + str(s).replace("\\", "\\\\").replace("'", "''") + "'"
+
+
+def slugify(s):
+    s = unicodedata.normalize("NFKD", s).encode("ascii", "ignore").decode()  # Café -> Cafe
+    out = "".join(c.lower() if c.isalnum() else "-" for c in s)
+    while "--" in out:
+        out = out.replace("--", "-")
+    return out.strip("-")
+
+
+def to_utc(hhmm_local):
+    h, m = map(int, hhmm_local.split(":"))
+    total = (h * 60 + m - 330) % (24 * 60)
+    return f"{total // 60:02d}:{total % 60:02d}"
+
+
+def phone():
+    return "+91" + random.choice("6789") + "".join(random.choice("0123456789") for _ in range(9))
+
+
+out = []
+w = out.append
+
+
+def insert(table, cols, rows):
+    if rows:
+        w(f"INSERT INTO {table} ({', '.join(cols)}) VALUES")
+        w(",\n".join("  (" + ", ".join(r) + ")" for r in rows) + ";")
+        w("")
+
+
+w("-- BookEasy demo cinemas, showtimes, restaurants and cafés (Tamil Nadu). Load after demo-tamilnadu.sql.")
+w("-- GENERATED by backend/seed/generate_movies_dining.py - edit the script, not this file.")
+w("-- Everything here is fictional. Owners: demo.venue.*@example.com / Demo@1234. DO NOT run against production.")
+w(f"-- Showtimes cover the {SHOW_DAYS} days after loading; load the file again for fresh ones.")
+w("SET NAMES utf8mb4;")
+w("START TRANSACTION;")
+w("")
+w("-- Remove earlier demo venues and movies")
+w("CREATE TEMPORARY TABLE demo_venue_users AS SELECT id FROM users WHERE email LIKE 'demo.venue.%@example.com';")
+w("CREATE TEMPORARY TABLE demo_venue_orgs AS SELECT o.id FROM organizations o JOIN organization_owners oo ON oo.organization_id = o.id "
+  "WHERE oo.user_id IN (SELECT id FROM demo_venue_users);")
+w("-- Bookings made at demo businesses: their payment records go first (they don't cascade).")
+w("CREATE TEMPORARY TABLE demo_appts AS SELECT id FROM appointments WHERE organization_id IN (SELECT id FROM demo_venue_orgs);")
+w("DELETE FROM refunds WHERE appointment_id IN (SELECT id FROM demo_appts);")
+w("DELETE FROM commission_records WHERE appointment_id IN (SELECT id FROM demo_appts);")
+w("DELETE FROM payments WHERE appointment_id IN (SELECT id FROM demo_appts);")
+w("DELETE FROM reviews WHERE appointment_id IN (SELECT id FROM demo_appts);")
+w("DROP TEMPORARY TABLE demo_appts;")
+w("DELETE FROM appointments WHERE organization_id IN (SELECT id FROM demo_venue_orgs);")
+w("DELETE FROM organizations WHERE id IN (SELECT id FROM demo_venue_orgs);")
+w("DELETE FROM users WHERE id IN (SELECT id FROM demo_venue_users);")
+w("DELETE FROM uploaded_files WHERE storage_key LIKE 'public/demo/venue-%';")
+w("DELETE FROM movies WHERE title IN (" + ", ".join(q(m[0]) for m in MOVIES + UPCOMING) + ");")
+w("DROP TEMPORARY TABLE demo_venue_users;")
+w("DROP TEMPORARY TABLE demo_venue_orgs;")
+w("")
+for var, table in [("u", "users"), ("o", "organizations"), ("b", "organization_branches"), ("s", "services"),
+                   ("m", "movies"), ("sc", "cinema_screens"), ("f", "uploaded_files")]:
+    w(f"SET @{var} = (SELECT COALESCE(MAX(id), 0) FROM {table});")
+w("")
+
+insert("movies", ["id", "title", "languages", "certificate", "genres", "duration_minutes", "synopsis", "cast_names",
+                  "release_date", "poster_from", "poster_to", "is_active", "created_at"],
+       [[f"@m + {i + 1}", q(t), q(lang), q(cert), q(gen), str(dur), q(syn), q(cast),
+         f"UTC_DATE() - INTERVAL {random.randint(1, 20)} DAY", q(c1), q(c2), "TRUE", "UTC_TIMESTAMP(6)"]
+        for i, (t, lang, cert, gen, dur, c1, c2, syn, cast) in enumerate(MOVIES)]
+       + [[f"@m + {len(MOVIES) + i + 1}", q(t), q(lang), q(cert), q(gen), str(dur), q(syn), q(cast),
+           f"UTC_DATE() + INTERVAL {days} DAY", q(c1), q(c2), "TRUE", "UTC_TIMESTAMP(6)"]
+          for i, (t, lang, cert, gen, dur, c1, c2, syn, cast, days) in enumerate(UPCOMING)])
+
+users, roles, orgs, owners, verifs, branches, hours, services, profiles, screens, shows, menu = ([] for _ in range(12))
+offer_rows, dining_orgs = [], []
+venues = [("CINEMA", c) for c in CINEMAS] + [("DINING", r) for r in RESTAURANTS]
+for n, (kind, v) in enumerate(venues, start=1):
+    first, last = random.choice(FIRST), random.choice(LAST)
+    users.append([f"@u + {n}", q(f"{first} {last}"), q(f"demo.venue.{slugify(first)}{n}@example.com"), q(phone()),
+                  q(PASSWORD_HASH), "'ACTIVE'", "UTC_TIMESTAMP(6)", "UTC_TIMESTAMP(6)", "'en'", "UTC_TIMESTAMP(6)", "UTC_TIMESTAMP(6)"])
+    roles += [[f"@u + {n}", "1"], [f"@u + {n}", "2"]]
+    if kind == "CINEMA":
+        name, city, locality, lat, lng, scr = v
+        sub, desc = CINEMA_SUB, f"Neighbourhood multiplex in {locality} with {len(scr)} screen{'s' if len(scr) > 1 else ''}, online seat selection and snacks counter."
+        hours_key = "cinema"
+    else:
+        name, sub, city, locality, lat, lng, cuisines, menu_key, cost, veg, cap, offer, feats, hours_key = v
+        desc = f"{cuisines} in {locality}, {city}. Book a table online - it's free."
+    slug = f"{slugify(name)}-{slugify(city)}"
+    org_phone = phone()
+    days_ago = random.randint(30, 200)
+    orgs.append([f"@o + {n}", str(sub), q(name), q(slug), q(desc), q(f"demo.contact.{slug[:40]}@example.com"), q(org_phone),
+                 "'APPROVED'", "'INSTANT'", f"UTC_TIMESTAMP(6) - INTERVAL {days_ago - 1} DAY",
+                 f"UTC_TIMESTAMP(6) - INTERVAL {days_ago - 3} DAY", f"@u + {n}",
+                 f"UTC_TIMESTAMP(6) - INTERVAL {days_ago} DAY", "UTC_TIMESTAMP(6)"])
+    owners.append([f"@o + {n}", f"@u + {n}", "'PRIMARY'", "UTC_TIMESTAMP(6)"])
+    verifs.append([f"@o + {n}", "'SUBMITTED'", "'DRAFT'", "'PENDING'", "NULL", f"UTC_TIMESTAMP(6) - INTERVAL {days_ago - 1} DAY"])
+    verifs.append([f"@o + {n}", "'APPROVED'", "'PENDING'", "'APPROVED'", "'Documents verified (demo data)'",
+                   f"UTC_TIMESTAMP(6) - INTERVAL {days_ago - 3} DAY"])
+    street = random.choice(["Main Road", "Gandhi Street", "Nehru Street", "Kamarajar Salai", "Periyar Street", "Car Street"])
+    branches.append([f"@b + {n}", f"@o + {n}", "'Main branch'", q(f"No. {random.randint(1, 250)}, {street}"), "NULL",
+                     q(locality), q(city), "'Tamil Nadu'", q(PINS[locality]), str(lat), str(lng), q(org_phone),
+                     "UTC_TIMESTAMP(6)", "UTC_TIMESTAMP(6)"])
+    o_, c_, bs, be = HOURS[hours_key]
+    for d in range(1, 8):
+        hours.append([f"@b + {n}", str(d), q(o_), q(c_), q(bs), q(be)])
+    services.append([f"@s + {n}", f"@o + {n}", q("Movie tickets" if kind == "CINEMA" else "Table booking"),
+                     "180" if kind == "CINEMA" else "90", "0.00", "FALSE", "30", "0", "FALSE", "UTC_TIMESTAMP(6)", "UTC_TIMESTAMP(6)"])
+    if kind == "CINEMA":
+        profiles.append([f"@o + {n}", "'CINEMA'", f"@s + {n}", "NULL", "NULL", "FALSE", "NULL", "NULL",
+                         q("Dolby sound, Parking, Wheelchair access, Food court"), "'CAFE'"])
+        for screen_name, layout, fmt in scr:
+            screens.append((n, screen_name, layout, fmt))
+    else:
+        profiles.append([f"@o + {n}", "'DINING'", f"@s + {n}", q(cuisines), f"{cost:.2f}", q(veg), str(cap), q(offer), q(feats),
+                         q("PREMIUM" if name in PREMIUM else "CAFE")])
+        for title, percent, meal in OFFERS.get(name, []):
+            offer_rows.append([f"@o + {n}", q(title), str(percent), q(meal), "UTC_TIMESTAMP(6)"])
+        dining_orgs.append((n, name))
+        sort = 0
+        for section, items in MENUS[menu_key]:
+            for dish, price, is_veg, best, about in items:
+                if veg and not is_veg:
+                    continue
+                sort += 1
+                menu.append([f"@o + {n}", q(section), q(dish), q(about), f"{price:.2f}", q(is_veg), q(best), str(sort)])
+
+insert("users", ["id", "full_name", "email", "phone_e164", "password_hash", "status", "email_verified_at",
+                 "phone_verified_at", "preferred_language", "created_at", "updated_at"], users)
+insert("user_roles", ["user_id", "role_id"], roles)
+insert("organizations", ["id", "subcategory_id", "name", "slug", "description", "contact_email", "contact_phone",
+                         "verification_status", "confirmation_mode", "submitted_at", "approved_at", "created_by",
+                         "created_at", "updated_at"], orgs)
+insert("organization_owners", ["organization_id", "user_id", "role", "created_at"], owners)
+insert("organization_verifications", ["organization_id", "action", "from_status", "to_status", "reason", "created_at"], verifs)
+insert("organization_branches", ["id", "organization_id", "name", "address_line1", "address_line2", "locality", "city",
+                                 "state", "pincode", "latitude", "longitude", "phone", "created_at", "updated_at"], branches)
+insert("working_hours", ["branch_id", "day_of_week", "opens_at", "closes_at", "break_start", "break_end"], hours)
+insert("services", ["id", "organization_id", "name", "duration_minutes", "price", "requires_staff", "slot_interval_minutes",
+                    "min_notice_minutes", "is_active", "created_at", "updated_at"], services)
+insert("venue_profiles", ["organization_id", "kind", "booking_service_id", "cuisines", "cost_for_two", "veg_only",
+                          "capacity_per_slot", "offer_text", "features", "dining_tier"], profiles)
+insert("dining_offers", ["organization_id", "title", "percent", "meal", "created_at"], offer_rows)
+
+# Past diners: completed table bookings with reviews, so restaurants show ratings.
+diner_base = len(venues)
+insert("users", ["id", "full_name", "email", "phone_e164", "password_hash", "status", "email_verified_at",
+                 "phone_verified_at", "preferred_language", "created_at", "updated_at"],
+       [[f"@u + {diner_base + i + 1}", q(name), q(f"demo.venue.diner{i + 1}@example.com"), q(phone()), q(PASSWORD_HASH), "'ACTIVE'",
+         "UTC_TIMESTAMP(6)", "UTC_TIMESTAMP(6)", "'en'", "UTC_TIMESTAMP(6)", "UTC_TIMESTAMP(6)"] for i, name in enumerate(DINERS)])
+insert("user_roles", ["user_id", "role_id"], [[f"@u + {diner_base + i + 1}", "1"] for i in range(len(DINERS))])
+REF_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
+past, past_reviews = [], []
+for n, name in dining_orgs:
+    quality = random.choice([5, 4, 4, 5])
+    for k in range(random.randint(3, 6)):
+        guests = random.choice([2, 2, 3, 4])
+        days = random.randint(3, 60)
+        hhmm = to_utc(random.choice(["13:00", "13:30", "20:00", "20:30", "19:30"]))
+        start = f"TIMESTAMP(UTC_DATE() - INTERVAL {days} DAY, '{hhmm}:00')"
+        cover = (25 if name in PREMIUM else 10) * guests
+        ref = "BD" + "".join(random.choice(REF_ALPHABET) for _ in range(8))
+        diner = diner_base + 1 + random.randrange(len(DINERS))
+        past.append([f"@a + {len(past) + 1}", q(ref), f"@u + {diner}", f"@o + {n}", f"@b + {n}", f"@s + {n}", start,
+                     f"{start} + INTERVAL 90 MINUTE", f"{start} + INTERVAL 90 MINUTE", "'COMPLETED'", q(f"Table for {guests}"),
+                     f"{cover:.2f}", "0.00", f"{cover:.2f}", str(guests), f"{start} - INTERVAL 5 MINUTE",
+                     f"{start} + INTERVAL 90 MINUTE", f"{start} - INTERVAL 2 DAY", f"{start} + INTERVAL 90 MINUTE"])
+        rating = max(3, min(5, quality + random.choice([0, 0, -1, 1])))
+        past_reviews.append([f"@a + {len(past)}", f"@o + {n}", f"@u + {diner}", str(rating), q(random.choice(DINING_REVIEWS[rating])),
+                             f"{start} + INTERVAL 1 DAY", f"{start} + INTERVAL 1 DAY"])
+w("SET @a = (SELECT COALESCE(MAX(id), 0) FROM appointments);")
+insert("appointments", ["id", "reference", "customer_id", "organization_id", "branch_id", "service_id", "starts_at", "ends_at",
+                        "blocked_until", "status", "service_name", "service_price", "platform_fee", "total_amount", "party_size",
+                        "checked_in_at", "completed_at", "created_at", "updated_at"], past)
+insert("reviews", ["appointment_id", "organization_id", "customer_id", "rating", "comment", "created_at", "updated_at"], past_reviews)
+w("UPDATE organizations o JOIN (SELECT organization_id, ROUND(AVG(rating), 2) avg_r, COUNT(*) n FROM reviews "
+  "WHERE status = 'VISIBLE' GROUP BY organization_id) r ON r.organization_id = o.id "
+  "SET o.rating_avg = r.avg_r, o.review_count = r.n WHERE o.id > @o;")
+w("")
+insert("menu_items", ["organization_id", "section", "name", "description", "price", "is_veg", "is_bestseller", "sort_order"], menu)
+
+
+screen_rows, show_rows = [], []
+for i, (n, screen_name, layout, fmt) in enumerate(screens, start=1):
+    screen_rows.append([f"@sc + {i}", f"@b + {n}", q(screen_name), q(json.dumps(LAYOUTS[layout], separators=(",", ":"))),
+                        "UTC_TIMESTAMP(6)"])
+    tiers = {r["tier"] for r in LAYOUTS[layout]}
+    extra = {"2D": 0, "3D": 60, "IMAX": 140, "4DX": 200}[fmt]
+    city_bump = 20 if venues[n - 1][1][1] == "Chennai" else 0
+    prices = json.dumps({t: PRICES[t] + extra + city_bump for t in ["CLASSIC", "PRIME", "RECLINER"] if t in tiers})
+    # Each screen plays two films a day; the line-up changes every few days.
+    for day in range(SHOW_DAYS):
+        week_slot = (i + day // 4) % len(MOVIES)
+        films = [week_slot, (week_slot + 3) % len(MOVIES)]
+        for k, local in enumerate(SHOW_TIMES):
+            m_idx = films[0] if k in (0, 2) else films[1]
+            title, langs = MOVIES[m_idx][0], MOVIES[m_idx][1]
+            language = langs.split(", ")[0] if k != 3 else langs.split(", ")[-1]
+            show_rows.append([f"@sc + {i}", f"@m + {m_idx + 1}",
+                              f"TIMESTAMP(UTC_DATE() + INTERVAL {day} DAY, '{to_utc(local)}:00')", q(fmt), q(language),
+                              q(prices), "UTC_TIMESTAMP(6)"])
+
+insert("cinema_screens", ["id", "branch_id", "name", "layout", "created_at"], screen_rows)
+for i in range(0, len(show_rows), 300):
+    insert("showtimes", ["screen_id", "movie_id", "starts_at", "format", "language", "prices", "created_at"], show_rows[i:i + 300])
+
+# ----- photos: movie posters and a cover for every cinema and restaurant -----
+SEED_DIR = Path(__file__).parent
+file_rows, copy_plan, poster_of, cover_of = [], {}, {}, {}
+
+
+def add_photo(rel, key, purpose, owner):
+    data = (SEED_DIR / "photos" / rel).read_bytes()
+    n = len(file_rows) + 1
+    file_rows.append([f"@f + {n}", q(str(uuid.uuid5(uuid.NAMESPACE_URL, "bookeasy-demo:" + key))), q(key),
+                      q(Path(rel).name), "'image/jpeg'", str(len(data)), q(hashlib.sha256(data).hexdigest()), "'PUBLIC'",
+                      q(purpose), owner, "UTC_TIMESTAMP(6)"])
+    copy_plan[key] = "photos/" + rel
+    return n
+
+
+for i, m in enumerate(MOVIES + UPCOMING):
+    poster_of[i + 1] = add_photo(f"movies/{slugify(m[0])}.jpg", f"public/demo/venue-poster-{slugify(m[0])}.jpg",
+                                 "MOVIE_POSTER", "NULL")
+cinema_n = dining_n = 0
+for n, (kind, v) in enumerate(venues, start=1):
+    if kind == "CINEMA":
+        rel, cinema_n = f"venues/cinema-{cinema_n}.jpg", cinema_n + 1
+    else:
+        rel, dining_n = f"venues/dining-{dining_n}.jpg", dining_n + 1
+    cover_of[n] = add_photo(rel, f"public/demo/venue-cover-{n}-{slugify(v[0])}.jpg", "ORGANIZATION_COVER", f"@u + {n}")
+
+insert("uploaded_files", ["id", "public_id", "storage_key", "original_name", "content_type", "size_bytes", "sha256",
+                          "visibility", "purpose", "owner_user_id", "created_at"], file_rows)
+for m, f in poster_of.items():
+    w(f"UPDATE movies SET poster_file_id = @f + {f} WHERE id = @m + {m};")
+for o, f in cover_of.items():
+    w(f"UPDATE organizations SET cover_file_id = @f + {f} WHERE id = @o + {o};")
+w("")
+(SEED_DIR / "demo-venue-photo-files.json").write_text(json.dumps(copy_plan, indent=1), encoding="utf-8")
+
+w("COMMIT;")
+w(f"-- {len(MOVIES)} movies (+{len(UPCOMING)} coming soon), {len(CINEMAS)} cinemas, {len(screen_rows)} screens, {len(show_rows)} shows, "
+  f"{len(RESTAURANTS)} restaurants/cafés, {len(menu)} dishes, {len(offer_rows)} offers, {len(past_reviews)} reviews, "
+  f"{len(file_rows)} photos")
+Path(__file__).with_name("demo-movies-dining.sql").write_text("\n".join(out) + "\n", encoding="utf-8")
+print(out[-1])
