@@ -94,4 +94,48 @@ class DiscoveryIT extends OrganizationTestBase {
         JsonNode sub = read(mvc.perform(get("/api/v1/public/suggest?q=dental")).andReturn()).path("data");
         assertThat(sub).anySatisfy(n -> assertThat(n.path("type").asText()).isEqualTo("SUBCATEGORY"));
     }
+
+    private JsonNode quick(String query) throws Exception {
+        return read(mvc.perform(get("/api/v1/public/quick-search?" + query)).andExpect(status().isOk()).andReturn()).path("data");
+    }
+
+    @Test
+    void quickSearchFindsMoviesBusinessesAndEventsNearby() throws Exception {
+        String tag = UUID.randomUUID().toString().substring(0, 6);
+        // Jaipur: far from the other tests' businesses.
+        String slug = approved("Pink City Dental " + tag, 26.9124, 75.7873, "Check-up", "500.00");
+        createDraft(verifiedCustomer(), subcategoryId("dental-clinic"), "Draft Dental " + tag); // never listed
+        long orgId = jdbc.queryForObject("SELECT id FROM organizations WHERE slug = ?", Long.class, slug);
+        jdbc.update("INSERT INTO promotions (organization_id, title, kind, valid_until, created_at) VALUES (?, ?, 'EVENT', ?, NOW(6))",
+                orgId, "Free dental camp " + tag, java.sql.Date.valueOf(java.time.LocalDate.now().plusDays(30)));
+        jdbc.update("INSERT INTO promotions (organization_id, title, kind, valid_until, created_at) VALUES (?, ?, 'EVENT', ?, NOW(6))",
+                orgId, "Old camp " + tag, java.sql.Date.valueOf(java.time.LocalDate.now().minusDays(30))); // over
+        jdbc.update("""
+                INSERT INTO movies (title, languages, certificate, genres, duration_minutes, release_date, created_at)
+                VALUES (?, 'Tamil', 'UA', 'Drama', 120, CURDATE(), NOW(6))""", "Movie " + tag);
+
+        JsonNode found = quick("lat=26.91&lng=75.79&q=" + tag);
+        assertThat(found.path("trending").asBoolean()).isFalse();
+        assertThat(found.path("items")).extracting(i -> i.path("kind").asText() + ":" + i.path("title").asText())
+                .containsExactlyInAnyOrder("MOVIE:Movie " + tag, "BUSINESS:Pink City Dental " + tag, "EVENT:Free dental camp " + tag);
+        JsonNode business = java.util.stream.StreamSupport.stream(found.path("items").spliterator(), false)
+                .filter(i -> i.path("kind").asText().equals("BUSINESS")).findFirst().orElseThrow();
+        assertThat(business.path("category").path("en").asText()).isEqualTo("Dental clinic");
+        assertThat(business.path("href").asText()).isEqualTo("/b/" + slug);
+
+        String healthcare = jdbc.queryForObject("""
+                SELECT c.slug FROM categories c JOIN subcategories s ON s.category_id = c.id WHERE s.slug = 'dental-clinic'""", String.class);
+        assertThat(quick("lat=26.91&lng=75.79&tab=" + healthcare + "&q=" + tag).path("items"))
+                .extracting(i -> i.path("kind").asText()).containsExactlyInAnyOrder("BUSINESS", "EVENT");
+        assertThat(quick("lat=26.91&lng=75.79&tab=movies&q=" + tag).path("items"))
+                .extracting(i -> i.path("kind").asText()).containsExactly("MOVIE");
+        // Too far away: only the movie (movies match anywhere; shows are picked on the movie page).
+        assertThat(quick("lat=13.04&lng=80.23&q=" + tag).path("items"))
+                .extracting(i -> i.path("kind").asText()).containsExactly("MOVIE");
+
+        JsonNode trending = quick("lat=26.91&lng=75.79");
+        assertThat(trending.path("trending").asBoolean()).isTrue();
+        assertThat(trending.path("items")).extracting(i -> i.path("title").asText()).contains("Pink City Dental " + tag);
+        mvc.perform(get("/api/v1/public/quick-search?lat=51.5&lng=-0.12")).andExpect(status().isBadRequest());
+    }
 }

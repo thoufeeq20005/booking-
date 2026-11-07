@@ -9,6 +9,7 @@ import { LoadingState } from '@/components/ui/StateMessage';
 import { useAuth } from '@/contexts/AuthContext';
 import { NotificationBell } from '@/features/engagement/NotificationBell';
 import { LanguageSelector } from '@/components/common/LanguageSelector';
+import { SearchButton } from '@/features/search/SearchOverlay';
 import { usePublicConfig } from '@/services/platformApi';
 import { formatWallTime } from '@/utils/format';
 import { intlLocale } from '@/i18n';
@@ -111,13 +112,15 @@ function SiteHeader() {
           <RoleLinks />
         </nav>
         <div className="ml-auto hidden items-center gap-2 md:flex">
+          <SearchButton />
           <LanguageSelector />
           <span className="mx-1 h-6 w-px bg-border" aria-hidden="true" />
           <AuthControls />
         </div>
+        <SearchButton className="ml-auto md:hidden" />
         <button
           type="button"
-          className="ml-auto inline-flex h-10 w-10 items-center justify-center rounded-xl text-fg-muted hover:bg-surface-muted md:hidden"
+          className="inline-flex h-10 w-10 items-center justify-center rounded-xl text-fg-muted hover:bg-surface-muted md:hidden"
           aria-label={open ? t('header.closeMenu') : t('header.openMenu')}
           aria-expanded={open}
           aria-controls="mobile-menu"
