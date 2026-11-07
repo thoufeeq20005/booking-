@@ -9,6 +9,7 @@ committed so generating the SQL needs no network.
 import io
 import json
 import time
+import urllib.error
 import urllib.parse
 import urllib.request
 from pathlib import Path
@@ -59,8 +60,16 @@ def search(q):
     if SOURCES:
         params["source"] = SOURCES
     url = "https://api.openverse.org/v1/images/?" + urllib.parse.urlencode(params)
-    with urllib.request.urlopen(urllib.request.Request(url, headers=UA), timeout=30) as r:
-        return json.load(r)["results"]
+    for attempt in range(6):
+        try:
+            with urllib.request.urlopen(urllib.request.Request(url, headers=UA), timeout=30) as r:
+                return json.load(r)["results"]
+        except urllib.error.HTTPError as e:
+            if e.code not in (403, 429) or attempt == 5:
+                raise
+            # Anonymous Openverse use is rate limited; wait and try again.
+            print(f"  rate limited, waiting {30 * (attempt + 1)} s")
+            time.sleep(30 * (attempt + 1))
 
 
 def fetch(url):

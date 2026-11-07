@@ -1170,7 +1170,6 @@
     "changePoster": "पोस्टर बदलें",
     "diningHeadline": "रेस्टोरेंट खोजें, टेबल बुक करें, बिल चुकाएँ –",
     "diningHeadlineAccent": "सब एक जगह।",
-    "heroTitle": "शानदार टेबल, कम बिल",
     "step": {
       "discover": {
         "title": "खोजें",
@@ -1275,6 +1274,23 @@
     "discountPercent": "छूट %",
     "when": "कब",
     "addOffer": "ऑफ़र जोड़ें",
-    "removeOffer": "{{name}} हटाएँ"
+    "removeOffer": "{{name}} हटाएँ",
+    "heroEyebrow": "BookEasy पर डाइनिंग",
+    "premiumTag": "प्रीमियम",
+    "flatOff": "फ़्लैट {{percent}}% छूट",
+    "opensAt": "{{time}} बजे खुलेगा",
+    "closedNow": "अभी बंद",
+    "openUntil": "अभी खुला · {{time}} तक",
+    "spotlightSub": "अभी आपके पास सबसे बड़ी बचत",
+    "cafesSub": "कॉफ़ी, डेज़र्ट और सुकून भरी दोपहर",
+    "premiumSub": "ख़ास शामों के लिए फ़ाइन डाइनिंग, रूफ़टॉप और लाउंज",
+    "familyTitle": "फ़ैमिली रेस्टोरेंट",
+    "familySub": "बड़ी टेबल, भरपेट खाना, जेब पर हल्का",
+    "sortBy": "क्रम",
+    "sort": {
+      "DISTANCE": "सबसे पास",
+      "RATING": "टॉप रेटेड",
+      "COST": "क़ीमत: कम से ज़्यादा"
+    }
   }
 }

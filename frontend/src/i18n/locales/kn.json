@@ -1170,7 +1170,6 @@
     "changePoster": "ಪೋಸ್ಟರ್ ಬದಲಿಸಿ",
     "diningHeadline": "ರೆಸ್ಟೋರೆಂಟ್ ಹುಡುಕಿ, ಟೇಬಲ್ ಬುಕ್ ಮಾಡಿ, ಬಿಲ್ ಪಾವತಿಸಿ –",
     "diningHeadlineAccent": "ಎಲ್ಲವೂ ಒಂದೇ ಕಡೆ.",
-    "heroTitle": "ಉತ್ತಮ ಟೇಬಲ್, ಕಡಿಮೆ ಬಿಲ್",
     "step": {
       "discover": {
         "title": "ಹುಡುಕಿ",
@@ -1275,6 +1274,23 @@
     "discountPercent": "ರಿಯಾಯಿತಿ %",
     "when": "ಯಾವಾಗ",
     "addOffer": "ಆಫರ್ ಸೇರಿಸಿ",
-    "removeOffer": "{{name}} ತೆಗೆದುಹಾಕಿ"
+    "removeOffer": "{{name}} ತೆಗೆದುಹಾಕಿ",
+    "heroEyebrow": "BookEasy ನಲ್ಲಿ ಡೈನಿಂಗ್",
+    "premiumTag": "ಪ್ರೀಮಿಯಂ",
+    "flatOff": "ಫ್ಲ್ಯಾಟ್ {{percent}}% ರಿಯಾಯಿತಿ",
+    "opensAt": "{{time}}ಕ್ಕೆ ತೆರೆಯುತ್ತದೆ",
+    "closedNow": "ಈಗ ಮುಚ್ಚಿದೆ",
+    "openUntil": "ಈಗ ತೆರೆದಿದೆ · {{time}}ರವರೆಗೆ",
+    "spotlightSub": "ಈಗ ನಿಮ್ಮ ಹತ್ತಿರ ಅತಿ ದೊಡ್ಡ ಉಳಿತಾಯ",
+    "cafesSub": "ಕಾಫಿ, ಸಿಹಿ ತಿನಿಸು, ನಿಧಾನದ ಮಧ್ಯಾಹ್ನಗಳು",
+    "premiumSub": "ವಿಶೇಷ ಸಂಜೆಗಳಿಗೆ ಫೈನ್ ಡೈನಿಂಗ್, ರೂಫ್‌ಟಾಪ್, ಲೌಂಜ್‌ಗಳು",
+    "familyTitle": "ಕುಟುಂಬ ರೆಸ್ಟೋರೆಂಟ್‌ಗಳು",
+    "familySub": "ದೊಡ್ಡ ಟೇಬಲ್, ತುಂಬು ಊಟ, ಕಡಿಮೆ ಖರ್ಚು",
+    "sortBy": "ವಿಂಗಡಿಸಿ",
+    "sort": {
+      "DISTANCE": "ಹತ್ತಿರ",
+      "RATING": "ಉನ್ನತ ರೇಟಿಂಗ್",
+      "COST": "ಬೆಲೆ: ಕಡಿಮೆಯಿಂದ"
+    }
   }
 }

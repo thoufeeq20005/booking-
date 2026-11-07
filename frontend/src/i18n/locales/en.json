@@ -1170,7 +1170,6 @@
     "changePoster": "Change poster",
     "diningHeadline": "Discover restaurants, book tables, pay bills –",
     "diningHeadlineAccent": "all in one place.",
-    "heroTitle": "Great tables, better bills",
     "step": {
       "discover": {
         "title": "Discover",
@@ -1275,6 +1274,23 @@
     "discountPercent": "Discount %",
     "when": "When",
     "addOffer": "Add offer",
-    "removeOffer": "Remove {{name}}"
+    "removeOffer": "Remove {{name}}",
+    "heroEyebrow": "Dining on BookEasy",
+    "premiumTag": "Premium",
+    "flatOff": "Flat {{percent}}% OFF",
+    "opensAt": "Opens at {{time}}",
+    "closedNow": "Closed now",
+    "openUntil": "Open now · till {{time}}",
+    "spotlightSub": "The biggest savings near you right now",
+    "cafesSub": "Coffee, desserts and slow afternoons",
+    "premiumSub": "Fine dining, rooftops and lounges for special evenings",
+    "familyTitle": "Family restaurants",
+    "familySub": "Big tables, big portions, easy on the wallet",
+    "sortBy": "Sort by",
+    "sort": {
+      "DISTANCE": "Nearest",
+      "RATING": "Top rated",
+      "COST": "Cost: low to high"
+    }
   }
 }

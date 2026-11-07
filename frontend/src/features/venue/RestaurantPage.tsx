@@ -6,7 +6,6 @@ import { ArrowLeft, BadgePercent, Check, Clock, MapPin, Phone, Star, Users, X } 
 import clsx from 'clsx';
 import { Alert } from '@/components/ui/Alert';
 import { Button, buttonClasses } from '@/components/ui/Button';
-import { Card } from '@/components/ui/Card';
 import { LoadingState } from '@/components/ui/StateMessage';
 import { useAuth } from '@/contexts/AuthContext';
 import { BusinessReviews } from '@/features/engagement/ReviewWidgets';
@@ -19,6 +18,7 @@ import type { PublicProfile } from '@/services/discoveryApi';
 import { venueApi, type DiningDetails, type DiningOffer, type Restaurant, type TableSlot } from '@/services/venueApi';
 import { formatINR, formatWallTime } from '@/utils/format';
 import { DiningMenu } from './DiningPanel';
+import { RestaurantCard } from './RestaurantCard';
 import { useVenueFormat } from './shared';
 
 const offerFor = (offers: DiningOffer[], meal: 'LUNCH' | 'DINNER') => offers.filter((o) => o.meal === 'ALL_DAY' || o.meal === meal);
@@ -304,21 +304,8 @@ export function RestaurantPage({ profile: p, details }: { profile: PublicProfile
         <section id="r-more" className="scroll-mt-32">
           <h2 className="text-xl font-bold">{t('venue.exploreMore')}</h2>
           {others.length === 0 ? <p className="mt-2 text-sm text-fg-muted">{t('venue.noRestaurants')}</p> : (
-            <ul className="-mx-1 mt-3 flex gap-4 overflow-x-auto px-1 pb-2">
-              {others.map((r) => (
-                <li key={r.branchId} className="w-60 shrink-0">
-                  <Link to={`/b/${r.slug}`} className="group block">
-                    <Card className="overflow-hidden">
-                      <div className="aspect-[16/10] bg-surface-muted">{r.coverUrl && <img src={fileUrl(r.coverUrl)} alt="" loading="lazy" className="h-full w-full object-cover" />}</div>
-                      <div className="p-3 text-sm">
-                        <p className="truncate font-semibold group-hover:text-brand-700">{r.name}</p>
-                        <p className="truncate text-fg-muted">{t('search.distance', { km: r.distanceKm })}{r.costForTwo != null && ` · ${t('venue.costForTwo', { price: formatINR(r.costForTwo) })}`}</p>
-                        {r.bestOfferPercent != null && <p className="text-brand-700">{r.bestOfferTitle}</p>}
-                      </div>
-                    </Card>
-                  </Link>
-                </li>
-              ))}
+            <ul className="-mx-1 mt-3 flex gap-5 overflow-x-auto px-1 pb-2">
+              {others.map((r) => <li key={r.branchId} className="w-72 shrink-0"><RestaurantCard r={r} /></li>)}
             </ul>
           )}
         </section>
