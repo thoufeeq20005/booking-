@@ -150,9 +150,11 @@ describe('dining', () => {
   it('filters restaurants by mood on the Dining home', async () => {
     api(null);
     renderWithProviders(<AppRoutes />, { route: '/dining?city=chennai' });
-    expect(await screen.findByRole('link', { name: /Brew Cafe/ })).toBeInTheDocument();
+    // Home: rows (spotlight, cafés, premium, family) plus the full list, so a place can appear more than once.
+    expect((await screen.findAllByRole('link', { name: /Brew Cafe/ })).length).toBeGreaterThan(0);
+    expect(screen.getByRole('heading', { name: 'Cozy cafés' })).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: 'Premium dining' }));
-    expect(screen.queryByRole('link', { name: /Brew Cafe/ })).not.toBeInTheDocument();
+    expect(screen.queryAllByRole('link', { name: /Brew Cafe/ })).toHaveLength(0);
     expect(screen.getAllByRole('link', { name: /Dosa Corner/ }).length).toBeGreaterThan(0);
   });
 

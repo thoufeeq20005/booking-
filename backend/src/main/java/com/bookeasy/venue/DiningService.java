@@ -84,7 +84,7 @@ public class DiningService {
     public record Restaurant(long organizationId, String slug, String name, String kind, BigDecimal ratingAvg, int reviewCount,
                              String coverUrl, String cuisines, BigDecimal costForTwo, boolean vegOnly, String offer,
                              long branchId, String locality, String city, double distanceKm, String tier, Integer bestOfferPercent,
-                             String bestOfferTitle) {
+                             String bestOfferTitle, LocalTime opensAt, LocalTime closesAt) {
     }
 
     public record MenuItem(long id, String name, String description, BigDecimal price, boolean veg, boolean bestseller) {
@@ -111,7 +111,8 @@ public class DiningService {
     @Transactional(readOnly = true)
     public List<Restaurant> nearby(double lat, double lng, double radiusKm, String q) {
         MapSqlParameterSource p = new MapSqlParameterSource().addValue("lat", lat).addValue("lng", lng)
-                .addValue("radiusM", Math.min(Math.max(radiusKm, 1), MAX_RADIUS_KM) * 1000);
+                .addValue("radiusM", Math.min(Math.max(radiusKm, 1), MAX_RADIUS_KM) * 1000)
+                .addValue("dow", clock.instant().atZone(IST).getDayOfWeek().getValue());
         String filter = "";
         if (q != null && !q.isBlank()) {
             filter = " AND (LOWER(o.name) LIKE :q OR LOWER(vp.cuisines) LIKE :q)";
@@ -122,6 +123,8 @@ public class DiningService {
                 SELECT * FROM (
                   SELECT o.id, o.slug, o.name, s.slug AS kind, o.rating_avg, o.review_count, o.cover_file_id,
                          vp.cuisines, vp.cost_for_two, vp.veg_only, vp.offer_text, vp.dining_tier, b.id AS branch_id, b.locality, b.city,
+                         (SELECT wh.opens_at FROM working_hours wh WHERE wh.branch_id = b.id AND wh.day_of_week = :dow) AS opens_at,
+                         (SELECT wh.closes_at FROM working_hours wh WHERE wh.branch_id = b.id AND wh.day_of_week = :dow) AS closes_at,
                          ST_Distance_Sphere(b.location, ST_SRID(POINT(:lng, :lat), 4326)) AS distance_m
                   FROM venue_profiles vp JOIN organizations o ON o.id = vp.organization_id
                   JOIN subcategories s ON s.id = o.subcategory_id
@@ -132,7 +135,7 @@ public class DiningService {
                     rs.getBigDecimal("rating_avg"), rs.getInt("review_count"), (Long) rs.getObject("cover_file_id", Long.class),
                     rs.getString("cuisines"), rs.getBigDecimal("cost_for_two"), rs.getBoolean("veg_only"), rs.getString("offer_text"),
                     rs.getLong("branch_id"), rs.getString("locality"), rs.getString("city"), rs.getDouble("distance_m"),
-                    rs.getString("dining_tier")});
+                    rs.getString("dining_tier"), rs.getTime("opens_at"), rs.getTime("closes_at")});
         });
         Map<Long, String> covers = new java.util.HashMap<>();
         files.findAllById(raw.stream().map(r -> (Long) r[6]).filter(java.util.Objects::nonNull).toList())
@@ -150,7 +153,8 @@ public class DiningService {
             return new Restaurant((Long) r[0], (String) r[1], (String) r[2], (String) r[3], (BigDecimal) r[4],
                     (Integer) r[5], r[6] == null ? null : covers.get((Long) r[6]), (String) r[7], (BigDecimal) r[8], (Boolean) r[9],
                     (String) r[10], (Long) r[11], (String) r[12], (String) r[13], Math.round((Double) r[14] / 100.0) / 10.0,
-                    (String) r[15], o == null ? null : o.percent(), o == null ? null : o.title());
+                    (String) r[15], o == null ? null : o.percent(), o == null ? null : o.title(),
+                    r[16] == null ? null : ((Time) r[16]).toLocalTime(), r[17] == null ? null : ((Time) r[17]).toLocalTime());
         }).toList();
     }
 

@@ -98,8 +98,14 @@ four shows a day) and 14 restaurants and cafés with menus, offers, café/premiu
 
 ```bash
 mysql -uroot -p --default-character-set=utf8mb4 bookeasy < backend/seed/demo-movies-dining.sql
+mysql -uroot -p --default-character-set=utf8mb4 bookeasy < backend/seed/demo-dining-more.sql   # more cafés and premium restaurants
 python backend/seed/install_demo_photos.py   # copies all demo photos, including posters and venue covers
 ```
+
+`demo-dining-more.sql` only replaces its own restaurants (owners `demo.resto.*@example.com`), so it can be loaded
+again without touching cinema bookings. `generate_more_dining.py` lists more cafés, premium and family restaurants than
+it includes: a restaurant is added once its CC0 cover photo exists (`python backend/seed/generate_more_dining.py
+--fetch-photos`, then run it again without the flag).
 
 Showtimes cover the 21 days after you load the file. Load it again for fresh shows (this also removes
 bookings made at the demo cinemas and restaurants). Demo owners sign in as `demo.venue.<name><n>@example.com`

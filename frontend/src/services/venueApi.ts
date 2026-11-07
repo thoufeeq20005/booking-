@@ -112,6 +112,9 @@ export interface Restaurant {
   tier: DiningTier;
   bestOfferPercent?: number;
   bestOfferTitle?: string;
+  /** Today's hours (HH:mm:ss, India time); missing when closed today. */
+  opensAt?: string;
+  closesAt?: string;
 }
 
 export type DiningTier = 'CAFE' | 'PREMIUM';
