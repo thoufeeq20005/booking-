@@ -94,7 +94,7 @@ to regenerate the SQL. Never run it against production.
 ### Movies and dining demo
 
 Load this after `demo-tamilnadu.sql` to add 8 fictional movies, 8 cinemas (16 screens with seat maps and
-four shows a day) and 12 restaurants and cafés with menus:
+four shows a day) and 14 restaurants and cafés with menus, offers, café/premium cover charges and reviews:
 
 ```bash
 mysql -uroot -p --default-character-set=utf8mb4 bookeasy < backend/seed/demo-movies-dining.sql

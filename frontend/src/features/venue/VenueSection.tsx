@@ -10,7 +10,7 @@ import { EmptyState, LoadingState } from '@/components/ui/StateMessage';
 import { TextField } from '@/components/ui/TextField';
 import { useApiForm } from '@/hooks/useApiForm';
 import type { OrganizationDetail } from '@/services/organizationApi';
-import { venueApi, type SeatRow, type VenueSetup } from '@/services/venueApi';
+import { venueApi, type DiningTier, type Meal, type SeatRow, type VenueSetup } from '@/services/venueApi';
 import { formatINR } from '@/utils/format';
 import { SeatGrid } from './SeatGrid';
 import { FoodMark } from './DiningPanel';
@@ -37,6 +37,7 @@ function ProfileForm({ orgId, setup }: { orgId: number; setup: VenueSetup }) {
     features: p?.features ?? '',
   });
   const [veg, setVeg] = useState(p?.vegOnly ?? false);
+  const [tier, setTier] = useState<DiningTier>(p?.diningTier ?? 'CAFE');
   const [saved, setSaved] = useState(false);
   const set = (k: keyof typeof v) => (e: { target: { value: string } }) => setV((s) => ({ ...s, [k]: e.target.value }));
   const submit = async (e: FormEvent) => {
@@ -49,6 +50,7 @@ function ProfileForm({ orgId, setup }: { orgId: number; setup: VenueSetup }) {
       offerText: v.offerText.trim() || undefined,
       features: v.features.trim() || undefined,
       vegOnly: veg,
+      diningTier: dining ? tier : undefined,
     }));
     if (d) { apply(d); setSaved(true); }
   };
@@ -62,12 +64,58 @@ function ProfileForm({ orgId, setup }: { orgId: number; setup: VenueSetup }) {
         {dining && <TextField label={t('venue.capacity')} hint={t('venue.capacityHint')} inputMode="numeric" value={v.capacityPerSlot} onChange={set('capacityPerSlot')} error={form.fieldErrors.capacityPerSlot} />}
         <TextField label={t('venue.offer')} value={v.offerText} onChange={set('offerText')} error={form.fieldErrors.offerText} maxLength={200} />
         <TextField className="sm:col-span-2" label={t('venue.features')} hint={t('venue.featuresHint')} value={v.features} onChange={set('features')} error={form.fieldErrors.features} maxLength={300} />
+        {dining && (
+          <SelectField label={t('venue.tierLabel')} value={tier} onChange={(e) => setTier(e.target.value as DiningTier)}
+            hint={t('venue.tierHint')}>
+            <option value="CAFE">{t('venue.tierOption.CAFE')}</option>
+            <option value="PREMIUM">{t('venue.tierOption.PREMIUM')}</option>
+          </SelectField>
+        )}
         {dining && <CheckboxField label={t('venue.pureVeg')} checked={veg} onChange={setVeg} />}
         <div className="flex items-center gap-3 sm:col-span-2">
           <Button type="submit" loading={form.submitting}>{t('common.save')}</Button>
           {saved && <span className="text-sm text-success">{t('venue.saved')}</span>}
         </div>
         {form.formError && <Alert tone="error" className="sm:col-span-2">{form.formError}</Alert>}
+      </form>
+    </Card>
+  );
+}
+
+function OffersEditor({ orgId, setup }: { orgId: number; setup: VenueSetup }) {
+  const { t } = useTranslation();
+  const form = useApiForm();
+  const apply = useApply(orgId);
+  const [title, setTitle] = useState('');
+  const [percent, setPercent] = useState('20');
+  const [meal, setMeal] = useState<Meal>('ALL_DAY');
+  const add = async (e: FormEvent) => {
+    e.preventDefault();
+    const d = await form.submit(() => venueApi.addOffer(orgId, { title: title.trim() || undefined, percent: Number(percent), meal }));
+    if (d) { apply(d); setTitle(''); }
+  };
+  return (
+    <Card className="p-6">
+      <h2 className="text-lg font-semibold">{t('venue.offersTitle')}</h2>
+      <p className="mt-1 text-sm text-fg-muted">{t('venue.offersHint')}</p>
+      {setup.offers.length === 0 && <p className="mt-3 text-sm text-fg-muted">{t('venue.noOffers')}</p>}
+      <ul className="mt-3 divide-y divide-border">
+        {setup.offers.map((o) => (
+          <li key={o.id} className="flex items-center justify-between gap-3 py-2 text-sm">
+            <span><span className="font-medium">{o.title}</span> · {o.percent}% · {t(`venue.mealWhen.${o.meal}`)}</span>
+            <Button variant="ghost" size="sm" aria-label={t('venue.removeOffer', { name: o.title })}
+              onClick={() => void form.submit(() => venueApi.deleteOffer(orgId, o.id)).then(apply)}><Trash2 className="h-4 w-4" aria-hidden="true" /></Button>
+          </li>
+        ))}
+      </ul>
+      <form onSubmit={add} className="mt-4 grid gap-3 border-t border-border pt-4 sm:grid-cols-[1fr_7rem_10rem]">
+        <TextField label={t('venue.offerName')} placeholder={t('venue.offerNamePlaceholder')} value={title} onChange={(e) => setTitle(e.target.value)} maxLength={80} error={form.fieldErrors.title} />
+        <TextField label={t('venue.discountPercent')} inputMode="numeric" value={percent} onChange={(e) => setPercent(e.target.value)} error={form.fieldErrors.percent} />
+        <SelectField label={t('venue.when')} value={meal} onChange={(e) => setMeal(e.target.value as Meal)}>
+          {(['ALL_DAY', 'LUNCH', 'DINNER'] as const).map((m) => <option key={m} value={m}>{t(`venue.mealWhen.${m}`)}</option>)}
+        </SelectField>
+        {form.formError && <Alert tone="error" className="sm:col-span-3">{form.formError}</Alert>}
+        <div className="sm:col-span-3"><Button type="submit" loading={form.submitting}><Plus className="h-4 w-4" aria-hidden="true" />{t('venue.addOffer')}</Button></div>
       </form>
     </Card>
   );
@@ -312,6 +360,7 @@ export function VenueSection({ org }: { org: OrganizationDetail }) {
   return (
     <div className="space-y-6">
       <ProfileForm key={JSON.stringify(setup.profile ?? {})} orgId={id} setup={setup} />
+      {setup.profile && setup.kind === 'DINING' && <OffersEditor orgId={id} setup={setup} />}
       {setup.profile && setup.kind === 'DINING' && <MenuEditor orgId={id} setup={setup} />}
       {setup.profile && setup.kind === 'CINEMA' && <ScreenEditor org={org} setup={setup} />}
       {setup.profile && setup.kind === 'CINEMA' && setup.screens.length > 0 && <ShowEditor orgId={id} setup={setup} />}

@@ -12,7 +12,7 @@ import { BusinessReviews } from '@/features/engagement/ReviewWidgets';
 import { FavouriteButton } from '@/features/engagement/FavouriteButton';
 import { discoveryApi } from '@/services/discoveryApi';
 import { venueApi } from '@/services/venueApi';
-import { DiningFacts, DiningMenu, TableBooking } from '@/features/venue/DiningPanel';
+import { RestaurantPage } from '@/features/venue/RestaurantPage';
 import { TheatreSchedule } from '@/features/venue/TheatreSchedule';
 import { formatINR, formatWallTime } from '@/utils/format';
 
@@ -32,6 +32,8 @@ export function BusinessPage() {
 
   if (isLoading) return <LoadingState />;
   if (error || !p) return <ErrorState error={error} onRetry={() => void refetch()} />;
+  if (workflow === 'DINING' && dining.isLoading) return <LoadingState />;
+  if (workflow === 'DINING' && dining.data) return <RestaurantPage profile={p} details={dining.data} />;
 
   const priceRange = (prices: (number | string)[]) => {
     const nums = prices.map(Number);
@@ -65,8 +67,6 @@ export function BusinessPage() {
         <div className="space-y-6">
           {p.description && <Card className="whitespace-pre-line p-6 text-sm">{p.description}</Card>}
           {workflow === 'CINEMA' && <TheatreSchedule orgId={p.id} />}
-          {workflow === 'DINING' && dining.data && <DiningFacts details={dining.data} />}
-          {workflow === 'DINING' && dining.data && <DiningMenu details={dining.data} />}
           {workflow !== 'CINEMA' && workflow !== 'DINING' && <Card className="p-6">
             <h2 className="text-lg font-semibold">{t('business.tab.services')}</h2>
             <ul className="mt-3 divide-y divide-border">
@@ -122,7 +122,6 @@ export function BusinessPage() {
           ))}
         </div>
         <aside className="space-y-4">
-          {workflow === 'DINING' && dining.data && <TableBooking profile={p} details={dining.data} />}
           {workflow === 'DINING' && dining.isError && <Card className="p-5 text-sm text-fg-muted">{t('venue.notTakingBookings')}</Card>}
           {workflow !== 'CINEMA' && workflow !== 'DINING' && <BookingWizard profile={p} />}
           <Card className="space-y-2 p-5 text-sm">

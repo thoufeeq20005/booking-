@@ -115,7 +115,10 @@ public final class VenueControllers {
     }
 
     public record TableRequest(@NotNull Long branchId, @NotNull Instant startsAt, @NotNull @Min(1) @Max(10) Integer partySize,
-                               @Size(max = 500) String note) {
+                               @Size(max = 500) String note, Long offerId) {
+    }
+
+    public record BillRequest(@NotNull Long branchId, @NotNull java.math.BigDecimal amount, Long bookingId) {
     }
 
     @RestController
@@ -141,7 +144,20 @@ public final class VenueControllers {
         @Operation(summary = "Book a table (free, confirmed instantly unless the restaurant approves bookings)")
         public ApiResponse<AppointmentView> table(@Valid @RequestBody TableRequest req) {
             return ApiResponse.ok(dining.reserve(CurrentUser.require().id(), req.branchId(), req.startsAt(),
-                    req.partySize(), req.note()));
+                    req.partySize(), req.note(), req.offerId()));
+        }
+
+        @GetMapping("/dining/bill-quote")
+        @Operation(summary = "What paying a restaurant bill costs after the offer and the cover charge already paid")
+        public ApiResponse<DiningService.BillQuote> quote(@RequestParam long branchId, @RequestParam java.math.BigDecimal amount,
+                                                         @RequestParam(required = false) Long bookingId) {
+            return ApiResponse.ok(dining.quote(CurrentUser.require().id(), branchId, amount, bookingId));
+        }
+
+        @PostMapping("/dining/bills")
+        @Operation(summary = "Pay a restaurant bill (goes to payment when something is left to pay)")
+        public ApiResponse<AppointmentView> payBill(@Valid @RequestBody BillRequest req) {
+            return ApiResponse.ok(dining.payBill(CurrentUser.require().id(), req.branchId(), req.amount(), req.bookingId()));
         }
     }
 
@@ -177,6 +193,19 @@ public final class VenueControllers {
         public ApiResponse<VenueSetupService.VenueSetup> save(@PathVariable long orgId,
                                                              @RequestBody VenueSetupService.ProfileRequest req) {
             return ApiResponse.ok(setup.saveProfile(me(), orgId, req));
+        }
+
+        @PostMapping("/organizations/{orgId}/venue/offers")
+        @Operation(summary = "Add a discount on the final bill")
+        public ApiResponse<VenueSetupService.VenueSetup> addOffer(@PathVariable long orgId,
+                                                                 @RequestBody VenueSetupService.OfferRequest req) {
+            return ApiResponse.ok(setup.addOffer(me(), orgId, req));
+        }
+
+        @DeleteMapping("/organizations/{orgId}/venue/offers/{offerId}")
+        @Operation(summary = "Remove an offer (bookings that chose it keep it)")
+        public ApiResponse<VenueSetupService.VenueSetup> deleteOffer(@PathVariable long orgId, @PathVariable long offerId) {
+            return ApiResponse.ok(setup.deleteOffer(me(), orgId, offerId));
         }
 
         @PostMapping("/organizations/{orgId}/venue/menu")

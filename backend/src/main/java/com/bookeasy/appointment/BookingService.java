@@ -152,7 +152,8 @@ public class BookingService {
         Appointment a = appointments.findByIdForUpdate(id).filter(x -> x.getCustomerId() == customerId)
                 .orElseThrow(() -> ApiException.notFound("Booking"));
         CancelPreview p = preview(a);
-        if (!p.allowed()) {
+        if (!p.allowed() || (a.isBill() && a.getStatus() != Status.PENDING_PAYMENT)) {
+            // A paid bill is settled with the restaurant; it can't be cancelled here.
             throw new ApiException(ErrorCode.BOOKING_NOT_CHANGEABLE);
         }
         a.cancel(Party.CUSTOMER, blank(reason), a.getStatus() == Status.PENDING_PAYMENT ? null : p.refundAmount(), clock.instant());
@@ -165,7 +166,7 @@ public class BookingService {
     public AppointmentView reschedule(long customerId, long id, Instant startsAt, Long staffId) {
         Appointment a = appointments.findByIdForUpdate(id).filter(x -> x.getCustomerId() == customerId)
                 .orElseThrow(() -> ApiException.notFound("Booking"));
-        if (a.getShowtimeId() != null || a.getPartySize() != null) {
+        if (a.getShowtimeId() != null || a.getPartySize() != null || a.isBill()) {
             // Tickets and table bookings are cancelled and booked again rather than moved.
             throw new ApiException(ErrorCode.BOOKING_NOT_CHANGEABLE);
         }
@@ -257,7 +258,7 @@ public class BookingService {
     /** A movie ticket or table booking, created by the venue services inside their own transaction. */
     public record VenueBooking(long customerId, long organizationId, long branchId, long serviceId, Instant startsAt,
                                Instant endsAt, String title, BigDecimal price, String note, Long showtimeId,
-                               Integer partySize) {
+                               Integer partySize, boolean noPlatformFee) {
     }
 
     /** Saves the booking (holding nothing yet); the caller claims seats/tables, then calls {@link #finishVenueBooking}. */
@@ -265,7 +266,7 @@ public class BookingService {
     public Appointment createVenueBooking(VenueBooking v) {
         rateLimiter.hit("book:user:" + v.customerId(), 20, Duration.ofHours(1));
         BigDecimal price = v.price().setScale(2, RoundingMode.HALF_UP);
-        BigDecimal fee = price.multiply(settings.decimal(PlatformConfigService.COMMISSION_PERCENT))
+        BigDecimal fee = v.noPlatformFee() ? BigDecimal.ZERO.setScale(2) : price.multiply(settings.decimal(PlatformConfigService.COMMISSION_PERCENT))
                 .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
         Appointment a = new Appointment(newReference(), v.customerId(), v.organizationId(), v.branchId(), v.serviceId(),
                 null, v.startsAt(), v.endsAt(), v.endsAt(), Status.PENDING_PAYMENT, v.title(), price, fee, blank(v.note()),
@@ -347,7 +348,8 @@ public class BookingService {
                     a.getRefundAmount(), a.getCheckedInAt(), a.getRescheduleCount(),
                     withQr && a.isActive() ? qr.payload(a.getReference()) : null, paid.contains(a.getId()), reviewed.contains(a.getId()), a.getCreatedAt(),
                     a.getShowtimeId(), a.getShowtimeId() == null ? null : screenByShowtime.get(a.getShowtimeId()),
-                    seatsByAppointment.getOrDefault(a.getId(), List.of()), a.getPartySize());
+                    seatsByAppointment.getOrDefault(a.getId(), List.of()), a.getPartySize(), a.getOfferTitle(),
+                    a.getOfferPercent(), a.getBillAmount(), a.getDiscountAmount(), a.getCoverCredit());
         }).toList();
     }
 

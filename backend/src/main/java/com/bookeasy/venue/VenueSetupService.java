@@ -71,11 +71,15 @@ public class VenueSetupService {
     // ----- models -----
 
     public record ProfileRequest(String cuisines, BigDecimal costForTwo, Boolean vegOnly, Integer capacityPerSlot,
-                                 String offerText, String features) {
+                                 String offerText, String features, String diningTier) {
     }
 
+    /** diningTier: CAFE (₹10 cover per guest) or PREMIUM (₹25); see platform settings. */
     public record Profile(String cuisines, BigDecimal costForTwo, boolean vegOnly, Integer capacityPerSlot, String offerText,
-                          String features) {
+                          String features, String diningTier) {
+    }
+
+    public record OfferRequest(String title, Integer percent, String meal) {
     }
 
     public record MenuRequest(String section, String name, String description, BigDecimal price, Boolean veg,
@@ -103,7 +107,8 @@ public class VenueSetupService {
     }
 
     /** kind is null when the business's category isn't a cinema or restaurant one. */
-    public record VenueSetup(String kind, Profile profile, List<MenuLine> menu, List<Screen> screens, List<ShowLine> shows) {
+    public record VenueSetup(String kind, Profile profile, List<MenuLine> menu, List<Screen> screens, List<ShowLine> shows,
+                             List<DiningService.Offer> offers) {
     }
 
     public record MovieRequest(String title, String languages, String certificate, String genres, Integer durationMinutes,
@@ -122,14 +127,15 @@ public class VenueSetupService {
         Organization org = access.owned(userId, orgId);
         String kind = kindOf(org);
         if (kind == null) {
-            return new VenueSetup(null, null, List.of(), List.of(), List.of());
+            return new VenueSetup(null, null, List.of(), List.of(), List.of(), List.of());
         }
         Profile profile = jdbc.query("SELECT * FROM venue_profiles WHERE organization_id = :org", Map.of("org", orgId),
                 (rs, i) -> new Profile(rs.getString("cuisines"), rs.getBigDecimal("cost_for_two"), rs.getBoolean("veg_only"),
                         (Integer) rs.getObject("capacity_per_slot", Integer.class), rs.getString("offer_text"),
-                        rs.getString("features"))).stream().findFirst().orElse(null);
+                        rs.getString("features"), rs.getString("dining_tier"))).stream().findFirst().orElse(null);
         return new VenueSetup(kind, profile, kind.equals("DINING") ? menu(orgId) : List.of(),
-                kind.equals("CINEMA") ? screens(orgId) : List.of(), kind.equals("CINEMA") ? shows(orgId) : List.of());
+                kind.equals("CINEMA") ? screens(orgId) : List.of(), kind.equals("CINEMA") ? shows(orgId) : List.of(),
+                kind.equals("DINING") ? offerList(orgId) : List.of());
     }
 
     @Transactional
@@ -147,15 +153,19 @@ public class VenueSetupService {
             cuisines = text("cuisines", req.cuisines(), 200, true);
             cost = req.costForTwo() == null ? null : money("costForTwo", req.costForTwo());
         }
+        String tier = req.diningTier() == null || req.diningTier().isBlank() ? "CAFE" : req.diningTier().trim().toUpperCase();
+        if (!tier.equals("CAFE") && !tier.equals("PREMIUM")) {
+            throw ApiException.invalidField("diningTier", "INVALID", "Choose café or premium");
+        }
         String offer = text("offerText", req.offerText(), 200, false);
         String features = text("features", req.features(), 300, false);
         boolean veg = Boolean.TRUE.equals(req.vegOnly());
         MapSqlParameterSource p = new MapSqlParameterSource("org", orgId).addValue("kind", kind).addValue("cuisines", cuisines)
                 .addValue("cost", cost).addValue("veg", veg).addValue("cap", capacity).addValue("offer", offer)
-                .addValue("features", features);
+                .addValue("features", features).addValue("tier", tier);
         int updated = jdbc.update("""
                 UPDATE venue_profiles SET cuisines = :cuisines, cost_for_two = :cost, veg_only = :veg,
-                       capacity_per_slot = :cap, offer_text = :offer, features = :features
+                       capacity_per_slot = :cap, offer_text = :offer, features = :features, dining_tier = :tier
                 WHERE organization_id = :org""", p);
         if (updated == 0) {
             // Customer bookings point at this hidden service so they fit the appointments table.
@@ -171,10 +181,51 @@ public class VenueSetupService {
             p.addValue("service", key.getKey().longValue());
             jdbc.update("""
                     INSERT INTO venue_profiles (organization_id, kind, booking_service_id, cuisines, cost_for_two, veg_only,
-                                                capacity_per_slot, offer_text, features)
-                    VALUES (:org, :kind, :service, :cuisines, :cost, :veg, :cap, :offer, :features)""", p);
+                                                capacity_per_slot, offer_text, features, dining_tier)
+                    VALUES (:org, :kind, :service, :cuisines, :cost, :veg, :cap, :offer, :features, :tier)""", p);
         }
         return setup(userId, orgId);
+    }
+
+    // ----- owner: offers -----
+
+    @Transactional
+    public VenueSetup addOffer(long userId, long orgId, OfferRequest req) {
+        requireKind(access.ownedForUpdate(userId, orgId), "DINING");
+        requireProfile(orgId);
+        if (req.percent() == null || req.percent() < 1 || req.percent() > 60) {
+            throw ApiException.invalidField("percent", "INVALID", "A discount is 1% to 60%");
+        }
+        String meal = req.meal() == null || req.meal().isBlank() ? "ALL_DAY" : req.meal().trim().toUpperCase();
+        if (!List.of("LUNCH", "DINNER", "ALL_DAY").contains(meal)) {
+            throw ApiException.invalidField("meal", "INVALID", "Choose lunch, dinner or all day");
+        }
+        Integer count = jdbc.queryForObject("SELECT COUNT(*) FROM dining_offers WHERE organization_id = :org", Map.of("org", orgId),
+                Integer.class);
+        if (count != null && count >= 10) {
+            throw ApiException.invalidField("title", "TOO_MANY", "A restaurant can have up to 10 offers");
+        }
+        String title = req.title() == null || req.title().isBlank() ? "Flat " + req.percent() + "% off" : text("title", req.title(), 80, true);
+        jdbc.update("INSERT INTO dining_offers (organization_id, title, percent, meal, created_at) VALUES (:org, :t, :p, :m, :now)",
+                new MapSqlParameterSource("org", orgId).addValue("t", title).addValue("p", req.percent()).addValue("m", meal)
+                        .addValue("now", Timestamp.from(clock.instant())));
+        return setup(userId, orgId);
+    }
+
+    @Transactional
+    public VenueSetup deleteOffer(long userId, long orgId, long offerId) {
+        access.ownedForUpdate(userId, orgId);
+        if (jdbc.update("DELETE FROM dining_offers WHERE id = :id AND organization_id = :org",
+                new MapSqlParameterSource("id", offerId).addValue("org", orgId)) == 0) {
+            throw ApiException.notFound("Offer");
+        }
+        return setup(userId, orgId);
+    }
+
+    private List<DiningService.Offer> offerList(long orgId) {
+        return jdbc.query("SELECT * FROM dining_offers WHERE organization_id = :org ORDER BY percent DESC, id", Map.of("org", orgId),
+                (rs, i) -> new DiningService.Offer(rs.getLong("id"), rs.getString("title"), rs.getInt("percent"),
+                        DiningService.Meal.valueOf(rs.getString("meal"))));
     }
 
     // ----- owner: menu -----

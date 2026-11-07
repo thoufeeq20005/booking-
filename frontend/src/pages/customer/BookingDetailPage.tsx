@@ -105,6 +105,20 @@ export function BookingDetailPage() {
           {Boolean(b.seats?.length) && <div><dt className="text-xs uppercase tracking-wide text-fg-muted">{t('venue.seats')}</dt>
             <dd className="flex flex-wrap gap-1">{b.seats!.map((s) => <span key={s} className="rounded-md bg-brand-50 px-2 py-0.5 font-medium text-brand-700">{s}</span>)}</dd></div>}
           {b.partySize != null && <div><dt className="text-xs uppercase tracking-wide text-fg-muted">{t('venue.guests')}</dt><dd>{b.partySize}</dd></div>}
+          {b.offerTitle && b.billAmount == null && (
+            <div><dt className="text-xs uppercase tracking-wide text-fg-muted">{t('venue.yourOffer')}</dt>
+              <dd className="font-medium text-brand-700">{b.offerTitle} <span className="font-normal text-fg-muted">· {t('venue.offerOnBill')}</span></dd></div>
+          )}
+          {b.billAmount != null && (
+            <div><dt className="text-xs uppercase tracking-wide text-fg-muted">{t('venue.billBreakdown')}</dt>
+              <dd>
+                <dl className="mt-1 space-y-0.5">
+                  <div className="flex justify-between gap-6"><dt>{t('venue.billAmount')}</dt><dd>{formatINR(b.billAmount)}</dd></div>
+                  {Number(b.discountAmount) > 0 && <div className="flex justify-between gap-6 text-emerald-700"><dt>{b.offerTitle}</dt><dd>− {formatINR(b.discountAmount!)}</dd></div>}
+                  {Number(b.coverCredit) > 0 && <div className="flex justify-between gap-6 text-emerald-700"><dt>{t('venue.coverCredit')}</dt><dd>− {formatINR(b.coverCredit!)}</dd></div>}
+                </dl>
+              </dd></div>
+          )}
           {b.patientName && <div><dt className="text-xs uppercase tracking-wide text-fg-muted">{t('extras.forWhom')}</dt><dd>{b.patientName}</dd></div>}
           {b.staffName && <div><dt className="text-xs uppercase tracking-wide text-fg-muted">{t('booking.with')}</dt><dd>{b.staffName}</dd></div>}
           <div><dt className="text-xs uppercase tracking-wide text-fg-muted">{t('booking.reference')}</dt><dd className="font-mono">{b.reference}</dd></div>
@@ -132,7 +146,13 @@ export function BookingDetailPage() {
       {b.paid && (
         <Link to={`/customer/bookings/${b.id}/receipt`} className="inline-block text-sm text-brand-700 hover:underline">{t('payment.viewReceipt')}</Link>
       )}
-      {active && (
+      {b.partySize != null && b.status === 'CONFIRMED' && isoDateIST(new Date(b.startsAt)) === isoDateIST(new Date()) && (
+        <Card className="flex flex-wrap items-center justify-between gap-3 p-6">
+          <p className="text-sm">{t('venue.payBillPrompt')}</p>
+          <Link to={`/dining/${b.organizationSlug}/pay-bill`} className={buttonClasses('primary')}>{t('venue.payBill')}</Link>
+        </Card>
+      )}
+      {active && !(b.billAmount != null && b.status !== 'PENDING_PAYMENT') && (
         <Card className="space-y-4 p-6">
           <div className="flex flex-wrap gap-2">
             {!isVenueBooking(b) && <Button variant="secondary" onClick={() => setPanel(panel === 'reschedule' ? null : 'reschedule')}>{t('booking.reschedule')}</Button>}

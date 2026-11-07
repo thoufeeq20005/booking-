@@ -40,5 +40,10 @@ public record AppointmentView(
         Long showtimeId,
         String screenName,
         java.util.List<String> seats,
-        Integer partySize) {
+        Integer partySize,
+        String offerTitle,
+        Integer offerPercent,
+        BigDecimal billAmount,
+        BigDecimal discountAmount,
+        BigDecimal coverCredit) {
 }

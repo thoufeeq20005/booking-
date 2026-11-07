@@ -56,6 +56,7 @@ const MoviePage = named(() => import('@/pages/venue/MoviePage'), 'MoviePage');
 const MovieShowsPage = named(() => import('@/pages/venue/MoviePage'), 'MovieShowsPage');
 const SeatsPage = named(() => import('@/pages/venue/SeatsPage'), 'SeatsPage');
 const DiningPage = named(() => import('@/pages/venue/DiningPage'), 'DiningPage');
+const PayBillPage = named(() => import('@/pages/venue/PayBillPage'), 'PayBillPage');
 const AdminMoviesPage = named(() => import('@/pages/admin/AdminMoviesPage'), 'AdminMoviesPage');
 const StaffOverviewPage = named(() => import('@/pages/dashboard/StaffOverviewPage'), 'StaffOverviewPage');
 
@@ -84,6 +85,7 @@ export function AppRoutes() {
         <Route path="movies/:id/tickets" element={<MovieShowsPage />} />
         <Route path="shows/:id" element={<SeatsPage />} />
         <Route path="dining" element={<DiningPage />} />
+        <Route path="dining/:slug/pay-bill" element={guard(<PayBillPage />)} />
         <Route path="pass/:code" element={<PassPage />} />
         <Route path="signin" element={<SignInPage />} />
         <Route path="register" element={<RegisterPage />} />

@@ -286,10 +286,12 @@ class VenueIT extends BookingTestBase {
         assertThat(times).contains("09:00", "17:00").doesNotContain("13:00", "17:30");
 
         JsonNode first = data(reserve(verifiedCustomer(), r, ten, 4));
-        assertThat(first.path("status").asText()).isEqualTo("CONFIRMED");
-        assertThat(first.path("totalAmount").decimalValue()).isEqualByComparingTo("0");
+        // Café: ₹10 cover per guest, paid online, no BookEasy fee.
+        assertThat(first.path("status").asText()).isEqualTo("PENDING_PAYMENT");
+        assertThat(first.path("servicePrice").decimalValue()).isEqualByComparingTo("40");
+        assertThat(first.path("platformFee").decimalValue()).isEqualByComparingTo("0");
+        assertThat(first.path("totalAmount").decimalValue()).isEqualByComparingTo("40");
         assertThat(first.path("partySize").asInt()).isEqualTo(4);
-        assertThat(first.path("qrPayload").asText()).isNotBlank();
 
         reserve(verifiedCustomer(), r, ten.plus(Duration.ofMinutes(30)), 4).andExpect(status().isConflict())
                 .andExpect(jsonPath("$.error.code").value("TABLE_UNAVAILABLE"));
@@ -311,6 +313,87 @@ class VenueIT extends BookingTestBase {
                 Map.of("reason", "Plans changed"))).andExpect(status().isOk());
         reserve(verifiedCustomer(), r, ZonedDateTime.of(monday, LocalTime.of(16, 0), IST).toInstant(), 6)
                 .andExpect(status().isOk());
+    }
+
+    private JsonNode demoPay(String token, long id) throws Exception {
+        mvc.perform(authed(post("/api/v1/customer/appointments/" + id + "/payment-order"), token)).andExpect(status().isOk());
+        mvc.perform(jsonRequest(post("/api/v1/customer/appointments/" + id + "/demo-payment"), token, Map.of("method", "upi")))
+                .andExpect(status().isOk());
+        return data(mvc.perform(authed(get("/api/v1/customer/appointments/" + id), token)));
+    }
+
+    @Test
+    void offersDiscountTheBillAndTheCoverChargeIsCredited() throws Exception {
+        Restaurant r = restaurant();
+        mvc.perform(jsonRequest(put(venue(r.orgId())), r.owner().token(), Map.of("cuisines", "South Indian", "capacityPerSlot", 6,
+                "diningTier", "PREMIUM"))).andExpect(jsonPath("$.data.profile.diningTier").value("PREMIUM"));
+        mvc.perform(jsonRequest(post(venue(r.orgId()) + "/offers"), r.owner().token(), Map.of("title", "Flat 20% off", "percent", 20)))
+                .andExpect(status().isOk());
+        JsonNode setup = data(mvc.perform(jsonRequest(post(venue(r.orgId()) + "/offers"), r.owner().token(),
+                Map.of("percent", 30, "meal", "DINNER"))));
+        long allDay = 0;
+        long dinner = 0;
+        for (JsonNode o : setup.path("offers")) {
+            if (o.path("meal").asText().equals("DINNER")) {
+                dinner = o.path("id").asLong();
+            } else {
+                allDay = o.path("id").asLong();
+            }
+        }
+        mvc.perform(jsonRequest(post(venue(r.orgId()) + "/offers"), r.owner().token(), Map.of("percent", 75)))
+                .andExpect(status().isBadRequest());
+        JsonNode details = data(mvc.perform(get("/api/v1/public/dining/" + r.slug())));
+        assertThat(details.path("coverPerGuest").decimalValue()).isEqualByComparingTo("25");
+        assertThat(details.path("offers").size()).isEqualTo(2);
+
+        LocalDate monday = LocalDate.now(IST).with(TemporalAdjusters.next(DayOfWeek.MONDAY));
+        Instant eleven = ZonedDateTime.of(monday, LocalTime.of(11, 0), IST).toInstant();
+        Person c = verifiedCustomer();
+        Map<String, Object> body = new java.util.HashMap<>(Map.of("branchId", r.branchId(), "startsAt", eleven.toString(), "partySize", 2,
+                "offerId", dinner));
+        mvc.perform(jsonRequest(post("/api/v1/customer/table-bookings"), c.token(), body))
+                .andExpect(jsonPath("$.error.fieldErrors[0].field").value("offerId")); // a dinner offer at lunch
+        body.put("offerId", allDay);
+        JsonNode booking = data(mvc.perform(jsonRequest(post("/api/v1/customer/table-bookings"), c.token(), body)));
+        assertThat(booking.path("totalAmount").decimalValue()).isEqualByComparingTo("50"); // 2 × ₹25
+        assertThat(booking.path("offerPercent").asInt()).isEqualTo(20);
+        long bookingId = booking.path("id").asLong();
+        demoPay(c.token(), bookingId);
+
+        // At the restaurant on the day: ₹1,000 bill − 20% − ₹50 cover = ₹750.
+        clock.advance(Duration.between(clock.instant(), eleven.plus(Duration.ofMinutes(60))));
+        try {
+            // Access tokens are short-lived; sign in again at the new time.
+            String me = login(c.email(), PASSWORD).accessToken();
+            Person other = verifiedCustomer();
+            JsonNode quote = data(mvc.perform(authed(get("/api/v1/customer/dining/bill-quote?branchId=" + r.branchId()
+                    + "&amount=1000"), me)));
+            assertThat(quote.path("bookingId").asLong()).isEqualTo(bookingId);
+            assertThat(quote.path("discount").decimalValue()).isEqualByComparingTo("200");
+            assertThat(quote.path("coverCredit").decimalValue()).isEqualByComparingTo("50");
+            assertThat(quote.path("payable").decimalValue()).isEqualByComparingTo("750");
+
+            JsonNode bill = data(mvc.perform(jsonRequest(post("/api/v1/customer/dining/bills"), me,
+                    Map.of("branchId", r.branchId(), "amount", 1000, "bookingId", bookingId))));
+            assertThat(bill.path("totalAmount").decimalValue()).isEqualByComparingTo("750");
+            assertThat(bill.path("platformFee").decimalValue()).isEqualByComparingTo("0");
+            assertThat(bill.path("billAmount").decimalValue()).isEqualByComparingTo("1000");
+            JsonNode paid = demoPay(me, bill.path("id").asLong());
+            assertThat(paid.path("status").asText()).isEqualTo("CONFIRMED");
+            mvc.perform(jsonRequest(post("/api/v1/customer/appointments/" + paid.path("id").asLong() + "/cancel"), me,
+                    Map.of("reason", "x"))).andExpect(status().isConflict()); // a paid bill is settled
+
+            // The booking's cover can't be used twice; a walk-in gets today's best lunch offer (not the dinner one).
+            mvc.perform(jsonRequest(post("/api/v1/customer/dining/bills"), me,
+                    Map.of("branchId", r.branchId(), "amount", 1000, "bookingId", bookingId))).andExpect(status().isBadRequest());
+            JsonNode walkIn = data(mvc.perform(authed(get("/api/v1/customer/dining/bill-quote?branchId=" + r.branchId()
+                    + "&amount=500"), other.token())));
+            assertThat(walkIn.path("offerPercent").asInt()).isEqualTo(20);
+            assertThat(walkIn.path("coverCredit").decimalValue()).isEqualByComparingTo("0");
+            assertThat(walkIn.path("payable").decimalValue()).isEqualByComparingTo("400");
+        } finally {
+            clock.reset();
+        }
     }
 
     @Test

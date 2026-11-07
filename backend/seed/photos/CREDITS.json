@@ -958,5 +958,59 @@
   "creator": "Snehal Kashid",
   "license": "cc0",
   "via": "Openverse / wordpress"
+ },
+ "frontend/public/dining/cafes.jpg": {
+  "source": "https://www.rawpixel.com/image/5969918/frothy-coffee-croissant",
+  "creator": "unknown",
+  "license": "cc0",
+  "via": "Openverse / rawpixel"
+ },
+ "frontend/public/dining/family.jpg": {
+  "source": "https://wordpress.org/photos/photo/66865bead0/",
+  "creator": "Rohit Motwani",
+  "license": "cc0",
+  "via": "Openverse / wordpress"
+ },
+ "frontend/public/dining/veg.jpg": {
+  "source": "https://stocksnap.io/photo/salad-lettuce-Z0133GNPXT",
+  "creator": "Jeffrey Betts",
+  "license": "cc0",
+  "via": "Openverse / stocksnap"
+ },
+ "frontend/public/dining/premium.jpg": {
+  "source": "https://www.flickr.com/photos/47121680@N00/52542068934",
+  "creator": "joncutrer",
+  "license": "cc0",
+  "via": "Openverse / flickr"
+ },
+ "frontend/public/dining/drinks.jpg": {
+  "source": "https://www.flickr.com/photos/7633518@N08/54276808354",
+  "creator": "sarahstierch",
+  "license": "cc0",
+  "via": "Openverse / flickr"
+ },
+ "frontend/public/dining/offers.jpg": {
+  "source": "https://stocksnap.io/photo/restaurant-table-A6FE2C3A25",
+  "creator": "Leeroy",
+  "license": "cc0",
+  "via": "Openverse / stocksnap"
+ },
+ "frontend/public/dining/hero.jpg": {
+  "source": "https://www.rawpixel.com/image/5916614/food-table-free-public-domain-cc0-photo",
+  "creator": "unknown",
+  "license": "cc0",
+  "via": "Openverse / rawpixel"
+ },
+ "venues/dining-12.jpg": {
+  "source": "https://www.flickr.com/photos/62518311@N00/13224529103",
+  "creator": "Daquella manera",
+  "license": "cc0",
+  "via": "Openverse / flickr"
+ },
+ "venues/dining-13.jpg": {
+  "source": "https://stocksnap.io/photo/restaurant-table-A6FE2C3A25",
+  "creator": "Leeroy",
+  "license": "cc0",
+  "via": "Openverse / stocksnap"
  }
 }

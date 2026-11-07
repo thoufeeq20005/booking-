@@ -1057,7 +1057,6 @@
     "showsHere": "Shows today and tomorrow",
     "noShowsHere": "No shows scheduled yet.",
     "diningTitle": "Dining",
-    "diningSubtitle": "Restaurants and cafés near you. Booking a table is free.",
     "diningSearch": "Search by name or cuisine",
     "noRestaurants": "No restaurants found",
     "noRestaurantsHint": "Try another city or search.",
@@ -1072,10 +1071,6 @@
     "cuisines": "Cuisines",
     "bookTable": "Book a table",
     "guests": "Guests",
-    "noTables": "No tables on this day. Try another day.",
-    "tableFree": "Table booking is free – you pay at the restaurant.",
-    "tableNote": "Requests (optional)",
-    "reserve": "Reserve a table for {{count}}",
     "notTakingBookings": "This place isn't taking online bookings yet.",
     "screen": "Screen",
     "seats": "Seats",
@@ -1168,6 +1163,114 @@
     "pickMore": "Tap a seat to pick {{count}} more.",
     "payAmount": "Pay {{amount}}",
     "addPoster": "Add poster",
-    "changePoster": "Change poster"
+    "changePoster": "Change poster",
+    "diningHeadline": "Discover restaurants, book tables, pay bills –",
+    "diningHeadlineAccent": "all in one place.",
+    "heroTitle": "Great tables, better bills",
+    "step": {
+      "discover": {
+        "title": "Discover",
+        "body": "Menus, photos, offers and reviews of places near you."
+      },
+      "book": {
+        "title": "Book",
+        "body": "Pick guests, day and time; a small cover charge holds your table."
+      },
+      "pay": {
+        "title": "Pay",
+        "body": "Pay the bill here: the offer and your cover charge come off automatically."
+      }
+    },
+    "withOffers": "With offers",
+    "moodTitle": "What's the mood?",
+    "mood": {
+      "cafes": "Cozy cafés",
+      "family": "Family dining",
+      "veg": "Pure veg",
+      "premium": "Premium dining",
+      "offers": "Big savings"
+    },
+    "spotlight": "In the spotlight",
+    "nearYou": "Restaurants in {{city}}",
+    "resultsFor": "Results for “{{q}}”",
+    "ratingLabel": "Rated {{rating}} from {{count}} reviews",
+    "openToday": "Open today",
+    "closedToday": "Closed today",
+    "tierName": {
+      "CAFE": "Café & casual dining",
+      "PREMIUM": "Premium dining"
+    },
+    "call": "Call",
+    "sections": "Restaurant sections",
+    "tab": {
+      "offers": "Offers",
+      "menu": "Menu",
+      "reviews": "Reviews",
+      "facilities": "Facilities",
+      "more": "Explore more"
+    },
+    "offersTitle": "Offers",
+    "noOffers": "No offers right now.",
+    "flat": "Flat",
+    "off": "off",
+    "mealWhen": {
+      "ALL_DAY": "All day",
+      "LUNCH": "Lunch (before 4 pm)",
+      "DINNER": "Dinner (from 4 pm)"
+    },
+    "mealName": {
+      "LUNCH": "Lunch",
+      "DINNER": "Dinner"
+    },
+    "coverShort": "Cover {{amount}}/guest",
+    "coverLine": "Cover charge {{amount}} per guest, taken off your bill",
+    "bookNow": "Book now",
+    "sampleBill": "Sample bill for 2 guests",
+    "estimatedBill": "Estimated bill",
+    "youPay": "You pay",
+    "youSave": "You save",
+    "facilities": "Facilities",
+    "noFacilities": "Not listed yet.",
+    "exploreMore": "More restaurants nearby",
+    "saveUpTo": "Save up to {{percent}}% on your bill",
+    "payBill": "Pay bill",
+    "bookingAt": "Booking at {{name}}",
+    "numberOfGuests": "Number of guests",
+    "guestsCount": "{{count}} guests",
+    "chooseDateTime": "Choose date and time",
+    "today": "Today",
+    "tomorrow": "Tomorrow",
+    "meal": "Meal",
+    "noTablesMeal": "No tables for this meal. Try the other one or another day.",
+    "noOffer": "No offer",
+    "selectOption": "Select an option",
+    "totalCover": "{{amount}} total cover charge",
+    "redeemable": "(taken off your bill)",
+    "proceedToBook": "Proceed to book",
+    "enterBill": "Enter the bill amount",
+    "billAmount": "Bill amount",
+    "coverCredit": "Cover charge paid when booking",
+    "bookEasyFee": "BookEasy fee",
+    "toPay": "To pay",
+    "usingBooking": "Using today's table booking: its offer and cover charge are applied.",
+    "walkInNote": "No table booking today, so the best offer for now is applied.",
+    "payBillHint": "Pay after your meal, before you leave. Show the receipt at the counter.",
+    "payBillPrompt": "Done with your meal? Pay the bill here to get your offer.",
+    "yourOffer": "Your offer",
+    "offerOnBill": "applied when you pay the bill here",
+    "billBreakdown": "Bill",
+    "tierLabel": "Type of place",
+    "tierHint": "Sets the cover charge per guest, which is taken off the customer's bill.",
+    "tierOption": {
+      "CAFE": "Café or casual restaurant – ₹10 per guest",
+      "PREMIUM": "Restro-bar, premium café or fine dining – ₹25 per guest"
+    },
+    "offersHint": "Discounts on the final bill. Customers pick one when booking or get the best one when paying.",
+    "offerName": "Offer name (optional)",
+    "offerNamePlaceholder": "Flat 20% off",
+    "discountPercent": "Discount %",
+    "when": "When",
+    "addOffer": "Add offer",
+    "removeOffer": "Remove {{name}}"
   }
 }

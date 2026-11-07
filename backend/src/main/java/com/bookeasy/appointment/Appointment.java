@@ -123,6 +123,26 @@ public class Appointment {
     @Column(name = "party_size")
     private Integer partySize;
 
+    /** Table bookings: the offer chosen for the final bill. Bill payments: the offer applied. */
+    @Column(name = "offer_title", length = 80)
+    private String offerTitle;
+
+    @Column(name = "offer_percent")
+    private Integer offerPercent;
+
+    /** Bill payments only: the bill before the offer and cover credit; service_price is what is paid now. */
+    @Column(name = "bill_amount")
+    private BigDecimal billAmount;
+
+    @Column(name = "discount_amount")
+    private BigDecimal discountAmount;
+
+    @Column(name = "cover_credit")
+    private BigDecimal coverCredit;
+
+    @Column(name = "bill_for_appointment_id")
+    private Long billForAppointmentId;
+
     @Column(name = "reschedule_count", nullable = false)
     private int rescheduleCount;
 
@@ -177,6 +197,33 @@ public class Appointment {
     }
 
     public Long getShowtimeId() { return showtimeId; }
+
+    public void withOffer(String title, Integer percent) {
+        this.offerTitle = title;
+        this.offerPercent = percent;
+    }
+
+    public void asBill(BigDecimal billAmount, BigDecimal discountAmount, BigDecimal coverCredit, Long forBooking) {
+        this.billAmount = billAmount;
+        this.discountAmount = discountAmount;
+        this.coverCredit = coverCredit;
+        this.billForAppointmentId = forBooking;
+    }
+
+    public String getOfferTitle() { return offerTitle; }
+
+    public Integer getOfferPercent() { return offerPercent; }
+
+    public BigDecimal getBillAmount() { return billAmount; }
+
+    public BigDecimal getDiscountAmount() { return discountAmount; }
+
+    public BigDecimal getCoverCredit() { return coverCredit; }
+
+    public Long getBillForAppointmentId() { return billForAppointmentId; }
+
+    /** A bill payment rather than a booking. */
+    public boolean isBill() { return billAmount != null; }
 
     public Integer getPartySize() { return partySize; }
 

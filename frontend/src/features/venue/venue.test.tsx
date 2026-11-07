@@ -43,13 +43,23 @@ function api(user: object | null, handler: (r: FakeRequest) => FakeResponse | un
     if (r.url === '/public/showtimes/40') return reply.ok(seatMap);
     if (r.url === '/public/organizations/dosa-corner') return reply.ok(dining);
     if (r.url === '/public/dining/dosa-corner') {
-      return reply.ok({ cuisines: 'South Indian', costForTwo: 400, vegOnly: false, offer: '10% off before noon', features: ['Parking'],
-        maxPartySize: 6, menu: [{ name: 'Tiffin', items: [{ id: 1, name: 'Ghee roast', price: 120, veg: true, bestseller: true },
+      return reply.ok({ cuisines: 'South Indian', costForTwo: 400, vegOnly: false, offer: 'Live music on Fridays', features: ['Parking'],
+        maxPartySize: 6, tier: 'PREMIUM', coverPerGuest: 25,
+        offers: [{ id: 7, title: 'Dinner special', percent: 30, meal: 'DINNER' }, { id: 8, title: 'Flat 20% off', percent: 20, meal: 'ALL_DAY' }],
+        menu: [{ name: 'Tiffin', items: [{ id: 1, name: 'Ghee roast', price: 120, veg: true, bestseller: true },
           { id: 2, name: 'Chicken 65', price: 220, veg: false, bestseller: false }] }] });
     }
     if (r.url === '/public/dining/branches/30/slots') {
-      return reply.ok([{ time: '12:00', startsAt: '2026-11-10T06:30:00Z', available: false },
-        { time: '12:30', startsAt: '2026-11-10T07:00:00Z', available: true }]);
+      return reply.ok([{ time: '12:00', startsAt: '2026-11-10T06:30:00Z', available: false, meal: 'LUNCH' },
+        { time: '12:30', startsAt: '2026-11-10T07:00:00Z', available: true, meal: 'LUNCH' },
+        { time: '19:00', startsAt: '2026-11-10T13:30:00Z', available: true, meal: 'DINNER' }]);
+    }
+    if (r.url === '/public/dining') {
+      const base = { kind: 'restaurant', ratingAvg: 4.5, reviewCount: 12, vegOnly: false, branchId: 30, locality: 'Mylapore', city: 'Chennai', distanceKm: 1.1 };
+      return reply.ok([
+        { ...base, organizationId: 7, slug: 'dosa-corner', name: 'Dosa Corner', tier: 'PREMIUM', bestOfferPercent: 30, bestOfferTitle: 'Dinner special', costForTwo: 400 },
+        { ...base, organizationId: 8, slug: 'brew', name: 'Brew Cafe', kind: 'cafe', tier: 'CAFE', branchId: 31, vegOnly: true, reviewCount: 0 },
+      ]);
     }
     return handler(r);
   });
@@ -133,28 +143,76 @@ describe('movies', () => {
 });
 
 describe('dining', () => {
-  it('shows the menu and books a free table', async () => {
-    const table = { ...ticket, id: 90, serviceName: 'Table for 4', servicePrice: 0, platformFee: 0, totalAmount: 0, showtimeId: undefined,
-      screenName: undefined, seats: [], partySize: 4 };
+  const table = { ...ticket, id: 90, organizationSlug: 'dosa-corner', serviceName: 'Table for 4 · Flat 20% off', servicePrice: 100,
+    platformFee: 0, totalAmount: 100, showtimeId: undefined, screenName: undefined, seats: [], partySize: 4, status: 'PENDING_PAYMENT',
+    paid: false, qrPayload: undefined, offerTitle: 'Flat 20% off', offerPercent: 20, createdAt: new Date().toISOString() };
+
+  it('filters restaurants by mood on the Dining home', async () => {
+    api(null);
+    renderWithProviders(<AppRoutes />, { route: '/dining?city=chennai' });
+    expect(await screen.findByRole('link', { name: /Brew Cafe/ })).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Premium dining' }));
+    expect(screen.queryByRole('link', { name: /Brew Cafe/ })).not.toBeInTheDocument();
+    expect(screen.getAllByRole('link', { name: /Dosa Corner/ }).length).toBeGreaterThan(0);
+  });
+
+  it('shows offers and menu, then books a table with an offer and goes to pay the cover charge', async () => {
     const requests = api(sampleUser, (r) => {
       if (r.url === '/customer/table-bookings') return reply.ok(table);
       if (r.url === '/customer/appointments/90') return reply.ok(table);
+      if (r.url === '/customer/appointments/90/payment-order') {
+        return reply.ok({ orderId: 'demo_order_9', amountPaise: 10000, currency: 'INR', reference: 'BETICKET01', description: 'Table',
+          expiresAt: new Date(Date.now() + 600000).toISOString(), demo: true });
+      }
       return undefined;
     });
     renderWithProviders(<AppRoutes />, { route: '/b/dosa-corner' });
     expect(await screen.findByText('Ghee roast')).toBeInTheDocument();
-    expect(screen.getByText('10% off before noon')).toBeInTheDocument();
+    expect(screen.getByText('Dinner special')).toBeInTheDocument();
     await userEvent.click(screen.getByLabelText('Veg only'));
     expect(screen.queryByText('Chicken 65')).not.toBeInTheDocument();
 
-    expect(await screen.findByRole('radio', { name: '12:00 pm' })).toBeDisabled();
-    await userEvent.click(within(screen.getByRole('radiogroup', { name: 'Guests' })).getByRole('radio', { name: '4' }));
-    await userEvent.click(await screen.findByRole('radio', { name: '12:30 pm' }));
-    await userEvent.click(screen.getByRole('button', { name: 'Reserve a table for 4' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Book a table' }));
+    const sheet = await screen.findByRole('dialog', { name: 'Booking at Dosa Corner' });
+    await userEvent.click(within(sheet).getByRole('radio', { name: '4' }));
+    await userEvent.click(within(sheet).getByRole('radio', { name: 'Lunch' }));
+    expect(await within(sheet).findByRole('radio', { name: /12:00 pm/ })).toBeDisabled();
+    await userEvent.click(within(sheet).getByRole('radio', { name: /12:30 pm/ }));
+    // Only all-day offers apply at lunch; the cover is ₹25 × 4.
+    expect(within(sheet).queryByRole('radio', { name: /Dinner special/ })).not.toBeInTheDocument();
+    expect(within(sheet).getByRole('radio', { name: /Flat 20% off/ })).toBeInTheDocument();
+    expect(within(sheet).getByText(/₹100 total cover charge/)).toBeInTheDocument();
+    await userEvent.click(within(sheet).getByRole('button', { name: 'Proceed to book' }));
     await waitFor(() => expect(requests.find((r) => r.url === '/customer/table-bookings')?.body).toEqual({
-      branchId: 30, startsAt: '2026-11-10T07:00:00Z', partySize: 4,
+      branchId: 30, startsAt: '2026-11-10T07:00:00Z', partySize: 4, offerId: 8,
     }));
-    expect(await screen.findByText("You're booked!")).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Payment' })).toBeInTheDocument();
+  });
+
+  it('pays the bill with the offer and the cover charge taken off', async () => {
+    const bill = { ...table, id: 91, serviceName: 'Bill payment · Flat 20% off', servicePrice: 700, totalAmount: 700, partySize: undefined,
+      billAmount: 1000, discountAmount: 200, coverCredit: 100 };
+    const requests = api(sampleUser, (r) => {
+      if (r.url === '/customer/dining/bill-quote') {
+        return reply.ok({ billAmount: r.params.amount, offerTitle: 'Flat 20% off', offerPercent: 20, discount: 200, coverCredit: 100,
+          payable: 700, bookingId: 90 });
+      }
+      if (r.url === '/customer/dining/bills') return reply.ok(bill);
+      if (r.url === '/customer/appointments/91') return reply.ok(bill);
+      if (r.url === '/customer/appointments/91/payment-order') {
+        return reply.ok({ orderId: 'demo_order_10', amountPaise: 70000, currency: 'INR', reference: 'BETICKET01', description: 'Bill',
+          expiresAt: new Date(Date.now() + 600000).toISOString(), demo: true });
+      }
+      return undefined;
+    });
+    renderWithProviders(<AppRoutes />, { route: '/dining/dosa-corner/pay-bill' });
+    await userEvent.type(await screen.findByLabelText('Enter the bill amount'), '1000');
+    expect(await screen.findByText('Cover charge paid when booking')).toBeInTheDocument();
+    await userEvent.click(await screen.findByRole('button', { name: /Pay ₹700/ }));
+    await waitFor(() => expect(requests.find((r) => r.url === '/customer/dining/bills')?.body).toEqual({
+      branchId: 30, amount: 1000, bookingId: 90,
+    }));
+    expect(await screen.findByRole('heading', { name: 'Payment' })).toBeInTheDocument();
   });
 });
 

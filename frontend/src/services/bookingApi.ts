@@ -60,10 +60,18 @@ export interface Booking {
   seats?: string[];
   /** Table bookings: number of guests. */
   partySize?: number;
+  /** Table bookings: the offer on the final bill. Bill payments: the offer applied. */
+  offerTitle?: string;
+  offerPercent?: number;
+  /** Bill payments: the bill, the discount and the cover charge credited; totalAmount is what was paid. */
+  billAmount?: number | string;
+  discountAmount?: number | string;
+  coverCredit?: number | string;
 }
 
 /** Tickets and tables are cancelled and booked again rather than moved. */
-export const isVenueBooking = (b: Pick<Booking, 'showtimeId' | 'partySize'>) => b.showtimeId != null || b.partySize != null;
+export const isVenueBooking = (b: Pick<Booking, 'showtimeId' | 'partySize' | 'billAmount'>) =>
+  b.showtimeId != null || b.partySize != null || b.billAmount != null;
 
 export interface CancelPreview {
   totalPaid: number | string;

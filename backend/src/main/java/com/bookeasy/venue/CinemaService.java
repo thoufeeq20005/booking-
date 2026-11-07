@@ -260,7 +260,7 @@ public class CinemaService {
         Appointment a = bookings.createVenueBooking(new BookingService.VenueBooking(customerId,
                 ((Number) s.get("org_id")).longValue(), ((Number) s.get("branch_id")).longValue(),
                 ((Number) s.get("booking_service_id")).longValue(), startsAt, startsAt.plus(Duration.ofMinutes(duration + 15)),
-                title, total.setScale(2, RoundingMode.HALF_UP), null, showtimeId, null));
+                title, total.setScale(2, RoundingMode.HALF_UP), null, showtimeId, null, false));
         try {
             for (Object[] l : lines) {
                 jdbc.update("INSERT INTO ticket_seats (showtime_id, seat_label, appointment_id, tier, price) "

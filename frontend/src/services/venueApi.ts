@@ -109,6 +109,30 @@ export interface Restaurant {
   locality?: string;
   city: string;
   distanceKm: number;
+  tier: DiningTier;
+  bestOfferPercent?: number;
+  bestOfferTitle?: string;
+}
+
+export type DiningTier = 'CAFE' | 'PREMIUM';
+export type Meal = 'LUNCH' | 'DINNER' | 'ALL_DAY';
+
+export interface DiningOffer {
+  id: number;
+  title: string;
+  percent: number;
+  meal: Meal;
+}
+
+/** Bill − offer discount − cover charge already paid = to pay now. */
+export interface BillQuote {
+  billAmount: Money;
+  offerTitle?: string;
+  offerPercent?: number;
+  discount: Money;
+  coverCredit: Money;
+  payable: Money;
+  bookingId?: number;
 }
 
 export interface MenuItem {
@@ -128,12 +152,17 @@ export interface DiningDetails {
   features: string[];
   maxPartySize: number;
   menu: { name: string; items: MenuItem[] }[];
+  tier: DiningTier;
+  /** Paid online when booking and credited against the final bill. */
+  coverPerGuest: Money;
+  offers: DiningOffer[];
 }
 
 export interface TableSlot {
   time: string;
   startsAt: string;
   available: boolean;
+  meal: 'LUNCH' | 'DINNER';
 }
 
 // ----- owner / admin -----
@@ -145,6 +174,7 @@ export interface VenueProfile {
   capacityPerSlot?: number;
   offerText?: string;
   features?: string;
+  diningTier?: DiningTier;
 }
 
 export interface MenuLine extends MenuItem {
@@ -182,6 +212,7 @@ export interface VenueSetup {
   menu: MenuLine[];
   screens: Screen[];
   shows: ShowLine[];
+  offers: DiningOffer[];
 }
 
 export interface CatalogMovie extends Movie {
@@ -204,8 +235,14 @@ export const venueApi = {
   dining: (slug: string) => apiGet<DiningDetails>(`/public/dining/${encodeURIComponent(slug)}`),
   tableSlots: (branchId: number, date: string, partySize: number) =>
     apiGet<TableSlot[]>(`/public/dining/branches/${branchId}/slots`, { params: { date, partySize } }),
-  bookTable: (body: { branchId: number; startsAt: string; partySize: number; note?: string }) =>
+  bookTable: (body: { branchId: number; startsAt: string; partySize: number; note?: string; offerId?: number }) =>
     apiPost<Booking>('/customer/table-bookings', body),
+  billQuote: (branchId: number, amount: number, bookingId?: number) =>
+    apiGet<BillQuote>('/customer/dining/bill-quote', { params: { branchId, amount, bookingId } }),
+  payBill: (body: { branchId: number; amount: number; bookingId?: number }) => apiPost<Booking>('/customer/dining/bills', body),
+  addOffer: (orgId: number, body: { title?: string; percent: number; meal: Meal }) =>
+    apiPost<VenueSetup>(`/owner/organizations/${orgId}/venue/offers`, body),
+  deleteOffer: (orgId: number, id: number) => apiDelete<VenueSetup>(`/owner/organizations/${orgId}/venue/offers/${id}`),
 
   setup: (orgId: number) => apiGet<VenueSetup>(`/owner/organizations/${orgId}/venue`),
   saveProfile: (orgId: number, body: Partial<VenueProfile>) => apiPut<VenueSetup>(`/owner/organizations/${orgId}/venue`, body),

@@ -104,6 +104,12 @@ MENUS = {
                                   ("Prawn thokku", 360, False, True, None),
                                   ("Crab rasam", 180, False, False, None)]),
                 ("Meals", [("Fish curry meals", 260, False, False, None), ("Veg meals", 170, True, False, None)])],
+    "bar": [("Mocktails", [("Kokum cooler", 220, True, True, "Kokum, mint and soda"), ("Tender coconut mojito", 240, True, False, None),
+                           ("Spiced guava fizz", 230, True, False, None)]),
+            ("Small plates", [("Chettinad chicken lollipop", 360, False, True, None), ("Paneer tikka", 320, True, False, None),
+                              ("Prawn koliwada", 420, False, False, None), ("Masala peanuts", 180, True, False, None)]),
+            ("Grills", [("Tandoori pomfret", 690, False, True, None), ("Mutton seekh kebab", 520, False, False, None),
+                        ("Tandoori broccoli", 340, True, False, None)])],
     "cafe": [("Coffee", [("Filter coffee", 50, True, True, None), ("Cappuccino", 160, True, False, None),
                          ("Cold coffee", 180, True, False, None)]),
              ("Bites", [("Paneer tikka sandwich", 190, True, True, None), ("Masala fries", 140, True, False, None),
@@ -138,14 +144,50 @@ RESTAURANTS = [
      None, "Air conditioned, Parking", "restaurant"),
     ("Shevaroy Hills Café", CAFE_SUB, "Salem", "Alagapuram", 11.6755, 78.1425, "Café, Coffee", "cafe", 400, True, 20,
      None, "Wi-Fi, Board games", "cafe"),
+    ("Marina Skyline Bistro & Bar", RESTAURANT_SUB, "Chennai", "Nungambakkam", 13.0575, 80.2430, "Grills, Coastal, Mocktails", "bar",
+     1800, False, 60, "Live music on Fridays", "Live music, Bar seating, Valet parking, Air conditioned", "bar"),
+    ("Kovai Terrace Grill", RESTAURANT_SUB, "Coimbatore", "Saibaba Colony", 11.0265, 76.9425, "Grills, North Indian, Coastal", "bar",
+     1500, False, 50, None, "Rooftop, Outdoor seating, Live music, Parking", "bar"),
 ]
+# Restro-bars, high-end cafés and restaurants pay the premium cover charge (₹25 per guest); the rest are cafés (₹10).
+PREMIUM = {"Anna Nagar Chettinad Kitchen", "Race Course Coffee House", "Pearl City Seafood Kitchen",
+           "Marina Skyline Bistro & Bar", "Kovai Terrace Grill"}
+# Discounts on the final bill: (title, percent, meal)
+OFFERS = {
+    "Mylapore Tiffin Room": [("Flat 10% off", 10, "ALL_DAY")],
+    "Anna Nagar Chettinad Kitchen": [("Flat 20% off", 20, "ALL_DAY"), ("Lunch special: 30% off", 30, "LUNCH")],
+    "Velachery Biryani Point": [("Flat 15% off", 15, "ALL_DAY")],
+    "Besant Brew Café": [("Flat 10% off", 10, "ALL_DAY"), ("Evening treat: 20% off", 20, "DINNER")],
+    "Kovai Kongunadu Mess": [("Flat 15% off", 15, "ALL_DAY")],
+    "Race Course Coffee House": [("Flat 20% off", 20, "ALL_DAY")],
+    "Koodal Jigarthanda Café": [("Flat 10% off", 10, "ALL_DAY")],
+    "Vaigai Parotta Hall": [("Flat 15% off", 15, "ALL_DAY"), ("Late dinner: 25% off", 25, "DINNER")],
+    "Pearl City Seafood Kitchen": [("Flat 25% off", 25, "ALL_DAY")],
+    "Rockfort Tiffin Centre": [("Flat 10% off", 10, "ALL_DAY")],
+    "Mango City Biryani House": [("Flat 15% off", 15, "ALL_DAY")],
+    "Shevaroy Hills Café": [("Flat 10% off", 10, "ALL_DAY")],
+    "Marina Skyline Bistro & Bar": [("Flat 30% off", 30, "ALL_DAY"), ("Happy hours: 40% off", 40, "LUNCH")],
+    "Kovai Terrace Grill": [("Flat 25% off", 25, "ALL_DAY"), ("Sunset dinner: 35% off", 35, "DINNER")],
+}
+DINERS = ["Aarthi Raman", "Bharath Kumar", "Charu Natarajan", "Dinesh Pandian", "Elakkiya Murugan", "Farhan Basha",
+          "Gowri Shankar", "Harini Venkatesh"]
+DINING_REVIEWS = {
+    5: ["Loved the food and the offer was applied without any fuss. Will come again!",
+        "Table was ready when we walked in. Lovely ambience and quick service.",
+        "Booked for a family lunch, everything was perfect. The staff were very warm."],
+    4: ["Tasty food and good portions. Slightly crowded at peak time but worth it.",
+        "Nice place, the discount on the bill made it great value.",
+        "Good service and clean tables. Parking was a little tricky."],
+    3: ["Food was okay, service was a bit slow on a busy evening."],
+}
 HOURS = {
     "restaurant": ("11:30", "23:00", "15:30", "18:30"),
     "early": ("06:30", "22:00", None, None),
     "cafe": ("08:00", "22:30", None, None),
+    "bar": ("12:00", "23:30", None, None),
     "cinema": ("09:30", "23:59", None, None),
 }
-PINS = {"T. Nagar": "600017", "Adyar": "600020", "Anna Nagar": "600040", "Mylapore": "600004", "Velachery": "600042",
+PINS = {"Nungambakkam": "600034", "Saibaba Colony": "641011", "T. Nagar": "600017", "Adyar": "600020", "Anna Nagar": "600040", "Mylapore": "600004", "Velachery": "600042",
         "Gandhipuram": "641012", "R.S. Puram": "641002", "Race Course": "641018", "Tallakulam": "625002",
         "Simmakkal": "625001", "Goripalayam": "625002", "Thillai Nagar": "620018", "Cantonment": "620001",
         "Fairlands": "636016", "Hasthampatti": "636007", "Alagapuram": "636004", "Millerpuram": "628008",
@@ -235,6 +277,7 @@ insert("movies", ["id", "title", "languages", "certificate", "genres", "duration
           for i, (t, lang, cert, gen, dur, c1, c2, syn, cast, days) in enumerate(UPCOMING)])
 
 users, roles, orgs, owners, verifs, branches, hours, services, profiles, screens, shows, menu = ([] for _ in range(12))
+offer_rows, dining_orgs = [], []
 venues = [("CINEMA", c) for c in CINEMAS] + [("DINING", r) for r in RESTAURANTS]
 for n, (kind, v) in enumerate(venues, start=1):
     first, last = random.choice(FIRST), random.choice(LAST)
@@ -270,11 +313,15 @@ for n, (kind, v) in enumerate(venues, start=1):
                      "180" if kind == "CINEMA" else "90", "0.00", "FALSE", "30", "0", "FALSE", "UTC_TIMESTAMP(6)", "UTC_TIMESTAMP(6)"])
     if kind == "CINEMA":
         profiles.append([f"@o + {n}", "'CINEMA'", f"@s + {n}", "NULL", "NULL", "FALSE", "NULL", "NULL",
-                         q("Dolby sound, Parking, Wheelchair access, Food court")])
+                         q("Dolby sound, Parking, Wheelchair access, Food court"), "'CAFE'"])
         for screen_name, layout, fmt in scr:
             screens.append((n, screen_name, layout, fmt))
     else:
-        profiles.append([f"@o + {n}", "'DINING'", f"@s + {n}", q(cuisines), f"{cost:.2f}", q(veg), str(cap), q(offer), q(feats)])
+        profiles.append([f"@o + {n}", "'DINING'", f"@s + {n}", q(cuisines), f"{cost:.2f}", q(veg), str(cap), q(offer), q(feats),
+                         q("PREMIUM" if name in PREMIUM else "CAFE")])
+        for title, percent, meal in OFFERS.get(name, []):
+            offer_rows.append([f"@o + {n}", q(title), str(percent), q(meal), "UTC_TIMESTAMP(6)"])
+        dining_orgs.append((n, name))
         sort = 0
         for section, items in MENUS[menu_key]:
             for dish, price, is_veg, best, about in items:
@@ -297,7 +344,44 @@ insert("working_hours", ["branch_id", "day_of_week", "opens_at", "closes_at", "b
 insert("services", ["id", "organization_id", "name", "duration_minutes", "price", "requires_staff", "slot_interval_minutes",
                     "min_notice_minutes", "is_active", "created_at", "updated_at"], services)
 insert("venue_profiles", ["organization_id", "kind", "booking_service_id", "cuisines", "cost_for_two", "veg_only",
-                          "capacity_per_slot", "offer_text", "features"], profiles)
+                          "capacity_per_slot", "offer_text", "features", "dining_tier"], profiles)
+insert("dining_offers", ["organization_id", "title", "percent", "meal", "created_at"], offer_rows)
+
+# Past diners: completed table bookings with reviews, so restaurants show ratings.
+diner_base = len(venues)
+insert("users", ["id", "full_name", "email", "phone_e164", "password_hash", "status", "email_verified_at",
+                 "phone_verified_at", "preferred_language", "created_at", "updated_at"],
+       [[f"@u + {diner_base + i + 1}", q(name), q(f"demo.venue.diner{i + 1}@example.com"), q(phone()), q(PASSWORD_HASH), "'ACTIVE'",
+         "UTC_TIMESTAMP(6)", "UTC_TIMESTAMP(6)", "'en'", "UTC_TIMESTAMP(6)", "UTC_TIMESTAMP(6)"] for i, name in enumerate(DINERS)])
+insert("user_roles", ["user_id", "role_id"], [[f"@u + {diner_base + i + 1}", "1"] for i in range(len(DINERS))])
+REF_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
+past, past_reviews = [], []
+for n, name in dining_orgs:
+    quality = random.choice([5, 4, 4, 5])
+    for k in range(random.randint(3, 6)):
+        guests = random.choice([2, 2, 3, 4])
+        days = random.randint(3, 60)
+        hhmm = to_utc(random.choice(["13:00", "13:30", "20:00", "20:30", "19:30"]))
+        start = f"TIMESTAMP(UTC_DATE() - INTERVAL {days} DAY, '{hhmm}:00')"
+        cover = (25 if name in PREMIUM else 10) * guests
+        ref = "BD" + "".join(random.choice(REF_ALPHABET) for _ in range(8))
+        diner = diner_base + 1 + random.randrange(len(DINERS))
+        past.append([f"@a + {len(past) + 1}", q(ref), f"@u + {diner}", f"@o + {n}", f"@b + {n}", f"@s + {n}", start,
+                     f"{start} + INTERVAL 90 MINUTE", f"{start} + INTERVAL 90 MINUTE", "'COMPLETED'", q(f"Table for {guests}"),
+                     f"{cover:.2f}", "0.00", f"{cover:.2f}", str(guests), f"{start} - INTERVAL 5 MINUTE",
+                     f"{start} + INTERVAL 90 MINUTE", f"{start} - INTERVAL 2 DAY", f"{start} + INTERVAL 90 MINUTE"])
+        rating = max(3, min(5, quality + random.choice([0, 0, -1, 1])))
+        past_reviews.append([f"@a + {len(past)}", f"@o + {n}", f"@u + {diner}", str(rating), q(random.choice(DINING_REVIEWS[rating])),
+                             f"{start} + INTERVAL 1 DAY", f"{start} + INTERVAL 1 DAY"])
+w("SET @a = (SELECT COALESCE(MAX(id), 0) FROM appointments);")
+insert("appointments", ["id", "reference", "customer_id", "organization_id", "branch_id", "service_id", "starts_at", "ends_at",
+                        "blocked_until", "status", "service_name", "service_price", "platform_fee", "total_amount", "party_size",
+                        "checked_in_at", "completed_at", "created_at", "updated_at"], past)
+insert("reviews", ["appointment_id", "organization_id", "customer_id", "rating", "comment", "created_at", "updated_at"], past_reviews)
+w("UPDATE organizations o JOIN (SELECT organization_id, ROUND(AVG(rating), 2) avg_r, COUNT(*) n FROM reviews "
+  "WHERE status = 'VISIBLE' GROUP BY organization_id) r ON r.organization_id = o.id "
+  "SET o.rating_avg = r.avg_r, o.review_count = r.n WHERE o.id > @o;")
+w("")
 insert("menu_items", ["organization_id", "section", "name", "description", "price", "is_veg", "is_bestseller", "sort_order"], menu)
 
 
@@ -362,6 +446,7 @@ w("")
 
 w("COMMIT;")
 w(f"-- {len(MOVIES)} movies (+{len(UPCOMING)} coming soon), {len(CINEMAS)} cinemas, {len(screen_rows)} screens, {len(show_rows)} shows, "
-  f"{len(RESTAURANTS)} restaurants/cafés, {len(menu)} dishes, {len(file_rows)} photos")
+  f"{len(RESTAURANTS)} restaurants/cafés, {len(menu)} dishes, {len(offer_rows)} offers, {len(past_reviews)} reviews, "
+  f"{len(file_rows)} photos")
 Path(__file__).with_name("demo-movies-dining.sql").write_text("\n".join(out) + "\n", encoding="utf-8")
 print(out[-1])

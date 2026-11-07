@@ -140,14 +140,17 @@ Legend: `[x]` done and tested · `[ ]` not started · `[~]` in progress
 - [x] Flyway V15: the venue profile's link to its hidden booking service cascades, so deleting a business works
 - [x] Tickets and tables reuse appointments, so payment (and the demo gateway), QR pass, receipts, cancellation, refunds and notifications work unchanged; they can't be rescheduled (cancel and book again)
 - [x] Seats go back on sale when a ticket booking is cancelled, declined or its payment hold expires; the seat numbers stay in the booking title
-- [x] Table bookings are free, confirmed instantly (or after approval), limited by guests seated per 90-minute sitting; booking locks the venue row so two people can't take the last table
+- [x] Table bookings: cover charge per guest paid online (₹10 at cafés, ₹25 at restro-bars/premium places; platform settings `dining.cover_per_guest.*`), credited against the final bill; no BookEasy fee; limited by guests seated per 90-minute sitting; booking locks the venue row so two people can't take the last table
+- [x] Flyway V17: dining tier (CAFE/PREMIUM), restaurant offers (percent off the bill, lunch/dinner/all day), offer and bill breakdown on bookings
+- [x] Pay bill: bill − offer − cover already paid = to pay (never below zero), paid through the normal payment page with receipt and QR; today's table booking is used automatically, its cover can be used once; walk-ins get the best offer for the current meal; paid bills can't be cancelled
+- [x] Dining journey: Dining home (headline + search banner, Discover/Book/Pay, filter chips, "What's the mood?" photo tiles, offers spotlight, list near you) → restaurant page (photo, rating, cuisines, cost for two, hours, Call/Directions, tabs Offers · Menu · Reviews · Facilities · Explore more, sample bill, sticky Book a table / Pay bill) → booking sheet (guests → day → lunch/dinner → time with its offer → choose offer → total cover) → payment
 - [x] Owner "Venue" tab: settings, menu editor, screen builder with a live seat-map preview, showtime scheduling (no overlaps on a screen, a price for every seat class, shows with tickets sold can't be removed)
 - [x] Flyway V16: movie poster photos; admins upload posters (JPEG/PNG/WebP ≤ 5 MB); demo posters and cinema/restaurant covers are CC0 photos with credits
 - [x] Admin movie catalogue (theatres only schedule movies from it; retiring a movie hides it at once)
 - [x] Movie booking flow: Movies in a city (language/genre/format filters, Coming soon) → movie details (runtime, genres, formats, languages, synopsis, cast, Book tickets) → shows (date strip, language/format filters, theatres with each screen's times, available/filling fast) → How many seats? (price and availability per class) → seat map (tapping a seat fills the chosen number side by side) → Pay → payment page, receipt and QR ticket like other bookings
 - [x] Customer pages: seat picker (up to 10 seats), Dining (search, pure-veg filter), restaurant page (menu with veg marks, offers, table booking); theatre pages list today's and tomorrow's shows; home page tiles and a Now showing strip
 - [x] Demo data: backend/seed/generate_movies_dining.py → demo-movies-dining.sql (8 fictional movies, 8 cinemas, 12 restaurants/cafés)
-- [x] Tests: backend VenueIT (8), frontend venue.test.tsx (8)
+- [x] Tests: backend VenueIT (9), frontend venue.test.tsx (10)
 - [ ] Showtimes in the demo data are created for 21 days from loading; reload the file to refresh them
-- [ ] Food pre-ordering with tickets and paid table deposits are not modelled
+- [ ] Food pre-ordering with tickets is not modelled
 
