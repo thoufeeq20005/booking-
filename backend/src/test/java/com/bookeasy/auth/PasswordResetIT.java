@@ -94,6 +94,12 @@ class PasswordResetIT extends AuthTestBase {
 
     @Test
     void resendVerificationIsLimited() throws Exception {
+        // The limit counts in fixed one-hour windows. This test moves the clock about two minutes, so start well inside
+        // a window; near the top of the hour the counter would otherwise restart mid-test.
+        long intoHour = clock.instant().getEpochSecond() % 3600;
+        if (intoHour > 3600 - 300) {
+            clock.advance(java.time.Duration.ofSeconds(3600 - intoHour + 60));
+        }
         String email = uniqueEmail();
         Session s = register(email);
         mvc.perform(authed(post("/api/v1/account/email/send-code"), s.accessToken())).andExpect(status().isOk());
