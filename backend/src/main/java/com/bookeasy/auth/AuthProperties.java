@@ -17,7 +17,8 @@ public record AuthProperties(
         Otp otp,
         Lockout lockout,
         Google google,
-        Bootstrap bootstrap) {
+        Bootstrap bootstrap,
+        boolean passwordLoginEmailCode) {
 
     /**
      * @param secure   send only over HTTPS (must be true in production)

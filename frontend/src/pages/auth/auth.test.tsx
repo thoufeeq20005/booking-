@@ -62,6 +62,45 @@ describe('sign in', () => {
     });
   });
 
+  it('after the password, asks for the code emailed to the account', async () => {
+    const requests = installFakeApi((r) => {
+      if (r.url === '/auth/login') {
+        return reply.ok({ status: 'EMAIL_CODE_REQUIRED', challengeToken: 'chal-2',
+          emailCode: { expiresInSeconds: 300, resendAfterSeconds: 0 } });
+      }
+      if (r.url === '/auth/login/email-code/resend') return reply.ok({ expiresInSeconds: 300, resendAfterSeconds: 60, demoCode: '654321' });
+      if (r.url === '/auth/login/email-code') {
+        return r.body?.code === '654321' ? reply.ok(authenticated()) : reply.fail(400, 'OTP_INVALID');
+      }
+      return undefined;
+    });
+    renderWithProviders(<AppRoutes />, { route: '/signin?next=%2Faccount' });
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Sign in with password instead' }));
+    await userEvent.type(screen.getByLabelText('Email address'), 'asha@example.test');
+    await userEvent.type(screen.getByLabelText('Password'), 'Sunrise2026');
+    await userEvent.click(screen.getByRole('button', { name: 'Sign in' }));
+
+    expect(await screen.findByRole('heading', { name: 'Check your email' })).toBeInTheDocument();
+    expect(screen.getByText(/a\*+@example\.test/)).toBeInTheDocument(); // masked address
+    // Pasting a code fills all six boxes.
+    await userEvent.click(screen.getByLabelText('Code digit 1'));
+    await userEvent.paste('11 22 33');
+    await userEvent.click(screen.getByRole('button', { name: 'Verify' }));
+    expect(await screen.findByRole('alert')).toBeInTheDocument();
+
+    // Resend (no wait left): in development the new code is shown and can be used directly.
+    await userEvent.click(screen.getByRole('button', { name: 'Resend code' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Fill in' }));
+    expect(screen.getByText(/Resend in 60s|Resend in 59s/)).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Verify' }));
+
+    expect(await screen.findByRole('heading', { name: 'My account' })).toBeInTheDocument();
+    expect(requests.filter((r) => r.url === '/auth/login/email-code').map((r) => r.body)).toEqual([
+      { challengeToken: 'chal-2', code: '112233' },
+      { challengeToken: 'chal-2', code: '654321' },
+    ]);
+  });
 });
 
 describe('email code sign-in', () => {

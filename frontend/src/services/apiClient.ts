@@ -70,11 +70,14 @@ export interface UserView {
 export type Role = 'CUSTOMER' | 'BUSINESS_OWNER' | 'STAFF' | 'SUPER_ADMIN';
 
 export interface Session {
-  status: 'AUTHENTICATED' | 'TWO_FACTOR_REQUIRED';
+  /** EMAIL_CODE_REQUIRED: the password was right and a code was emailed; TWO_FACTOR_REQUIRED: authenticator app. */
+  status: 'AUTHENTICATED' | 'TWO_FACTOR_REQUIRED' | 'EMAIL_CODE_REQUIRED';
   accessToken?: string;
   accessTokenExpiresAt?: string;
   challengeToken?: string;
   user?: UserView;
+  /** EMAIL_CODE_REQUIRED only: code lifetime, resend wait and (in development without email) the code itself. */
+  emailCode?: { expiresInSeconds: number; resendAfterSeconds: number; demoCode?: string };
 }
 
 type SessionListener = (user: UserView | null) => void;

@@ -212,7 +212,11 @@
     "resetDone": "Your password has been changed and you've been signed out on all devices.",
     "newPassword": "New password",
     "confirmPassword": "Confirm new password",
-    "setNewPassword": "Set new password"
+    "setNewPassword": "Set new password",
+    "checkEmailTitle": "Check your email",
+    "loginCodeSent": "We sent a 6-digit code to {{email}}. Enter it below to finish signing in. It expires in {{minutes}} minutes.",
+    "emailCodeLabel": "Code digit",
+    "differentAccount": "Use a different account"
   },
   "account": {
     "title": "My account",

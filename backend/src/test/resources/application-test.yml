@@ -19,6 +19,8 @@ bookeasy:
     client-ip-xff-index-from-right: 0
   auth:
     jwt-secret: test-only-jwt-secret-that-is-long-enough-for-hs512-signing-0123456789abcdef
+    # Most tests sign in with a password directly; PasswordEmailCodeIT turns the emailed code step on.
+    password-login-email-code: false
     refresh-cookie:
       secure: true
     google:

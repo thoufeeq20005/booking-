@@ -60,10 +60,24 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    @Operation(summary = "Sign in with email and password; may return TWO_FACTOR_REQUIRED")
+    @Operation(summary = "Sign in with email and password; returns EMAIL_CODE_REQUIRED (code emailed) or TWO_FACTOR_REQUIRED")
     public ResponseEntity<ApiResponse<Session>> login(@Valid @RequestBody AuthRequests.Login req,
                                                       HttpServletRequest http) {
         return web.sessionResponse(passwordAuth.login(req, web.context(http)));
+    }
+
+    @PostMapping("/login/email-code")
+    @Operation(summary = "Finish a password sign-in with the code emailed to the account")
+    public ResponseEntity<ApiResponse<Session>> passwordEmailCode(@Valid @RequestBody AuthRequests.EmailCodeStep req,
+                                                                  HttpServletRequest http) {
+        return web.sessionResponse(passwordAuth.completeEmailCode(req, web.context(http)));
+    }
+
+    @PostMapping("/login/email-code/resend")
+    @Operation(summary = "Email a new code for a password sign-in in progress")
+    public ApiResponse<OtpSent> resendPasswordEmailCode(@Valid @RequestBody AuthRequests.EmailCodeChallenge req,
+                                                        HttpServletRequest http) {
+        return ApiResponse.ok(passwordAuth.resendEmailCode(req, web.context(http)));
     }
 
     @PostMapping("/login/two-factor")

@@ -33,18 +33,26 @@ public final class AuthResponses {
         }
     }
 
-    public enum AuthStatus { AUTHENTICATED, TWO_FACTOR_REQUIRED }
+    /** EMAIL_CODE_REQUIRED: the password was right; a code was emailed and must be entered to finish signing in. */
+    public enum AuthStatus { AUTHENTICATED, TWO_FACTOR_REQUIRED, EMAIL_CODE_REQUIRED }
 
-    /** Either an access token + user, or a 2FA challenge. The refresh token travels only in its cookie. */
+    /**
+     * Either an access token + user, or a challenge to finish signing in. The refresh token travels only in its cookie.
+     * emailCode is set for EMAIL_CODE_REQUIRED (when the code can be resent, and the code itself in development only).
+     */
     public record Session(AuthStatus status, String accessToken, Instant accessTokenExpiresAt, String challengeToken,
-                          UserView user) {
+                          UserView user, OtpSent emailCode) {
 
         public static Session authenticated(String accessToken, Instant expiresAt, UserView user) {
-            return new Session(AuthStatus.AUTHENTICATED, accessToken, expiresAt, null, user);
+            return new Session(AuthStatus.AUTHENTICATED, accessToken, expiresAt, null, user, null);
         }
 
         public static Session challenge(String challengeToken) {
-            return new Session(AuthStatus.TWO_FACTOR_REQUIRED, null, null, challengeToken, null);
+            return new Session(AuthStatus.TWO_FACTOR_REQUIRED, null, null, challengeToken, null, null);
+        }
+
+        public static Session emailCodeChallenge(String challengeToken, OtpSent sent) {
+            return new Session(AuthStatus.EMAIL_CODE_REQUIRED, null, null, challengeToken, null, sent);
         }
     }
 
