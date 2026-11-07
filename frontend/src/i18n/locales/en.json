@@ -781,7 +781,8 @@
     "noResultsHint": "Try a bigger radius, another category or a different search.",
     "distance": "{{km}} km away",
     "from": "from {{price}}",
-    "openMap": "Open in Google Maps"
+    "openMap": "Open in Google Maps",
+    "freeTrial": "Free trial"
   },
   "biz": {
     "reviews": "{{count}} reviews",

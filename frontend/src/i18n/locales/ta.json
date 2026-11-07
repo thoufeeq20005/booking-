@@ -781,7 +781,8 @@
     "noResultsHint": "பெரிய தூரம், வேறு வகை அல்லது வேறு தேடலை முயற்சிக்கவும்.",
     "distance": "{{km}} கி.மீ தொலைவில்",
     "from": "{{price}} முதல்",
-    "openMap": "Google Maps இல் திற"
+    "openMap": "Google Maps இல் திற",
+    "freeTrial": "இலவச சோதனை வகுப்பு"
   },
   "biz": {
     "reviews": "{{count}} மதிப்புரைகள்",

@@ -781,7 +781,8 @@
     "noResultsHint": "बड़ी दूरी, कोई और श्रेणी या अलग खोज आज़माएँ।",
     "distance": "{{km}} किमी दूर",
     "from": "{{price}} से",
-    "openMap": "Google Maps में खोलें"
+    "openMap": "Google Maps में खोलें",
+    "freeTrial": "मुफ़्त ट्रायल"
   },
   "biz": {
     "reviews": "{{count}} समीक्षाएँ",

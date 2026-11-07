@@ -145,7 +145,7 @@ export function SearchPage() {
                   <span className="inline-flex items-center gap-1"><MapPin className="h-3.5 w-3.5 text-brand-600" aria-hidden="true" />
                     {t('search.distance', { km: h.distanceKm })} · {[h.locality, h.city].filter(Boolean).join(', ')}</span>
                   {h.reviewCount > 0 && <span className="inline-flex items-center gap-1"><Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" aria-hidden="true" />{Number(h.ratingAvg).toFixed(1)} ({h.reviewCount})</span>}
-                  {h.fromPrice != null && <span>{t('search.from', { price: formatINR(h.fromPrice) })}</span>}
+                  {h.fromPrice != null && <span>{Number(h.fromPrice) === 0 ? t('search.freeTrial') : t('search.from', { price: formatINR(h.fromPrice) })}</span>}
                 </p>
                 <span className="mt-1 flex flex-wrap items-center gap-3 text-xs">
                   <LocationButton place={{ name: h.name, address: [h.branchName, h.locality, h.city].filter(Boolean).join(', '), latitude: Number(h.latitude), longitude: Number(h.longitude) }} />
