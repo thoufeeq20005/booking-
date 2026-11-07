@@ -11,6 +11,7 @@ import { usePublicCategories } from '@/services/organizationApi';
 import { CITIES, discoveryApi, type SearchHit } from '@/services/discoveryApi';
 import { formatINR } from '@/utils/format';
 import { Poster } from '@/features/venue/shared';
+import { ForYouSection } from '@/features/recommend/ForYouSection';
 import { venueApi } from '@/services/venueApi';
 import { illustratePlatformFee, paiseToRupees } from '@/utils/money';
 
@@ -170,6 +171,8 @@ export function HomePage() {
           <div className="mt-8"><HeroSearch /></div>
         </div>
       </section>
+
+      <ForYouSection />
 
       <section className="mx-auto mt-12 max-w-7xl px-4 sm:px-6">
         <SectionHeading title={t('home.typesTitle')} />

@@ -19,6 +19,7 @@ import { venueApi, type DiningDetails, type DiningOffer, type Restaurant, type T
 import { formatINR, formatWallTime } from '@/utils/format';
 import { DiningMenu } from './DiningPanel';
 import { RestaurantCard } from './RestaurantCard';
+import { BusinessOffers } from '@/features/recommend/Promotions';
 import { useVenueFormat } from './shared';
 
 const offerFor = (offers: DiningOffer[], meal: 'LUNCH' | 'DINNER') => offers.filter((o) => o.meal === 'ALL_DAY' || o.meal === meal);
@@ -284,6 +285,7 @@ export function RestaurantPage({ profile: p, details }: { profile: PublicProfile
             </ul>
           )}
           <SampleBill details={details} />
+          <BusinessOffers slug={p.slug} />
           {details.offer && <p className="rounded-xl bg-amber-50 p-3 text-sm text-amber-900">{details.offer}</p>}
         </section>
 

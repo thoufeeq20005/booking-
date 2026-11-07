@@ -100,6 +100,7 @@ four shows a day) and 14 restaurants and cafés with menus, offers, café/premiu
 mysql -uroot -p --default-character-set=utf8mb4 bookeasy < backend/seed/demo-movies-dining.sql
 mysql -uroot -p --default-character-set=utf8mb4 bookeasy < backend/seed/demo-dining-more.sql   # more cafés and premium restaurants
 mysql -uroot -p --default-character-set=utf8mb4 bookeasy < backend/seed/demo-education-fitness.sql   # 5 education + 5 fitness places per city
+mysql -uroot -p --default-character-set=utf8mb4 bookeasy < backend/seed/demo-promotions.sql   # offers: gym packages, free check-ups, …
 python backend/seed/install_demo_photos.py   # copies all demo photos, including posters and venue covers
 ```
 

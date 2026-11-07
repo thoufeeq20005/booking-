@@ -14,6 +14,7 @@ import { discoveryApi } from '@/services/discoveryApi';
 import { venueApi } from '@/services/venueApi';
 import { RestaurantPage } from '@/features/venue/RestaurantPage';
 import { TheatreSchedule } from '@/features/venue/TheatreSchedule';
+import { BusinessOffers } from '@/features/recommend/Promotions';
 import { formatINR, formatWallTime } from '@/utils/format';
 
 export function BusinessPage() {
@@ -66,6 +67,7 @@ export function BusinessPage() {
       <div className="grid gap-6 lg:grid-cols-[1fr_24rem]">
         <div className="space-y-6">
           {p.description && <Card className="whitespace-pre-line p-6 text-sm">{p.description}</Card>}
+          <BusinessOffers slug={p.slug} />
           {workflow === 'CINEMA' && <TheatreSchedule orgId={p.id} />}
           {workflow !== 'CINEMA' && workflow !== 'DINING' && <Card className="p-6">
             <h2 className="text-lg font-semibold">{t('business.tab.services')}</h2>

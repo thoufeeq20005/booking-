@@ -366,7 +366,8 @@
       "review": "Review & submit",
       "services": "Services",
       "staff": "Staff",
-      "venue": "Venue"
+      "venue": "Venue",
+      "offers": "Offers"
     },
     "banner": {
       "DRAFT": "Complete each step, then submit your business for verification.",
@@ -1293,5 +1294,61 @@
       "RATING": "Top rated",
       "COST": "Cost: low to high"
     }
+  },
+  "reco": {
+    "title": "Picked for you nearby",
+    "near": "Offers near {{place}}",
+    "yourLocation": "your location",
+    "askLabel": "What are you looking for?",
+    "askPlaceholder": "Try: cheap gym membership, free health check-up, café offers",
+    "ask": "Find",
+    "chip": {
+      "cafe": "Café offers",
+      "health": "Free health check-up",
+      "gym": "Gym deals",
+      "learning": "Free trial classes",
+      "beauty": "Salon & spa offers"
+    },
+    "locationDenied": "Location is off, so we're showing offers near your chosen city.",
+    "loading": "Finding the best offers near you…",
+    "none": "No offers near here yet. Try another city.",
+    "byAi": "Picked by AI from real offers listed on BookEasy.",
+    "byRules": "Sorted by savings, ratings and distance.",
+    "privacy": "Your location is only used for this search and isn't saved.",
+    "percentOff": "{{percent}}% off",
+    "kind": {
+      "FREE": "Free",
+      "FREE_SERVICE": "Free trial",
+      "PACKAGE": "Package deal",
+      "EVENT": "Event",
+      "DISCOUNT": "Discount"
+    }
+  },
+  "promo": {
+    "title": "Offers",
+    "until": "Until {{date}}",
+    "hint": "Offers appear on your page and in nearby recommendations. Only publish offers you will honour.",
+    "none": "No offers yet.",
+    "notCurrent": "Not running today",
+    "remove": "Remove {{title}}",
+    "kindLabel": "Type of offer",
+    "kind": {
+      "DISCOUNT": "Discount",
+      "FREE": "Something free",
+      "PACKAGE": "Package or membership deal",
+      "EVENT": "Event or camp"
+    },
+    "titleLabel": "Offer",
+    "example": {
+      "DISCOUNT": "20% off on weekdays",
+      "FREE": "Free health check-up camp this Sunday",
+      "PACKAGE": "Pay for 6 months, get 6 months free",
+      "EVENT": "Free meditation session this Sunday"
+    },
+    "detailsLabel": "Details (optional)",
+    "percentLabel": "Discount %",
+    "fromLabel": "Starts (optional)",
+    "untilLabel": "Ends (optional)",
+    "add": "Publish offer"
   }
 }
