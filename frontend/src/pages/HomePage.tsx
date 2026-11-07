@@ -91,7 +91,7 @@ function PlaceCard({ h }: { h: SearchHit }) {
             </p>
           )}
           {h.fromPrice != null && (
-            <p className="mt-auto pt-2 text-right text-sm">{t('search.from', { price: formatINR(h.fromPrice) })}</p>
+            <p className="mt-auto pt-2 text-right text-sm">{Number(h.fromPrice) === 0 ? t('search.freeTrial') : t('search.from', { price: formatINR(h.fromPrice) })}</p>
           )}
         </div>
       </Card>

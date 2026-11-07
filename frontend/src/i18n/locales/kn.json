@@ -781,7 +781,8 @@
     "noResultsHint": "ದೊಡ್ಡ ವ್ಯಾಪ್ತಿ, ಬೇರೆ ವರ್ಗ ಅಥವಾ ಬೇರೆ ಹುಡುಕಾಟ ಪ್ರಯತ್ನಿಸಿ.",
     "distance": "{{km}} ಕಿ.ಮೀ ದೂರ",
     "from": "{{price}} ರಿಂದ",
-    "openMap": "Google Maps ನಲ್ಲಿ ತೆರೆಯಿರಿ"
+    "openMap": "Google Maps ನಲ್ಲಿ ತೆರೆಯಿರಿ",
+    "freeTrial": "ಉಚಿತ ಟ್ರಯಲ್"
   },
   "biz": {
     "reviews": "{{count}} ವಿಮರ್ಶೆಗಳು",

@@ -781,7 +781,8 @@
     "noResultsHint": "വലിയ ദൂരം, മറ്റൊരു വിഭാഗം അല്ലെങ്കിൽ മറ്റൊരു തിരയൽ ശ്രമിക്കുക.",
     "distance": "{{km}} കി.മീ അകലെ",
     "from": "{{price}} മുതൽ",
-    "openMap": "Google Maps-ൽ തുറക്കുക"
+    "openMap": "Google Maps-ൽ തുറക്കുക",
+    "freeTrial": "സൗജന്യ ട്രയൽ"
   },
   "biz": {
     "reviews": "{{count}} അവലോകനങ്ങൾ",

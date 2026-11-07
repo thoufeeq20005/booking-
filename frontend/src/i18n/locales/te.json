@@ -781,7 +781,8 @@
     "noResultsHint": "పెద్ద పరిధి, మరో వర్గం లేదా వేరే శోధన ప్రయత్నించండి.",
     "distance": "{{km}} కి.మీ దూరంలో",
     "from": "{{price}} నుండి",
-    "openMap": "Google Maps లో తెరవండి"
+    "openMap": "Google Maps లో తెరవండి",
+    "freeTrial": "ఉచిత ట్రయల్"
   },
   "biz": {
     "reviews": "{{count}} సమీక్షలు",
