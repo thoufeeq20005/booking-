@@ -16,6 +16,10 @@ export const authApi = {
   register: (body: { fullName: string; email: string; password: string; preferredLanguage?: string }) =>
     apiPost<{ session: Session }>('/auth/register', body),
   login: (email: string, password: string) => apiPost<Session>('/auth/login', { email, password }),
+  /** Second step of password sign-in: the code emailed to the account. */
+  completeLoginCode: (challengeToken: string, code: string) =>
+    apiPost<Session>('/auth/login/email-code', { challengeToken, code }),
+  resendLoginCode: (challengeToken: string) => apiPost<OtpSent>('/auth/login/email-code/resend', { challengeToken }),
   completeTwoFactor: (challengeToken: string, code: string) =>
     apiPost<Session>('/auth/login/two-factor', { challengeToken, code }),
   sendEmailCode: (email: string) => apiPost<OtpSent>('/auth/email-code/send', { email }),

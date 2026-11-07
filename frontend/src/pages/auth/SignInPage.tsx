@@ -9,6 +9,7 @@ import { AuthCard, Divider } from '@/features/auth/AuthCard';
 import { GoogleSignInButton, googleSignInAvailable } from '@/features/auth/GoogleSignInButton';
 import { EmailCodeForm } from '@/features/auth/EmailCodeForm';
 import { TwoFactorStep } from '@/features/auth/TwoFactorStep';
+import { PasswordEmailCodeStep } from '@/features/auth/PasswordEmailCodeStep';
 import { useApiForm } from '@/hooks/useApiForm';
 import { safeNext } from '@/routes/RequireAuth';
 import type { Session } from '@/services/apiClient';
@@ -25,13 +26,18 @@ export function SignInPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [challenge, setChallenge] = useState<string | null>(null);
+  const [emailStep, setEmailStep] = useState<Session | null>(null);
   const form = useApiForm();
 
-  if (status === 'authenticated' && !challenge) return <Navigate to={next} replace />;
+  if (status === 'authenticated' && !challenge && !emailStep) return <Navigate to={next} replace />;
 
   const handleSession = (s: Session) => {
     if (s.status === 'TWO_FACTOR_REQUIRED' && s.challengeToken) {
       setChallenge(s.challengeToken);
+      return;
+    }
+    if (s.status === 'EMAIL_CODE_REQUIRED' && s.challengeToken) {
+      setEmailStep(s);
       return;
     }
     signIn(s);
@@ -48,6 +54,15 @@ export function SignInPage() {
     const s = await form.submit(() => authApi.google(idToken));
     if (s) handleSession(s);
   };
+
+  if (emailStep?.challengeToken) {
+    return (
+      <AuthCard title={t('auth.checkEmailTitle')}>
+        <PasswordEmailCodeStep email={email} challengeToken={emailStep.challengeToken} sent={emailStep.emailCode}
+          onDone={handleSession} onBack={() => { setEmailStep(null); setPassword(''); }} />
+      </AuthCard>
+    );
+  }
 
   if (challenge) {
     return (

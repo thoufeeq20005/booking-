@@ -23,6 +23,12 @@ public final class AuthRequests {
     public record Login(@NotBlank @Size(max = 255) String email, @NotBlank @Size(max = 128) String password) {
     }
 
+    public record EmailCodeChallenge(@NotBlank String challengeToken) {
+    }
+
+    public record EmailCodeStep(@NotBlank String challengeToken, @NotBlank @Pattern(regexp = "\\d{6}") String code) {
+    }
+
     public record TwoFactorLogin(@NotBlank String challengeToken, @NotBlank @Pattern(regexp = "\\d{6}") String code) {
     }
 

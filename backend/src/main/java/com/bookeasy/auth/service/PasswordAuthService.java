@@ -12,7 +12,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.bookeasy.auth.AuthProperties;
 import com.bookeasy.auth.dto.AuthRequests;
+import com.bookeasy.auth.dto.AuthResponses.OtpSent;
 import com.bookeasy.auth.dto.AuthResponses.Registered;
+import com.bookeasy.auth.dto.AuthResponses.Session;
+import com.bookeasy.auth.entity.OtpPurpose;
+import com.bookeasy.auth.otp.OtpService;
+import com.bookeasy.auth.support.AuthEmails;
 import com.bookeasy.auth.service.SessionIssuer.AuthResult;
 import com.bookeasy.auth.support.Identifiers;
 import com.bookeasy.auth.support.PasswordPolicy;
@@ -43,6 +48,8 @@ public class PasswordAuthService {
     private final TwoFactorService twoFactorService;
     private final RateLimiter rateLimiter;
     private final AuthProperties properties;
+    private final OtpService otpService;
+    private final AuthEmails authEmails;
     private final Clock clock;
     /** Compared against when the email is unknown, so response time doesn't reveal whether an account exists. */
     private final String dummyHash;
@@ -51,7 +58,9 @@ public class PasswordAuthService {
                                SessionIssuer sessionIssuer, JwtTokenService jwtTokenService,
                                RefreshTokenService refreshTokenService, TwoFactorService twoFactorService,
                                RateLimiter rateLimiter,
-                               AuthProperties properties, Clock clock) {
+                               AuthProperties properties, OtpService otpService, AuthEmails authEmails, Clock clock) {
+        this.otpService = otpService;
+        this.authEmails = authEmails;
         this.users = users;
         this.passwordEncoder = passwordEncoder;
         this.passwordPolicy = passwordPolicy;
@@ -111,7 +120,65 @@ public class PasswordAuthService {
             }
             throw new ApiException(ErrorCode.INVALID_CREDENTIALS);
         }
+        if (properties.passwordLoginEmailCode() && !user.isTwoFactorEnabled()) {
+            // Second step: a code emailed to the account. People with an authenticator app use that instead.
+            SessionIssuer.requireActive(user);
+            String challenge = jwtTokenService.issueTwoFactorChallenge(user).value();
+            return new AuthResult(Session.emailCodeChallenge(challenge, sendCode(user, true)), null);
+        }
         return sessionIssuer.afterFirstFactor(user, ctx);
+    }
+
+    /** Emails a fresh sign-in code for a password challenge (the 60-second resend wait applies). */
+    @Transactional
+    public OtpSent resendEmailCode(AuthRequests.EmailCodeChallenge req, RequestContext ctx) {
+        rateLimiter.hit("login-code-resend:ip:" + ctx.ip(), 20, Duration.ofHours(1));
+        return sendCode(challengedUser(req.challengeToken()), false);
+    }
+
+    /** Finishes a password sign-in with the code from the email. */
+    @Transactional(noRollbackFor = ApiException.class)
+    public AuthResult completeEmailCode(AuthRequests.EmailCodeStep req, RequestContext ctx) {
+        User user = challengedUser(req.challengeToken());
+        rateLimiter.hit("login-code:user:" + user.getId(), 10, WINDOW);
+        otpService.verify(user.getEmail(), OtpPurpose.EMAIL_LOGIN, req.code());
+        if (user.getEmailVerifiedAt() == null) {
+            user.setEmailVerifiedAt(clock.instant()); // receiving the code proves the person controls this inbox
+        }
+        return sessionIssuer.complete(user, ctx);
+    }
+
+    private User challengedUser(String challengeToken) {
+        TwoFactorChallenge challenge = jwtTokenService.parseTwoFactorChallenge(challengeToken);
+        User user = users.findWithRolesById(challenge.userId()).orElseThrow(() -> new ApiException(ErrorCode.SESSION_EXPIRED));
+        // An authenticator-app challenge can't be finished with an email code.
+        if (user.getTokenVersion() != challenge.tokenVersion() || user.isTwoFactorEnabled() || !properties.passwordLoginEmailCode()) {
+            throw new ApiException(ErrorCode.SESSION_EXPIRED);
+        }
+        return user;
+    }
+
+    /**
+     * On sign-in a code sent less than a minute ago is still valid, so the wait isn't an error there: the screen just
+     * offers "resend" a little later.
+     */
+    private OtpSent sendCode(User user, boolean onLogin) {
+        long minutes = otpService.ttlMinutes();
+        // Checked first: a failure inside the send would mark the whole sign-in transaction for rollback.
+        if (onLogin && otpService.sentRecently(user.getEmail(), OtpPurpose.EMAIL_LOGIN)) {
+            return otpService.notSent();
+        }
+        return otpService.send(user.getEmail(), OtpPurpose.EMAIL_LOGIN, new OtpService.CodeDelivery() {
+                @Override
+                public void deliver(String code) {
+                    authEmails.sendLoginCode(user, code, minutes);
+                }
+
+                @Override
+                public boolean visible() {
+                    return authEmails.codesVisibleOnScreen();
+                }
+            });
     }
 
     @Transactional(noRollbackFor = ApiException.class)

@@ -76,6 +76,16 @@ public class OtpService {
         return config.ttl().toMinutes();
     }
 
+    /** True while no new code may be sent: the last one is younger than the resend wait, or the hourly limit is used up. */
+    @Transactional(readOnly = true)
+    public boolean sentRecently(String target, OtpPurpose purpose) {
+        Instant now = clock.instant();
+        return repository.findFirstByTargetAndPurposeOrderByCreatedAtDesc(target, purpose)
+                .filter(last -> last.getCreatedAt().plus(config.resendCooldown()).isAfter(now)).isPresent()
+                || repository.countByTargetAndPurposeAndCreatedAtAfter(target, purpose, now.minus(Duration.ofHours(1)))
+                        >= config.maxSendsPerHour();
+    }
+
     @Transactional
     public OtpSent send(String phone, OtpPurpose purpose, CodeDelivery delivery) {
         Instant now = clock.instant();
