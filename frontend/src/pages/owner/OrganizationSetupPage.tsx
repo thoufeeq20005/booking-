@@ -16,6 +16,7 @@ import { PhotoField } from '@/features/organization/PhotoField';
 import { ServicesSection } from '@/features/organization/ServicesSection';
 import { StaffSection } from '@/features/organization/StaffSection';
 import { VenueSection, venueKey } from '@/features/venue/VenueSection';
+import { OffersSection } from '@/features/recommend/Promotions';
 import { venueApi } from '@/services/venueApi';
 import { fileUrl, StatusBadge, useLocalized } from '@/features/organization/shared';
 import { useApiForm } from '@/hooks/useApiForm';
@@ -26,11 +27,11 @@ import {
   type OrganizationDetail,
 } from '@/services/organizationApi';
 
-const STEPS = ['details', 'branches', 'documents', 'services', 'staff', 'venue', 'review'] as const;
+const STEPS = ['details', 'branches', 'documents', 'services', 'staff', 'venue', 'offers', 'review'] as const;
 type Step = (typeof STEPS)[number];
 /** Cinemas and restaurants set up screens/shows or a menu instead of services and staff. */
-const VENUE_STEPS: readonly Step[] = ['details', 'branches', 'documents', 'venue', 'review'];
-const SERVICE_STEPS: readonly Step[] = ['details', 'branches', 'documents', 'services', 'staff', 'review'];
+const VENUE_STEPS: readonly Step[] = ['details', 'branches', 'documents', 'venue', 'offers', 'review'];
+const SERVICE_STEPS: readonly Step[] = ['details', 'branches', 'documents', 'services', 'staff', 'offers', 'review'];
 
 /** Which tab fixes each missing step. */
 const STEP_FOR: Record<MissingStep, Step> = {
@@ -206,6 +207,7 @@ export function OrganizationSetupPage() {
     services: false,
     staff: false,
     venue: Boolean(venue.data?.profile),
+    offers: false,
     review: org.summary.status !== 'DRAFT' && org.summary.status !== 'REJECTED',
   };
 
@@ -260,6 +262,7 @@ export function OrganizationSetupPage() {
         {step === 'services' && <ServicesSection org={org} />}
         {step === 'staff' && <StaffSection org={org} />}
         {step === 'venue' && <VenueSection org={org} />}
+        {step === 'offers' && <OffersSection orgId={org.summary.id} />}
         {step === 'review' && <ReviewStep org={org} goTo={goTo} />}
       </div>
     </div>

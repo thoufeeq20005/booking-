@@ -157,3 +157,10 @@ Legend: `[x]` done and tested · `[ ]` not started · `[~]` in progress
 - [ ] Showtimes in the demo data are created for 21 days from loading; reload the file to refresh them
 - [ ] Food pre-ordering with tickets is not modelled
 
+## AI recommendations ✅
+- [x] Flyway V18: `promotions` – offers any business publishes (discount, something free, package/membership, event) with optional dates; owner *Offers* tab; shown on business pages
+- [x] "Picked for you nearby" on the home page: real offers within 8 km (published offers, restaurant discounts, free trial classes); Claude (Anthropic Java SDK, `claude-opus-5-5`, low effort, structured JSON output, server-side refusal fallback) picks up to six and explains them; unknown ids are dropped; rule-based ranking without an API key or when the call fails; 15-minute cache, 30 AI answers an hour per visitor; location not stored
+- [x] Demo offers for demo businesses (`backend/seed/demo-promotions.sql`)
+- [x] Tests: `RecommendationRulesTest`, `RecommendationIT`, frontend `recommend.test.tsx`
+- [ ] Add `ANTHROPIC_API_KEY` (see [ai-recommendations.md](integrations/ai-recommendations.md)) and set a monthly spend limit in the Anthropic Console
+

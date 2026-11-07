@@ -111,6 +111,10 @@ bookeasy:
     # After a correct password, email a 6-digit code and sign in only once it is entered (skipped for accounts that
     # use an authenticator app, which is the stronger second step).
     password-login-email-code: ${AUTH_PASSWORD_LOGIN_EMAIL_CODE:true}
+  ai:
+    # Claude API key for AI recommendations (console.anthropic.com -> API keys). Empty: offers are ranked by simple rules.
+    api-key: ${ANTHROPIC_API_KEY:}
+    model: ${AI_MODEL:claude-opus-5-5}
   payments:
     # Minutes an unpaid booking holds its slot before it expires.
     hold-minutes: ${PAYMENT_HOLD_MINUTES:15}
