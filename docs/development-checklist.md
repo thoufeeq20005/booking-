@@ -162,5 +162,6 @@ Legend: `[x]` done and tested · `[ ]` not started · `[~]` in progress
 - [x] "Picked for you nearby" on the home page: real offers within 8 km (published offers, restaurant discounts, free trial classes); Claude (Anthropic Java SDK, `claude-opus-5-5`, low effort, structured JSON output, server-side refusal fallback) picks up to six and explains them; unknown ids are dropped; rule-based ranking without an API key or when the call fails; 15-minute cache, 30 AI answers an hour per visitor; location not stored
 - [x] Demo offers for demo businesses (`backend/seed/demo-promotions.sql`)
 - [x] Tests: `RecommendationRulesTest`, `RecommendationIT`, frontend `recommend.test.tsx`
-- [ ] Add `ANTHROPIC_API_KEY` (see [ai-recommendations.md](integrations/ai-recommendations.md)) and set a monthly spend limit in the Anthropic Console
+- [x] Google Gemini as a second provider (REST, JSON response schema, `gemini-3.5-flash-lite`, low thinking, 25 s timeout); `AI_PROVIDER` auto/claude/gemini; tested live with a Gemini key (AI picks in 2–4 s)
+- [ ] Rotate the Gemini key that was shared in chat; set a budget alert; optionally add `ANTHROPIC_API_KEY`
 

@@ -29,8 +29,9 @@ bookeasy:
       email: founder@bookeasy.test
       token: test-bootstrap-token-0123456789abcdef
   ai:
-    # Tests never call the real Claude API.
+    # Tests never call a real AI API.
     api-key: ""
+    gemini-api-key: ""
   payments:
     # Tests opt in to the demo gateway explicitly.
     demo-mode: false
