@@ -66,7 +66,9 @@ class EngagementIT extends BookingTestBase {
         Instant start = b.at("11:00");
         clock.advance(Duration.between(clock.instant(), start.minus(Duration.ofMinutes(30))));
 
-        assertThat(bookingNotifications.sendReminders()).isEqualTo(1);
+        // Other tests may have bookings due at the same moment (the test order differs between machines), so count
+        // this customer's reminders rather than everything the run sent.
+        assertThat(bookingNotifications.sendReminders()).isPositive();
         assertThat(bookingNotifications.sendReminders()).isZero();
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM notifications WHERE user_id = ? AND type = 'REMINDER'",
                 Integer.class, c.id())).isEqualTo(1);
