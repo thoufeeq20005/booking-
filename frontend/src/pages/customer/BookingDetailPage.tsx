@@ -14,7 +14,7 @@ import { SlotPicker } from '@/features/booking/SlotPicker';
 import { ReviewForm } from '@/features/engagement/ReviewWidgets';
 import { useApiForm } from '@/hooks/useApiForm';
 import { intlLocale } from '@/i18n';
-import { ACTIVE, bookingApi, isoDateIST, type Booking } from '@/services/bookingApi';
+import { ACTIVE, bookingApi, isoDateIST, isVenueBooking, type Booking } from '@/services/bookingApi';
 import { formatDateTime, formatINR } from '@/utils/format';
 
 /** Link a phone camera opens to show the booking pass; staff can also paste it at check-in. */
@@ -101,6 +101,10 @@ export function BookingDetailPage() {
           <div><dt className="text-xs uppercase tracking-wide text-fg-muted">{t('booking.when')}</dt><dd className="font-medium">{formatDateTime(b.startsAt, locale)}</dd></div>
           <div><dt className="text-xs uppercase tracking-wide text-fg-muted">{t('booking.where')}</dt>
             <dd><Link to={`/b/${b.organizationSlug}`} className="font-medium text-brand-700 hover:underline">{b.organizationName}</Link> · {b.branchName}<br />{b.branchAddress}</dd></div>
+          {b.screenName && <div><dt className="text-xs uppercase tracking-wide text-fg-muted">{t('venue.screen')}</dt><dd>{b.screenName}</dd></div>}
+          {Boolean(b.seats?.length) && <div><dt className="text-xs uppercase tracking-wide text-fg-muted">{t('venue.seats')}</dt>
+            <dd className="flex flex-wrap gap-1">{b.seats!.map((s) => <span key={s} className="rounded-md bg-brand-50 px-2 py-0.5 font-medium text-brand-700">{s}</span>)}</dd></div>}
+          {b.partySize != null && <div><dt className="text-xs uppercase tracking-wide text-fg-muted">{t('venue.guests')}</dt><dd>{b.partySize}</dd></div>}
           {b.patientName && <div><dt className="text-xs uppercase tracking-wide text-fg-muted">{t('extras.forWhom')}</dt><dd>{b.patientName}</dd></div>}
           {b.staffName && <div><dt className="text-xs uppercase tracking-wide text-fg-muted">{t('booking.with')}</dt><dd>{b.staffName}</dd></div>}
           <div><dt className="text-xs uppercase tracking-wide text-fg-muted">{t('booking.reference')}</dt><dd className="font-mono">{b.reference}</dd></div>
@@ -131,7 +135,7 @@ export function BookingDetailPage() {
       {active && (
         <Card className="space-y-4 p-6">
           <div className="flex flex-wrap gap-2">
-            <Button variant="secondary" onClick={() => setPanel(panel === 'reschedule' ? null : 'reschedule')}>{t('booking.reschedule')}</Button>
+            {!isVenueBooking(b) && <Button variant="secondary" onClick={() => setPanel(panel === 'reschedule' ? null : 'reschedule')}>{t('booking.reschedule')}</Button>}
             <Button variant="ghost" onClick={() => setPanel(panel === 'cancel' ? null : 'cancel')}>{t('booking.cancel')}</Button>
           </div>
           {panel === 'cancel' && <CancelPanel b={b} onDone={update} />}

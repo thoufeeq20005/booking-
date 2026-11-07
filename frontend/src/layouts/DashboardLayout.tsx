@@ -15,8 +15,7 @@ import {
   UserRound,
   Users,
   Wallet,
-  type LucideIcon,
-} from 'lucide-react';
+  type LucideIcon, Clapperboard } from 'lucide-react';
 import clsx from 'clsx';
 import { LoadingState } from '@/components/ui/StateMessage';
 import { useAuth } from '@/contexts/AuthContext';
@@ -47,6 +46,7 @@ function useNav(area: DashboardArea): NavItem[] {
         { to: '/admin/organizations', label: t('admin.organizations'), icon: ClipboardCheck },
         { to: '/admin/users', label: t('dashboard.users'), icon: Users },
         { to: '/admin/categories', label: t('admin.categories'), icon: FolderTree },
+        { to: '/admin/movies', label: t('venue.catalogue'), icon: Clapperboard },
         { to: '/admin/settlements', label: t('payment.settlements'), icon: Wallet },
         { to: '/admin/reviews', label: t('review.moderation'), icon: Star },
         { to: '/admin/support', label: t('extras.support'), icon: LifeBuoy },

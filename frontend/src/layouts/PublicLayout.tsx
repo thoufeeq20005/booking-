@@ -72,6 +72,12 @@ function RoleLinks({ onNavigate }: { onNavigate?: () => void }) {
       <NavLink to="/search" className={navLinkClass} onClick={onNavigate}>
         {t('nav.findServices')}
       </NavLink>
+      <NavLink to="/movies" className={navLinkClass} onClick={onNavigate}>
+        {t('nav.movies')}
+      </NavLink>
+      <NavLink to="/dining" className={navLinkClass} onClick={onNavigate}>
+        {t('nav.dining')}
+      </NavLink>
       {status === 'authenticated' && (
         <NavLink to="/dashboard" className={navLinkClass} onClick={onNavigate}>
           {t('nav.dashboard')}

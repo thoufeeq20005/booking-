@@ -11,6 +11,9 @@ import { BookingWizard } from '@/features/booking/BookingWizard';
 import { BusinessReviews } from '@/features/engagement/ReviewWidgets';
 import { FavouriteButton } from '@/features/engagement/FavouriteButton';
 import { discoveryApi } from '@/services/discoveryApi';
+import { venueApi } from '@/services/venueApi';
+import { DiningFacts, DiningMenu, TableBooking } from '@/features/venue/DiningPanel';
+import { TheatreSchedule } from '@/features/venue/TheatreSchedule';
 import { formatINR, formatWallTime } from '@/utils/format';
 
 export function BusinessPage() {
@@ -19,6 +22,13 @@ export function BusinessPage() {
   const slug = useParams().slug ?? '';
   const { data: p, error, isLoading, refetch } = useQuery({ queryKey: ['public-org', slug], queryFn: () => discoveryApi.profile(slug) });
   const locale = intlLocale(i18n.language);
+  const workflow = p?.bookingWorkflow;
+  const dining = useQuery({
+    queryKey: ['dining-details', slug],
+    queryFn: () => venueApi.dining(slug),
+    enabled: workflow === 'DINING',
+    retry: false,
+  });
 
   if (isLoading) return <LoadingState />;
   if (error || !p) return <ErrorState error={error} onRetry={() => void refetch()} />;
@@ -54,7 +64,10 @@ export function BusinessPage() {
       <div className="grid gap-6 lg:grid-cols-[1fr_24rem]">
         <div className="space-y-6">
           {p.description && <Card className="whitespace-pre-line p-6 text-sm">{p.description}</Card>}
-          <Card className="p-6">
+          {workflow === 'CINEMA' && <TheatreSchedule orgId={p.id} />}
+          {workflow === 'DINING' && dining.data && <DiningFacts details={dining.data} />}
+          {workflow === 'DINING' && dining.data && <DiningMenu details={dining.data} />}
+          {workflow !== 'CINEMA' && workflow !== 'DINING' && <Card className="p-6">
             <h2 className="text-lg font-semibold">{t('business.tab.services')}</h2>
             <ul className="mt-3 divide-y divide-border">
               {p.services.map((s) => (
@@ -70,8 +83,8 @@ export function BusinessPage() {
               ))}
               {p.services.length === 0 && <li className="py-3 text-sm text-fg-muted">{t('team.noServices')}</li>}
             </ul>
-          </Card>
-          {p.staff.length > 0 && (
+          </Card>}
+          {p.staff.length > 0 && workflow !== 'CINEMA' && workflow !== 'DINING' && (
             <Card className="p-6">
               <h2 className="text-lg font-semibold">{t('biz.team')}</h2>
               <ul className="mt-3 grid gap-3 sm:grid-cols-2">
@@ -109,7 +122,9 @@ export function BusinessPage() {
           ))}
         </div>
         <aside className="space-y-4">
-          <BookingWizard profile={p} />
+          {workflow === 'DINING' && dining.data && <TableBooking profile={p} details={dining.data} />}
+          {workflow === 'DINING' && dining.isError && <Card className="p-5 text-sm text-fg-muted">{t('venue.notTakingBookings')}</Card>}
+          {workflow !== 'CINEMA' && workflow !== 'DINING' && <BookingWizard profile={p} />}
           <Card className="space-y-2 p-5 text-sm">
             {p.contactPhone && <p className="flex items-center gap-2"><Phone className="h-4 w-4 text-brand-600" aria-hidden="true" /><a href={`tel:${p.contactPhone}`}>{p.contactPhone}</a></p>}
             {p.contactEmail && <p className="flex items-center gap-2"><Mail className="h-4 w-4 text-brand-600" aria-hidden="true" /><a href={`mailto:${p.contactEmail}`}>{p.contactEmail}</a></p>}

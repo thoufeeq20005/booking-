@@ -5,5 +5,9 @@ public enum BookingWorkflow {
     HEALTHCARE,
     SALON,
     EDUCATION,
-    GENERIC
+    GENERIC,
+    /** Movie tickets: showtimes and seat selection. */
+    CINEMA,
+    /** Restaurants and cafés: table bookings for a party size. */
+    DINING
 }

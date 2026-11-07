@@ -54,7 +54,16 @@ export interface Booking {
   paid: boolean;
   reviewed: boolean;
   createdAt: string;
+  /** Movie tickets: the show, its screen and the seats (seats are released if the booking ends). */
+  showtimeId?: number;
+  screenName?: string;
+  seats?: string[];
+  /** Table bookings: number of guests. */
+  partySize?: number;
 }
+
+/** Tickets and tables are cancelled and booked again rather than moved. */
+export const isVenueBooking = (b: Pick<Booking, 'showtimeId' | 'partySize'>) => b.showtimeId != null || b.partySize != null;
 
 export interface CancelPreview {
   totalPaid: number | string;

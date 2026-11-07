@@ -2,7 +2,7 @@ import { useState, type FormEvent, type ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useQueries, useQuery } from '@tanstack/react-query';
-import { BadgeCheck, CalendarClock, ChevronRight, IndianRupee, MapPin, QrCode, Search } from 'lucide-react';
+import { BadgeCheck, CalendarClock, ChevronRight, Clapperboard, IndianRupee, MapPin, QrCode, Search, UtensilsCrossed } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Button, buttonClasses } from '@/components/ui/Button';
 import { fileUrl, useLocalized } from '@/features/organization/shared';
@@ -10,6 +10,8 @@ import { usePublicConfig } from '@/services/platformApi';
 import { usePublicCategories } from '@/services/organizationApi';
 import { CITIES, discoveryApi, type SearchHit } from '@/services/discoveryApi';
 import { formatINR } from '@/utils/format';
+import { Poster } from '@/features/venue/shared';
+import { venueApi } from '@/services/venueApi';
 import { illustratePlatformFee, paiseToRupees } from '@/utils/money';
 
 const EXAMPLE_FEE_PAISE = 100_000; // ₹1,000
@@ -21,6 +23,11 @@ const CATEGORY_PHOTOS: Record<string, string> = {
   'salon-spa': '/home/salon-spa.jpg',
   education: '/home/education.jpg',
   fitness: '/home/fitness.jpg',
+};
+/** Movies and dining have their own pages, with a drawn tile instead of a photo. */
+const CATEGORY_LINKS: Record<string, { to: string; icon: typeof Clapperboard; tile: string }> = {
+  movies: { to: '/movies', icon: Clapperboard, tile: 'from-indigo-600 via-violet-600 to-fuchsia-600' },
+  dining: { to: '/dining', icon: UtensilsCrossed, tile: 'from-orange-500 via-rose-500 to-red-600' },
 };
 const cityOf = (key: string) => CITIES.find((c) => c.key === key)!;
 
@@ -119,6 +126,12 @@ export function HomePage() {
     queryFn: () => discoveryApi.search({ lat: chennai.lat, lng: chennai.lng, radiusKm: 25, sort: 'RATING' }),
     staleTime: 5 * 60 * 1000,
   });
+  const movies = useQuery({
+    queryKey: ['home-movies', 'chennai'],
+    queryFn: () => venueApi.movies({ lat: chennai.lat, lng: chennai.lng, radiusKm: 25 }),
+    staleTime: 5 * 60 * 1000,
+  });
+  const nowShowing = (movies.data ?? []).slice(0, 10);
   const cityCounts = useQueries({
     queries: FEATURED_CITIES.map((key) => {
       const c = cityOf(key);
@@ -161,10 +174,14 @@ export function HomePage() {
 
       <section className="mx-auto mt-12 max-w-7xl px-4 sm:px-6">
         <SectionHeading title={t('home.typesTitle')} />
-        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-          {categories.data?.map((c) => (
-            <Link key={c.id} to={`/search?category=${c.id}`} className="group block">
-              <div className="aspect-[4/3] overflow-hidden rounded-2xl bg-surface-muted">
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
+          {categories.data?.map((c) => {
+            const special = CATEGORY_LINKS[c.slug];
+            const Icon = special?.icon;
+            return (
+            <Link key={c.id} to={special ? special.to : `/search?category=${c.id}`} className="group block">
+              <div className={`aspect-[4/3] overflow-hidden rounded-2xl ${special ? `flex items-center justify-center bg-gradient-to-br ${special.tile}` : 'bg-surface-muted'}`}>
+                {Icon && <Icon className="h-14 w-14 text-white/90 transition duration-300 group-hover:scale-110" aria-hidden="true" />}
                 {CATEGORY_PHOTOS[c.slug] && (
                   <img src={CATEGORY_PHOTOS[c.slug]} alt="" loading="lazy" className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]" />
                 )}
@@ -172,9 +189,34 @@ export function HomePage() {
               <p className="mt-2 font-semibold group-hover:text-brand-700">{pick(c.name)}</p>
               {c.description && <p className="text-sm text-fg-muted">{pick(c.description)}</p>}
             </Link>
-          ))}
+            );
+          })}
         </div>
       </section>
+
+      {nowShowing.length > 0 && (
+        <section className="mx-auto mt-14 max-w-7xl px-4 sm:px-6">
+          <SectionHeading
+            title={t('venue.nowShowingIn', { city: t('search.city.chennai') })}
+            action={
+              <Link to="/movies?city=chennai" className="inline-flex items-center gap-1 text-sm font-semibold text-brand-700 hover:underline">
+                {t('home.seeAll')}<ChevronRight className="h-4 w-4" aria-hidden="true" />
+              </Link>
+            }
+          />
+          <ul className="-mx-1 flex gap-4 overflow-x-auto px-1 pb-2">
+            {nowShowing.map(({ movie }) => (
+              <li key={movie.id} className="w-36 shrink-0 sm:w-44">
+                <Link to={`/movies/${movie.id}`} className="group block">
+                  <Poster movie={movie} className="transition group-hover:-translate-y-0.5" />
+                  <p className="mt-2 truncate text-sm font-semibold group-hover:text-brand-700">{movie.title}</p>
+                  <p className="text-xs text-fg-muted">{movie.certificate} · {movie.languages}</p>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <section className="mx-auto mt-14 max-w-7xl px-4 sm:px-6">
         <SectionHeading title={t('home.citiesTitle')} subtitle={t('home.citiesSubtitle')} />

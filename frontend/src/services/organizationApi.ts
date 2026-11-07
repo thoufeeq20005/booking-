@@ -4,7 +4,7 @@ import { apiBlob, apiDelete, apiGet, apiPatch, apiPost, apiPut, apiUpload } from
 /** Translatable text keyed by language code; `en` is always present. */
 export type LocalizedText = Record<string, string>;
 
-export type BookingWorkflow = 'HEALTHCARE' | 'SALON' | 'EDUCATION' | 'GENERIC';
+export type BookingWorkflow = 'HEALTHCARE' | 'SALON' | 'EDUCATION' | 'GENERIC' | 'CINEMA' | 'DINING';
 export type OrganizationStatus = 'DRAFT' | 'PENDING' | 'APPROVED' | 'REJECTED' | 'SUSPENDED';
 export type DocumentStatus = 'SUBMITTED' | 'ACCEPTED' | 'REJECTED';
 export type ConfirmationMode = 'INSTANT' | 'APPROVAL';

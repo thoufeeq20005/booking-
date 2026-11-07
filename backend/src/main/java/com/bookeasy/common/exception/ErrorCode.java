@@ -67,6 +67,9 @@ public enum ErrorCode {
     BOOKING_NOT_CHANGEABLE(HttpStatus.CONFLICT, "This booking can't be changed any more"),
     RESCHEDULE_LIMIT_REACHED(HttpStatus.CONFLICT, "This booking has been rescheduled the maximum number of times"),
     INVALID_QR_CODE(HttpStatus.BAD_REQUEST, "This booking code isn't valid here"),
+    SEATS_UNAVAILABLE(HttpStatus.CONFLICT, "Some of those seats were just taken. Please choose again"),
+    SHOW_CLOSED(HttpStatus.CONFLICT, "Booking for this show has closed"),
+    TABLE_UNAVAILABLE(HttpStatus.CONFLICT, "No table is free for that many guests at that time"),
 
     // Payments
     PAYMENT_SIGNATURE_INVALID(HttpStatus.BAD_REQUEST, "The payment could not be verified"),

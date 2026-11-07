@@ -21,7 +21,7 @@ import {
   type Subcategory,
 } from '@/services/organizationApi';
 
-const WORKFLOWS: BookingWorkflow[] = ['HEALTHCARE', 'SALON', 'EDUCATION', 'GENERIC'];
+const WORKFLOWS: BookingWorkflow[] = ['HEALTHCARE', 'SALON', 'EDUCATION', 'GENERIC', 'CINEMA', 'DINING'];
 const DOC_TYPES = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp'];
 const MB = 1024 * 1024;
 

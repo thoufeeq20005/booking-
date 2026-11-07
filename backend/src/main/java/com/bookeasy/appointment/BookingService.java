@@ -165,6 +165,10 @@ public class BookingService {
     public AppointmentView reschedule(long customerId, long id, Instant startsAt, Long staffId) {
         Appointment a = appointments.findByIdForUpdate(id).filter(x -> x.getCustomerId() == customerId)
                 .orElseThrow(() -> ApiException.notFound("Booking"));
+        if (a.getShowtimeId() != null || a.getPartySize() != null) {
+            // Tickets and table bookings are cancelled and booked again rather than moved.
+            throw new ApiException(ErrorCode.BOOKING_NOT_CHANGEABLE);
+        }
         Instant now = clock.instant();
         if (!a.isActive() || a.getStartsAt().isBefore(now.plus(Duration.ofHours(
                 settings.integer("refund.partial_before_hours"))))) {
@@ -250,6 +254,43 @@ public class BookingService {
         return views(List.of(a), withQr).get(0);
     }
 
+    /** A movie ticket or table booking, created by the venue services inside their own transaction. */
+    public record VenueBooking(long customerId, long organizationId, long branchId, long serviceId, Instant startsAt,
+                               Instant endsAt, String title, BigDecimal price, String note, Long showtimeId,
+                               Integer partySize) {
+    }
+
+    /** Saves the booking (holding nothing yet); the caller claims seats/tables, then calls {@link #finishVenueBooking}. */
+    @Transactional(propagation = org.springframework.transaction.annotation.Propagation.MANDATORY)
+    public Appointment createVenueBooking(VenueBooking v) {
+        rateLimiter.hit("book:user:" + v.customerId(), 20, Duration.ofHours(1));
+        BigDecimal price = v.price().setScale(2, RoundingMode.HALF_UP);
+        BigDecimal fee = price.multiply(settings.decimal(PlatformConfigService.COMMISSION_PERCENT))
+                .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+        Appointment a = new Appointment(newReference(), v.customerId(), v.organizationId(), v.branchId(), v.serviceId(),
+                null, v.startsAt(), v.endsAt(), v.endsAt(), Status.PENDING_PAYMENT, v.title(), price, fee, blank(v.note()),
+                clock.instant());
+        if (v.showtimeId() != null) {
+            a.forShowtime(v.showtimeId());
+        }
+        if (v.partySize() != null) {
+            a.forParty(v.partySize());
+        }
+        return appointments.saveAndFlush(a);
+    }
+
+    /** Free bookings (tables) are confirmed now; paid ones wait on the payment page. */
+    @Transactional(propagation = org.springframework.transaction.annotation.Propagation.MANDATORY)
+    public AppointmentView finishVenueBooking(Appointment a) {
+        if (!paymentGate.requiresOnlinePayment(a)) {
+            boolean approval = organizations.findById(a.getOrganizationId())
+                    .map(o -> o.getConfirmationMode() == ConfirmationMode.APPROVAL).orElse(false);
+            a.markPaid(approval, clock.instant());
+            events.publishEvent(new AppointmentChanged(a.getId(), AppointmentChanged.Kind.BOOKED));
+        }
+        return view(a, true);
+    }
+
     /** The booking behind a scanned pass (QR link or payload); unknown or forged codes are rejected. */
     @Transactional(readOnly = true)
     public BookingPass pass(String code) {
@@ -272,6 +313,19 @@ public class BookingService {
         java.util.Set<Long> paid = new java.util.HashSet<>(jdbc.queryForList(
                 "SELECT appointment_id FROM payments WHERE status = 'CAPTURED' AND appointment_id IN (:ids)",
                 Map.of("ids", ids(list, Appointment::getId)), Long.class));
+        Map<Long, List<String>> seatsByAppointment = new java.util.HashMap<>();
+        Map<Long, String> screenByShowtime = new java.util.HashMap<>();
+        List<Long> showtimeIds = ids(list, Appointment::getShowtimeId);
+        if (!showtimeIds.isEmpty()) {
+            jdbc.query("SELECT appointment_id, seat_label FROM ticket_seats WHERE appointment_id IN (:ids) ORDER BY seat_label",
+                    Map.of("ids", ids(list, Appointment::getId)), rs -> {
+                        seatsByAppointment.computeIfAbsent(rs.getLong(1), k -> new java.util.ArrayList<>()).add(rs.getString(2));
+                    });
+            jdbc.query("SELECT st.id, sc.name FROM showtimes st JOIN cinema_screens sc ON sc.id = st.screen_id WHERE st.id IN (:ids)",
+                    Map.of("ids", showtimeIds), rs -> {
+                        screenByShowtime.put(rs.getLong(1), rs.getString(2));
+                    });
+        }
         java.util.Set<Long> reviewed = new java.util.HashSet<>(jdbc.queryForList(
                 "SELECT appointment_id FROM reviews WHERE appointment_id IN (:ids)",
                 Map.of("ids", ids(list, Appointment::getId)), Long.class));
@@ -291,7 +345,9 @@ public class BookingService {
                     c == null ? null : c.getFullName(), c == null ? null : c.getPhone(), a.getPatientName(), a.getServicePrice(),
                     a.getPlatformFee(), a.getTotalAmount(), a.getCustomerNote(), a.getCancelReason(), a.getCancelledBy(),
                     a.getRefundAmount(), a.getCheckedInAt(), a.getRescheduleCount(),
-                    withQr && a.isActive() ? qr.payload(a.getReference()) : null, paid.contains(a.getId()), reviewed.contains(a.getId()), a.getCreatedAt());
+                    withQr && a.isActive() ? qr.payload(a.getReference()) : null, paid.contains(a.getId()), reviewed.contains(a.getId()), a.getCreatedAt(),
+                    a.getShowtimeId(), a.getShowtimeId() == null ? null : screenByShowtime.get(a.getShowtimeId()),
+                    seatsByAppointment.getOrDefault(a.getId(), List.of()), a.getPartySize());
         }).toList();
     }
 

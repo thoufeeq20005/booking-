@@ -134,3 +134,18 @@ Legend: `[x]` done and tested · `[ ]` not started · `[~]` in progress
 - [x] Concurrency test for double booking (Phase 7); full suites: backend 138, frontend 85; 0 npm vulnerabilities
 - [x] Live smoke run: dev database migrated V1→V10, health, search, auth gate, webhook guard through the Vite proxy
 - [ ] Before launch: walk through the production checklist with real provider accounts (Razorpay KYC, DLT SMS, SMTP domain, Google OAuth origin); add Google Maps keys for the embedded map; move uploads to S3-compatible storage before running more than one API instance
+
+## Movies & dining ✅
+- [x] Flyway V14: Movies and Dining categories (cinema, restaurant, café) with required documents; venue_profiles, menu_items, movies, cinema_screens (JSON seat layouts), showtimes (per-tier JSON prices), ticket_seats (primary key on show + seat, so a seat can't be sold twice); appointments.showtime_id and party_size
+- [x] Flyway V15: the venue profile's link to its hidden booking service cascades, so deleting a business works
+- [x] Tickets and tables reuse appointments, so payment (and the demo gateway), QR pass, receipts, cancellation, refunds and notifications work unchanged; they can't be rescheduled (cancel and book again)
+- [x] Seats go back on sale when a ticket booking is cancelled, declined or its payment hold expires; the seat numbers stay in the booking title
+- [x] Table bookings are free, confirmed instantly (or after approval), limited by guests seated per 90-minute sitting; booking locks the venue row so two people can't take the last table
+- [x] Owner "Venue" tab: settings, menu editor, screen builder with a live seat-map preview, showtime scheduling (no overlaps on a screen, a price for every seat class, shows with tickets sold can't be removed)
+- [x] Admin movie catalogue (theatres only schedule movies from it; retiring a movie hides it at once)
+- [x] Customer pages: Movies (now showing near a city), movie page (days, theatres, show times with seats left), seat picker (up to 10 seats), Dining (search, pure-veg filter), restaurant page (menu with veg marks, offers, table booking); theatre pages list today's and tomorrow's shows; home page tiles and a Now showing strip
+- [x] Demo data: backend/seed/generate_movies_dining.py → demo-movies-dining.sql (8 fictional movies, 8 cinemas, 12 restaurants/cafés)
+- [x] Tests: backend VenueIT (6), frontend venue.test.tsx (6)
+- [ ] Showtimes in the demo data are created for 21 days from loading; reload the file to refresh them
+- [ ] Food pre-ordering with tickets and paid table deposits are not modelled
+

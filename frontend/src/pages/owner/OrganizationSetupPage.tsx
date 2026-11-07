@@ -15,6 +15,8 @@ import { OrganizationForm } from '@/features/organization/OrganizationForm';
 import { PhotoField } from '@/features/organization/PhotoField';
 import { ServicesSection } from '@/features/organization/ServicesSection';
 import { StaffSection } from '@/features/organization/StaffSection';
+import { VenueSection, venueKey } from '@/features/venue/VenueSection';
+import { venueApi } from '@/services/venueApi';
 import { fileUrl, StatusBadge, useLocalized } from '@/features/organization/shared';
 import { useApiForm } from '@/hooks/useApiForm';
 import {
@@ -24,8 +26,11 @@ import {
   type OrganizationDetail,
 } from '@/services/organizationApi';
 
-const STEPS = ['details', 'branches', 'documents', 'services', 'staff', 'review'] as const;
+const STEPS = ['details', 'branches', 'documents', 'services', 'staff', 'venue', 'review'] as const;
 type Step = (typeof STEPS)[number];
+/** Cinemas and restaurants set up screens/shows or a menu instead of services and staff. */
+const VENUE_STEPS: readonly Step[] = ['details', 'branches', 'documents', 'venue', 'review'];
+const SERVICE_STEPS: readonly Step[] = ['details', 'branches', 'documents', 'services', 'staff', 'review'];
 
 /** Which tab fixes each missing step. */
 const STEP_FOR: Record<MissingStep, Step> = {
@@ -184,7 +189,9 @@ export function OrganizationSetupPage() {
   const [params, setParams] = useSearchParams();
   const qc = useQueryClient();
   const query = useQuery({ queryKey: orgKeys.detail(id), queryFn: () => api.get(id), enabled: Number.isFinite(id) });
-  const step: Step = (STEPS as readonly string[]).includes(params.get('step') ?? '')
+  const venue = useQuery({ queryKey: venueKey(id), queryFn: () => venueApi.setup(id), enabled: Number.isFinite(id) });
+  const steps = venue.data?.kind ? VENUE_STEPS : SERVICE_STEPS;
+  const step: Step = (steps as readonly string[]).includes(params.get('step') ?? '')
     ? (params.get('step') as Step) : 'details';
   const goTo = (s: Step) => setParams({ step: s }, { replace: true });
 
@@ -198,6 +205,7 @@ export function OrganizationSetupPage() {
     documents: !org.missingSteps.includes('DOCUMENTS'),
     services: false,
     staff: false,
+    venue: Boolean(venue.data?.profile),
     review: org.summary.status !== 'DRAFT' && org.summary.status !== 'REJECTED',
   };
 
@@ -215,7 +223,7 @@ export function OrganizationSetupPage() {
       <StatusBanner org={org} />
 
       <div role="tablist" aria-label={t('business.setupSteps')} className="flex gap-1 overflow-x-auto border-b border-border">
-        {STEPS.map((s, i) => (
+        {steps.map((s, i) => (
           <button key={s} type="button" role="tab" aria-selected={step === s} onClick={() => goTo(s)}
             className={clsx('flex shrink-0 items-center gap-2 border-b-2 px-3 py-2.5 text-sm font-medium transition',
               step === s ? 'border-brand-600 text-brand-700' : 'border-transparent text-fg-muted hover:text-fg')}>
@@ -251,6 +259,7 @@ export function OrganizationSetupPage() {
         {step === 'documents' && <DocumentsSection org={org} />}
         {step === 'services' && <ServicesSection org={org} />}
         {step === 'staff' && <StaffSection org={org} />}
+        {step === 'venue' && <VenueSection org={org} />}
         {step === 'review' && <ReviewStep org={org} goTo={goTo} />}
       </div>
     </div>

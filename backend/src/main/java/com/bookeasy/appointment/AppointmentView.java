@@ -36,5 +36,9 @@ public record AppointmentView(
         String qrPayload,
         boolean paid,
         boolean reviewed,
-        Instant createdAt) {
+        Instant createdAt,
+        Long showtimeId,
+        String screenName,
+        java.util.List<String> seats,
+        Integer partySize) {
 }

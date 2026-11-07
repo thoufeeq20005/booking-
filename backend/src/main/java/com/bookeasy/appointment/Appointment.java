@@ -115,6 +115,14 @@ public class Appointment {
     @Column(name = "patient_name", length = 120)
     private String patientName;
 
+    /** Movie ticket bookings: the show; the seats are in ticket_seats. */
+    @Column(name = "showtime_id")
+    private Long showtimeId;
+
+    /** Table bookings: number of guests. */
+    @Column(name = "party_size")
+    private Integer partySize;
+
     @Column(name = "reschedule_count", nullable = false)
     private int rescheduleCount;
 
@@ -160,6 +168,18 @@ public class Appointment {
     }
 
     /** Booked by the account holder for a family member; the name is kept even if the member is later removed. */
+    public void forShowtime(long showtimeId) {
+        this.showtimeId = showtimeId;
+    }
+
+    public void forParty(int partySize) {
+        this.partySize = partySize;
+    }
+
+    public Long getShowtimeId() { return showtimeId; }
+
+    public Integer getPartySize() { return partySize; }
+
     public void bookFor(long familyMemberId, String name) {
         this.familyMemberId = familyMemberId;
         this.patientName = name;

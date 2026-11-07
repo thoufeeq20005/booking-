@@ -51,6 +51,11 @@ const AdminSupportPage = named(() => import('@/pages/admin/AdminSupportPage'), '
 const SearchPage = named(() => import('@/pages/discovery/SearchPage'), 'SearchPage');
 const BusinessPage = named(() => import('@/pages/discovery/BusinessPage'), 'BusinessPage');
 const AcceptInvitationPage = named(() => import('@/pages/staff/AcceptInvitationPage'), 'AcceptInvitationPage');
+const MoviesPage = named(() => import('@/pages/venue/MoviesPage'), 'MoviesPage');
+const MoviePage = named(() => import('@/pages/venue/MoviePage'), 'MoviePage');
+const SeatsPage = named(() => import('@/pages/venue/SeatsPage'), 'SeatsPage');
+const DiningPage = named(() => import('@/pages/venue/DiningPage'), 'DiningPage');
+const AdminMoviesPage = named(() => import('@/pages/admin/AdminMoviesPage'), 'AdminMoviesPage');
 const StaffOverviewPage = named(() => import('@/pages/dashboard/StaffOverviewPage'), 'StaffOverviewPage');
 
 /** /dashboard sends each person to the area of their most powerful role. */
@@ -73,6 +78,10 @@ export function AppRoutes() {
         <Route path="search" element={<SearchPage />} />
         <Route path="b/:slug" element={<BusinessPage />} />
         <Route path="compare" element={<ComparePage />} />
+        <Route path="movies" element={<MoviesPage />} />
+        <Route path="movies/:id" element={<MoviePage />} />
+        <Route path="shows/:id" element={<SeatsPage />} />
+        <Route path="dining" element={<DiningPage />} />
         <Route path="pass/:code" element={<PassPage />} />
         <Route path="signin" element={<SignInPage />} />
         <Route path="register" element={<RegisterPage />} />
@@ -115,6 +124,7 @@ export function AppRoutes() {
           <Route path="organizations" element={<AdminOrganizationsPage />} />
           <Route path="organizations/:id" element={<AdminOrganizationReviewPage />} />
           <Route path="categories" element={<AdminCategoriesPage />} />
+          <Route path="movies" element={<AdminMoviesPage />} />
           <Route path="users" element={<AdminUsersPage />} />
           <Route path="audit" element={<AdminAuditPage />} />
           <Route path="settlements" element={<AdminSettlementsPage />} />

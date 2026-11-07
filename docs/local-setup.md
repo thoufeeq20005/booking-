@@ -90,3 +90,17 @@ All names, phone numbers and reviews are fictional; localities, PIN codes and ma
 Every demo login is `demo.<role>.<name><n>@example.com` with password `Demo@1234`. Re-running the file
 replaces the earlier demo rows. To change the data, edit `backend/seed/generate_demo_data.py` and run it
 to regenerate the SQL. Never run it against production.
+
+### Movies and dining demo
+
+Load this after `demo-tamilnadu.sql` to add 8 fictional movies, 8 cinemas (16 screens with seat maps and
+four shows a day) and 12 restaurants and cafés with menus:
+
+```bash
+mysql -uroot -p --default-character-set=utf8mb4 bookeasy < backend/seed/demo-movies-dining.sql
+```
+
+Showtimes cover the 21 days after you load the file. Load it again for fresh shows (this also removes
+bookings made at the demo cinemas and restaurants). Demo owners sign in as `demo.venue.<name><n>@example.com`
+with password `Demo@1234`. Movie titles, plots, cast and venues are invented; posters are drawn from two
+colours, so no artwork is copied. To change the data, edit `backend/seed/generate_movies_dining.py` and run it.

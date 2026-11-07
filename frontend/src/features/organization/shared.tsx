@@ -15,6 +15,7 @@ import {
   Store,
   Utensils,
   type LucideIcon,
+  Clapperboard,
 } from 'lucide-react';
 import clsx from 'clsx';
 import { API_BASE_URL } from '@/services/apiClient';
@@ -33,6 +34,7 @@ export const CATEGORY_ICONS: Record<string, LucideIcon> = {
   home: Home,
   camera: Camera,
   utensils: Utensils,
+  clapperboard: Clapperboard,
   briefcase: Briefcase,
   store: Store,
 };
