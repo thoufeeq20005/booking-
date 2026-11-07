@@ -10,6 +10,7 @@ import { SelectField } from '@/components/ui/FormFields';
 import { EmptyState, ErrorState, LoadingState } from '@/components/ui/StateMessage';
 import { CityPicker, Poster, useVenueFormat, useVenueLocation } from '@/features/venue/shared';
 import { venueApi, type Show } from '@/services/venueApi';
+import { fileUrl } from '@/features/organization/shared';
 import { formatINR } from '@/utils/format';
 
 function useMoviePage(id: number, date?: string) {
@@ -41,7 +42,13 @@ export function MoviePage() {
     <div>
       <section className="relative overflow-hidden text-white"
         style={{ backgroundImage: `linear-gradient(110deg, #0b1220 30%, ${movie.posterTo} 60%, ${movie.posterFrom} 100%)` }}>
-        <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 sm:grid-cols-[14rem_1fr] sm:px-6">
+        {movie.posterUrl && (
+          <>
+            <img src={fileUrl(movie.posterUrl)} alt="" className="absolute inset-0 h-full w-full scale-110 object-cover opacity-60 blur-sm" />
+            <span className="absolute inset-0 bg-gradient-to-r from-[#0b1220] via-[#0b1220]/85 to-[#0b1220]/30" />
+          </>
+        )}
+        <div className="relative mx-auto grid max-w-6xl gap-8 px-4 py-10 sm:grid-cols-[14rem_1fr] sm:px-6">
           <div>
             <Poster movie={movie} className="w-44 sm:w-56" />
             <p className="mt-2 w-44 rounded-b-xl bg-black/60 py-1 text-center text-xs sm:w-56">{released ? t('venue.inCinemas') : t('venue.releasesOn', { date: f.day(movie.releaseDate) })}</p>

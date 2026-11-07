@@ -390,6 +390,13 @@ w("CREATE TEMPORARY TABLE demo_users AS SELECT id FROM users WHERE email LIKE 'd
 w("CREATE TEMPORARY TABLE demo_orgs AS SELECT o.id FROM organizations o JOIN organization_owners oo ON oo.organization_id = o.id "
   "WHERE oo.user_id IN (SELECT id FROM demo_users);")
 w("DELETE FROM reviews WHERE organization_id IN (SELECT id FROM demo_orgs) OR customer_id IN (SELECT id FROM demo_users);")
+w("-- Bookings made at demo businesses: their payment records go first (they don't cascade).")
+w("CREATE TEMPORARY TABLE demo_appts AS SELECT id FROM appointments WHERE organization_id IN (SELECT id FROM demo_orgs) OR customer_id IN (SELECT id FROM demo_users);")
+w("DELETE FROM refunds WHERE appointment_id IN (SELECT id FROM demo_appts);")
+w("DELETE FROM commission_records WHERE appointment_id IN (SELECT id FROM demo_appts);")
+w("DELETE FROM payments WHERE appointment_id IN (SELECT id FROM demo_appts);")
+w("DELETE FROM reviews WHERE appointment_id IN (SELECT id FROM demo_appts);")
+w("DROP TEMPORARY TABLE demo_appts;")
 w("DELETE FROM appointments WHERE organization_id IN (SELECT id FROM demo_orgs) OR customer_id IN (SELECT id FROM demo_users);")
 w("DELETE FROM organizations WHERE id IN (SELECT id FROM demo_orgs);")
 w("DELETE FROM users WHERE id IN (SELECT id FROM demo_users);")

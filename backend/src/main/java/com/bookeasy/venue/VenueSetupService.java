@@ -49,9 +49,18 @@ public class VenueSetupService {
     private final CinemaService cinema;
     private final ObjectMapper json;
     private final Clock clock;
+    private final com.bookeasy.file.FileService fileService;
+    private final com.bookeasy.file.UploadedFileRepository files;
+
+    static final com.bookeasy.file.FileService.UploadRules POSTER_RULES = new com.bookeasy.file.FileService.UploadRules(
+            Set.of(com.bookeasy.file.ContentSniffer.PNG, com.bookeasy.file.ContentSniffer.JPEG, com.bookeasy.file.ContentSniffer.WEBP),
+            5L * 1024 * 1024);
 
     public VenueSetupService(NamedParameterJdbcTemplate jdbc, OrganizationAccess access, CinemaService cinema,
-                             ObjectMapper json, Clock clock) {
+                             ObjectMapper json, Clock clock, com.bookeasy.file.FileService fileService,
+                             com.bookeasy.file.UploadedFileRepository files) {
+        this.fileService = fileService;
+        this.files = files;
         this.jdbc = jdbc;
         this.access = access;
         this.cinema = cinema;
@@ -103,7 +112,7 @@ public class VenueSetupService {
 
     public record CatalogMovie(long id, String title, String languages, String certificate, String genres,
                                int durationMinutes, String synopsis, String cast, LocalDate releaseDate, String posterFrom,
-                               String posterTo, boolean active) {
+                               String posterTo, boolean active, String posterUrl) {
     }
 
     // ----- owner: overview and profile -----
@@ -315,12 +324,12 @@ public class VenueSetupService {
 
     @Transactional(readOnly = true)
     public List<CatalogMovie> catalog(boolean activeOnly) {
-        return jdbc.query("SELECT * FROM movies" + (activeOnly ? " WHERE is_active" : "")
-                + " ORDER BY is_active DESC, release_date DESC, title", Map.of(), (rs, i) -> new CatalogMovie(rs.getLong("id"),
+        return jdbc.query("SELECT m.*, " + CinemaService.POSTER + " FROM movies m" + (activeOnly ? " WHERE m.is_active" : "")
+                + " ORDER BY m.is_active DESC, m.release_date DESC, m.title", Map.of(), (rs, i) -> new CatalogMovie(rs.getLong("id"),
                 rs.getString("title"), rs.getString("languages"), rs.getString("certificate"), rs.getString("genres"),
                 rs.getInt("duration_minutes"), rs.getString("synopsis"), rs.getString("cast_names"),
                 rs.getDate("release_date").toLocalDate(), rs.getString("poster_from"), rs.getString("poster_to"),
-                rs.getBoolean("is_active")));
+                rs.getBoolean("is_active"), CinemaService.posterUrl(rs.getString("poster_public_id"))));
     }
 
     @Transactional
@@ -358,6 +367,22 @@ public class VenueSetupService {
         if (jdbc.update("UPDATE movies SET is_active = :a WHERE id = :id",
                 new MapSqlParameterSource("a", active).addValue("id", movieId)) == 0) {
             throw ApiException.notFound("Movie");
+        }
+        return catalog(false).stream().filter(m -> m.id() == movieId).findFirst().orElseThrow();
+    }
+
+    /** Replaces a movie's poster photo (admin). */
+    @Transactional
+    public CatalogMovie setPoster(long adminId, long movieId, org.springframework.web.multipart.MultipartFile upload) {
+        Long previous = jdbc.query("SELECT poster_file_id FROM movies WHERE id = :id FOR UPDATE", Map.of("id", movieId),
+                (rs, i) -> java.util.Optional.ofNullable(rs.getObject(1, Long.class))).stream().findFirst()
+                .orElseThrow(() -> ApiException.notFound("Movie")).orElse(null);
+        com.bookeasy.file.UploadedFile stored = fileService.store(upload, POSTER_RULES, com.bookeasy.file.FileVisibility.PUBLIC,
+                com.bookeasy.file.FilePurpose.MOVIE_POSTER, adminId);
+        jdbc.update("UPDATE movies SET poster_file_id = :f WHERE id = :id",
+                new MapSqlParameterSource("f", stored.getId()).addValue("id", movieId));
+        if (previous != null) {
+            files.findById(previous).ifPresent(fileService::delete);
         }
         return catalog(false).stream().filter(m -> m.id() == movieId).findFirst().orElseThrow();
     }

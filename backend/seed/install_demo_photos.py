@@ -12,7 +12,10 @@ from pathlib import Path
 
 seed = Path(__file__).resolve().parent
 root = Path(sys.argv[1]) if len(sys.argv) > 1 else seed.parent / "data" / "uploads"
-plan = json.loads((seed / "demo-photo-files.json").read_text(encoding="utf-8"))
+plan = {}
+for name in ("demo-photo-files.json", "demo-venue-photo-files.json"):  # Tamil Nadu businesses, movies & dining
+    if (seed / name).exists():
+        plan.update(json.loads((seed / name).read_text(encoding="utf-8")))
 
 demo_dir = root / "public" / "demo"
 if demo_dir.exists():

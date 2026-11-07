@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/Button';
 import { SelectField } from '@/components/ui/FormFields';
 import { intlLocale } from '@/i18n';
 import { CITIES } from '@/services/discoveryApi';
+import { fileUrl } from '@/features/organization/shared';
 import type { Movie } from '@/services/venueApi';
 import { storage } from '@/utils/storage';
 
@@ -64,17 +65,25 @@ export function CityPicker({ loc, onChange }: { loc: Loc; onChange: (l: Loc) => 
 }
 
 /** Drawn poster: the movie's two colours and its title. No artwork is stored or copied. */
-export function Poster({ movie, className, size = 'md' }: { movie: Pick<Movie, 'title' | 'certificate' | 'posterFrom' | 'posterTo' | 'genres'>; className?: string; size?: 'sm' | 'md' }) {
+/** Poster: the movie's photo (or its two colours) with the title set over a dark fade, like a printed poster. */
+export function Poster({ movie, className, size = 'md' }: { movie: Pick<Movie, 'title' | 'certificate' | 'posterFrom' | 'posterTo' | 'genres' | 'posterUrl'>; className?: string; size?: 'sm' | 'md' }) {
   return (
     <div
       className={clsx('relative flex aspect-[2/3] flex-col justify-end overflow-hidden rounded-xl text-white shadow-card', className)}
       style={{ backgroundImage: `linear-gradient(160deg, ${movie.posterFrom} 0%, ${movie.posterTo} 85%)` }}
       aria-hidden="true"
     >
-      <span className="absolute inset-0 opacity-25" style={{ backgroundImage: 'radial-gradient(circle at 75% 20%, rgba(255,255,255,.55), transparent 45%)' }} />
-      <span className="absolute right-2 top-2 rounded-md border border-white/60 px-1.5 text-xs font-bold">{movie.certificate}</span>
+      {movie.posterUrl ? (
+        <>
+          <img src={fileUrl(movie.posterUrl)} alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover" />
+          <span className="absolute inset-0" style={{ backgroundImage: `linear-gradient(to top, ${movie.posterTo}f2 0%, ${movie.posterTo}99 28%, transparent 60%)` }} />
+        </>
+      ) : (
+        <span className="absolute inset-0 opacity-25" style={{ backgroundImage: 'radial-gradient(circle at 75% 20%, rgba(255,255,255,.55), transparent 45%)' }} />
+      )}
+      <span className="absolute right-2 top-2 rounded-md border border-white/70 bg-black/40 px-1.5 text-xs font-bold">{movie.certificate}</span>
       <div className={clsx('relative', size === 'sm' ? 'p-2' : 'p-3')}>
-        <p className={clsx('font-extrabold uppercase leading-tight tracking-wide', size === 'sm' ? 'text-xs' : 'text-lg')}>{movie.title}</p>
+        <p className={clsx('font-extrabold uppercase leading-tight tracking-wide drop-shadow', size === 'sm' ? 'text-xs' : 'text-lg')}>{movie.title}</p>
         {size === 'md' && <p className="mt-1 text-xs text-white/80">{movie.genres}</p>}
       </div>
     </div>

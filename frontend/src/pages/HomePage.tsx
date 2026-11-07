@@ -2,7 +2,7 @@ import { useState, type FormEvent, type ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useQueries, useQuery } from '@tanstack/react-query';
-import { BadgeCheck, CalendarClock, ChevronRight, Clapperboard, IndianRupee, MapPin, QrCode, Search, UtensilsCrossed } from 'lucide-react';
+import { BadgeCheck, CalendarClock, ChevronRight, IndianRupee, MapPin, QrCode, Search } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Button, buttonClasses } from '@/components/ui/Button';
 import { fileUrl, useLocalized } from '@/features/organization/shared';
@@ -23,12 +23,11 @@ const CATEGORY_PHOTOS: Record<string, string> = {
   'salon-spa': '/home/salon-spa.jpg',
   education: '/home/education.jpg',
   fitness: '/home/fitness.jpg',
+  movies: '/home/movies.jpg',
+  dining: '/home/dining.jpg',
 };
 /** Movies and dining have their own pages, with a drawn tile instead of a photo. */
-const CATEGORY_LINKS: Record<string, { to: string; icon: typeof Clapperboard; tile: string }> = {
-  movies: { to: '/movies', icon: Clapperboard, tile: 'from-indigo-600 via-violet-600 to-fuchsia-600' },
-  dining: { to: '/dining', icon: UtensilsCrossed, tile: 'from-orange-500 via-rose-500 to-red-600' },
-};
+const CATEGORY_LINKS: Record<string, string> = { movies: '/movies', dining: '/dining' };
 const cityOf = (key: string) => CITIES.find((c) => c.key === key)!;
 
 function HeroSearch() {
@@ -176,12 +175,9 @@ export function HomePage() {
         <SectionHeading title={t('home.typesTitle')} />
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
           {categories.data?.map((c) => {
-            const special = CATEGORY_LINKS[c.slug];
-            const Icon = special?.icon;
             return (
-            <Link key={c.id} to={special ? special.to : `/search?category=${c.id}`} className="group block">
-              <div className={`aspect-[4/3] overflow-hidden rounded-2xl ${special ? `flex items-center justify-center bg-gradient-to-br ${special.tile}` : 'bg-surface-muted'}`}>
-                {Icon && <Icon className="h-14 w-14 text-white/90 transition duration-300 group-hover:scale-110" aria-hidden="true" />}
+            <Link key={c.id} to={CATEGORY_LINKS[c.slug] ?? `/search?category=${c.id}`} className="group block">
+              <div className="aspect-[4/3] overflow-hidden rounded-2xl bg-surface-muted">
                 {CATEGORY_PHOTOS[c.slug] && (
                   <img src={CATEGORY_PHOTOS[c.slug]} alt="" loading="lazy" className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]" />
                 )}

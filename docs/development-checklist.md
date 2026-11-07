@@ -142,11 +142,12 @@ Legend: `[x]` done and tested · `[ ]` not started · `[~]` in progress
 - [x] Seats go back on sale when a ticket booking is cancelled, declined or its payment hold expires; the seat numbers stay in the booking title
 - [x] Table bookings are free, confirmed instantly (or after approval), limited by guests seated per 90-minute sitting; booking locks the venue row so two people can't take the last table
 - [x] Owner "Venue" tab: settings, menu editor, screen builder with a live seat-map preview, showtime scheduling (no overlaps on a screen, a price for every seat class, shows with tickets sold can't be removed)
+- [x] Flyway V16: movie poster photos; admins upload posters (JPEG/PNG/WebP ≤ 5 MB); demo posters and cinema/restaurant covers are CC0 photos with credits
 - [x] Admin movie catalogue (theatres only schedule movies from it; retiring a movie hides it at once)
 - [x] Movie booking flow: Movies in a city (language/genre/format filters, Coming soon) → movie details (runtime, genres, formats, languages, synopsis, cast, Book tickets) → shows (date strip, language/format filters, theatres with each screen's times, available/filling fast) → How many seats? (price and availability per class) → seat map (tapping a seat fills the chosen number side by side) → Pay → payment page, receipt and QR ticket like other bookings
 - [x] Customer pages: seat picker (up to 10 seats), Dining (search, pure-veg filter), restaurant page (menu with veg marks, offers, table booking); theatre pages list today's and tomorrow's shows; home page tiles and a Now showing strip
 - [x] Demo data: backend/seed/generate_movies_dining.py → demo-movies-dining.sql (8 fictional movies, 8 cinemas, 12 restaurants/cafés)
-- [x] Tests: backend VenueIT (7), frontend venue.test.tsx (8)
+- [x] Tests: backend VenueIT (8), frontend venue.test.tsx (8)
 - [ ] Showtimes in the demo data are created for 21 days from loading; reload the file to refresh them
 - [ ] Food pre-ordering with tickets and paid table deposits are not modelled
 

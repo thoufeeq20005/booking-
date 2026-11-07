@@ -1166,6 +1166,8 @@
     },
     "selectSeats": "सीटें चुनें",
     "pickMore": "{{count}} और सीटें चुनने के लिए किसी सीट पर टैप करें।",
-    "payAmount": "{{amount}} भुगतान करें"
+    "payAmount": "{{amount}} भुगतान करें",
+    "addPoster": "पोस्टर जोड़ें",
+    "changePoster": "पोस्टर बदलें"
   }
 }

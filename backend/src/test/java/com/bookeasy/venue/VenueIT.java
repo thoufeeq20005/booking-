@@ -170,6 +170,28 @@ class VenueIT extends BookingTestBase {
     }
 
     @Test
+    void adminsUploadPostersThatCustomersSee() throws Exception {
+        long id = addMovie("Poster test " + System.nanoTime());
+        String url = data(mvc.perform(authed(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                .multipart("/api/v1/admin/movies/" + id + "/poster")
+                .file(new org.springframework.mock.web.MockMultipartFile("file", "poster.png", "image/png", PNG)), admin().token())))
+                .path("posterUrl").asText();
+        assertThat(url).startsWith("/api/v1/public/files/");
+        mvc.perform(get(url)).andExpect(status().isOk());
+        assertThat(data(mvc.perform(get("/api/v1/public/movies/" + id + "?" + NEAR))).path("movie").path("posterUrl").asText())
+                .isEqualTo(url);
+        // Not an image: refused. Customers can't upload.
+        mvc.perform(authed(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                .multipart("/api/v1/admin/movies/" + id + "/poster")
+                .file(new org.springframework.mock.web.MockMultipartFile("file", "x.png", "image/png", PDF)), admin().token()))
+                .andExpect(status().is4xxClientError());
+        mvc.perform(authed(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                .multipart("/api/v1/admin/movies/" + id + "/poster")
+                .file(new org.springframework.mock.web.MockMultipartFile("file", "p.png", "image/png", PNG)), verifiedCustomer().token()))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
     void unpaidSeatsGoBackOnSaleWhenTheHoldExpires() throws Exception {
         Cinema c = cinema();
         buyTickets(verifiedCustomer(), c.showId(), List.of("A5", "A6")).andExpect(status().isOk());

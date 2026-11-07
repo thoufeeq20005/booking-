@@ -1166,6 +1166,8 @@
     },
     "selectSeats": "Select seats",
     "pickMore": "Tap a seat to pick {{count}} more.",
-    "payAmount": "Pay {{amount}}"
+    "payAmount": "Pay {{amount}}",
+    "addPoster": "Add poster",
+    "changePoster": "Change poster"
   }
 }

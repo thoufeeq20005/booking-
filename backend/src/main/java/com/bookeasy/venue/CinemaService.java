@@ -54,7 +54,7 @@ public class CinemaService {
     // ----- models -----
 
     public record Movie(long id, String title, String languages, String certificate, String genres, int durationMinutes,
-                        String synopsis, String cast, LocalDate releaseDate, String posterFrom, String posterTo) {
+                        String synopsis, String cast, LocalDate releaseDate, String posterFrom, String posterTo, String posterUrl) {
     }
 
     /** formats and languages: what this movie plays in nearby this week (for filters). */
@@ -83,6 +83,9 @@ public class CinemaService {
 
     // ----- queries -----
 
+    /** Select-list column giving the poster's public file id; the query must alias movies as m. */
+    static final String POSTER = "(SELECT f.public_id FROM uploaded_files f WHERE f.id = m.poster_file_id) AS poster_public_id";
+
     private static final String NEARBY = """
             FROM showtimes st
             JOIN cinema_screens sc ON sc.id = st.screen_id
@@ -104,7 +107,7 @@ public class CinemaService {
         Instant now = clock.instant();
         MapSqlParameterSource p = area(lat, lng, radiusKm).addValue("from", Timestamp.from(now.plus(CLOSES_BEFORE)))
                 .addValue("until", Timestamp.from(now.plus(Duration.ofDays(8))));
-        return jdbc.query("SELECT m.*, COUNT(DISTINCT b.id) AS theatres, MIN(st.starts_at) AS next_show, "
+        return jdbc.query("SELECT m.*, " + POSTER + ", COUNT(DISTINCT b.id) AS theatres, MIN(st.starts_at) AS next_show, "
                         + "GROUP_CONCAT(DISTINCT st.format ORDER BY st.format) AS formats, "
                         + "GROUP_CONCAT(DISTINCT st.language ORDER BY st.language) AS show_languages " + NEARBY
                         + " GROUP BY m.id ORDER BY m.release_date DESC, m.title",
@@ -115,7 +118,7 @@ public class CinemaService {
     /** Active movies releasing after today, for "Coming soon". */
     @Transactional(readOnly = true)
     public List<Movie> upcoming() {
-        return jdbc.query("SELECT * FROM movies WHERE is_active AND release_date > :today ORDER BY release_date, title LIMIT 20",
+        return jdbc.query("SELECT m.*, " + POSTER + " FROM movies m WHERE m.is_active AND m.release_date > :today ORDER BY m.release_date, m.title LIMIT 20",
                 Map.of("today", java.sql.Date.valueOf(LocalDate.ofInstant(clock.instant(), IST))), (rs, i) -> movie(rs));
     }
 
@@ -125,7 +128,7 @@ public class CinemaService {
 
     @Transactional(readOnly = true)
     public MoviePage movie(long movieId, LocalDate date, double lat, double lng, double radiusKm) {
-        Movie movie = jdbc.query("SELECT * FROM movies WHERE id = :id AND is_active", Map.of("id", movieId),
+        Movie movie = jdbc.query("SELECT m.*, " + POSTER + " FROM movies m WHERE m.id = :id AND m.is_active", Map.of("id", movieId),
                 (rs, i) -> movie(rs)).stream().findFirst().orElseThrow(() -> ApiException.notFound("Movie"));
         Instant now = clock.instant();
         MapSqlParameterSource week = area(lat, lng, radiusKm).addValue("from", Timestamp.from(now.plus(CLOSES_BEFORE)))
@@ -203,7 +206,7 @@ public class CinemaService {
     @Transactional(readOnly = true)
     public SeatMap seatMap(long showtimeId) {
         Map<String, Object> s = show(showtimeId, false);
-        Movie movie = jdbc.query("SELECT * FROM movies WHERE id = :id", Map.of("id", s.get("movie_id")),
+        Movie movie = jdbc.query("SELECT m.*, " + POSTER + " FROM movies m WHERE m.id = :id", Map.of("id", s.get("movie_id")),
                 (rs, i) -> movie(rs)).get(0);
         List<String> taken = jdbc.queryForList("SELECT seat_label FROM ticket_seats WHERE showtime_id = :id",
                 Map.of("id", showtimeId), String.class);
@@ -328,9 +331,14 @@ public class CinemaService {
         return rows.stream().mapToInt(SeatRow::seats).sum();
     }
 
+    static String posterUrl(String publicId) {
+        return publicId == null ? null : "/api/v1/public/files/" + publicId;
+    }
+
     private static Movie movie(java.sql.ResultSet rs) throws java.sql.SQLException {
         return new Movie(rs.getLong("id"), rs.getString("title"), rs.getString("languages"), rs.getString("certificate"),
                 rs.getString("genres"), rs.getInt("duration_minutes"), rs.getString("synopsis"), rs.getString("cast_names"),
-                rs.getDate("release_date").toLocalDate(), rs.getString("poster_from"), rs.getString("poster_to"));
+                rs.getDate("release_date").toLocalDate(), rs.getString("poster_from"), rs.getString("poster_to"),
+                posterUrl(rs.getString("poster_public_id")));
     }
 }

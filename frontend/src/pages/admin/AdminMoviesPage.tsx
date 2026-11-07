@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Clapperboard, Plus } from 'lucide-react';
+import { Clapperboard, ImagePlus, Plus } from 'lucide-react';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -31,6 +31,10 @@ export function AdminMoviesPage() {
       durationMinutes: Number(v.durationMinutes), synopsis: v.synopsis.trim() || undefined, cast: v.cast.trim() || undefined,
     }));
     if (m) { setV(EMPTY); void qc.invalidateQueries({ queryKey: ['admin-movies'] }); }
+  };
+  const upload = async (id: number, file: File) => {
+    await form.submit(() => venueApi.setPoster(id, file));
+    void qc.invalidateQueries({ queryKey: ['admin-movies'] });
   };
   const toggle = async (id: number, active: boolean) => {
     await form.submit(() => venueApi.setMovieActive(id, active));
@@ -77,9 +81,16 @@ export function AdminMoviesPage() {
                 <p className="font-semibold">{m.title}</p>
                 <p className="text-fg-muted">{m.certificate} · {f.runtime(m.durationMinutes)} · {m.languages}</p>
                 <p className="text-fg-muted">{m.genres}</p>
-                <Button size="sm" variant={m.active ? 'ghost' : 'secondary'} onClick={() => void toggle(m.id, !m.active)}>
-                  {t(m.active ? 'venue.retire' : 'venue.restore')}
-                </Button>
+                <div className="flex flex-wrap gap-2">
+                  <label className="inline-flex cursor-pointer items-center gap-1 rounded-lg border border-border px-2.5 py-1 text-xs font-medium hover:bg-surface-muted">
+                    <ImagePlus className="h-3.5 w-3.5" aria-hidden="true" />{t(m.posterUrl ? 'venue.changePoster' : 'venue.addPoster')}
+                    <input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only"
+                      onChange={(e) => { const file = e.target.files?.[0]; e.target.value = ''; if (file) void upload(m.id, file); }} />
+                  </label>
+                  <Button size="sm" variant={m.active ? 'ghost' : 'secondary'} onClick={() => void toggle(m.id, !m.active)}>
+                    {t(m.active ? 'venue.retire' : 'venue.restore')}
+                  </Button>
+                </div>
               </div>
             </Card>
           </li>

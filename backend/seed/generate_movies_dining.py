@@ -5,11 +5,18 @@ coordinates are real so nearby search works. Output is deterministic (fixed rand
 
     python backend/seed/generate_movies_dining.py     # rewrites backend/seed/demo-movies-dining.sql
 
+Photos (CC0, from Openverse; see photos/CREDITS.json) come from photos/movies and photos/venues and are copied
+into file storage by install_demo_photos.py, using demo-venue-photo-files.json written by this script.
+
 Showtimes are created for the 21 days after the file is loaded. Load it again to get fresh ones (this also
 removes bookings made at the demo cinemas and restaurants). Demo owners sign in as demo.venue.*@example.com
 with the password Demo@1234. Never run it in production.
 """
+import hashlib
+import json
 import random
+import unicodedata
+import uuid
 from pathlib import Path
 
 random.seed(1407)
@@ -159,6 +166,7 @@ def q(s):
 
 
 def slugify(s):
+    s = unicodedata.normalize("NFKD", s).encode("ascii", "ignore").decode()  # Café -> Cafe
     out = "".join(c.lower() if c.isalnum() else "-" for c in s)
     while "--" in out:
         out = out.replace("--", "-")
@@ -197,15 +205,23 @@ w("-- Remove earlier demo venues and movies")
 w("CREATE TEMPORARY TABLE demo_venue_users AS SELECT id FROM users WHERE email LIKE 'demo.venue.%@example.com';")
 w("CREATE TEMPORARY TABLE demo_venue_orgs AS SELECT o.id FROM organizations o JOIN organization_owners oo ON oo.organization_id = o.id "
   "WHERE oo.user_id IN (SELECT id FROM demo_venue_users);")
+w("-- Bookings made at demo businesses: their payment records go first (they don't cascade).")
+w("CREATE TEMPORARY TABLE demo_appts AS SELECT id FROM appointments WHERE organization_id IN (SELECT id FROM demo_venue_orgs);")
+w("DELETE FROM refunds WHERE appointment_id IN (SELECT id FROM demo_appts);")
+w("DELETE FROM commission_records WHERE appointment_id IN (SELECT id FROM demo_appts);")
+w("DELETE FROM payments WHERE appointment_id IN (SELECT id FROM demo_appts);")
+w("DELETE FROM reviews WHERE appointment_id IN (SELECT id FROM demo_appts);")
+w("DROP TEMPORARY TABLE demo_appts;")
 w("DELETE FROM appointments WHERE organization_id IN (SELECT id FROM demo_venue_orgs);")
 w("DELETE FROM organizations WHERE id IN (SELECT id FROM demo_venue_orgs);")
 w("DELETE FROM users WHERE id IN (SELECT id FROM demo_venue_users);")
+w("DELETE FROM uploaded_files WHERE storage_key LIKE 'public/demo/venue-%';")
 w("DELETE FROM movies WHERE title IN (" + ", ".join(q(m[0]) for m in MOVIES + UPCOMING) + ");")
 w("DROP TEMPORARY TABLE demo_venue_users;")
 w("DROP TEMPORARY TABLE demo_venue_orgs;")
 w("")
 for var, table in [("u", "users"), ("o", "organizations"), ("b", "organization_branches"), ("s", "services"),
-                   ("m", "movies"), ("sc", "cinema_screens")]:
+                   ("m", "movies"), ("sc", "cinema_screens"), ("f", "uploaded_files")]:
     w(f"SET @{var} = (SELECT COALESCE(MAX(id), 0) FROM {table});")
 w("")
 
@@ -284,7 +300,6 @@ insert("venue_profiles", ["organization_id", "kind", "booking_service_id", "cuis
                           "capacity_per_slot", "offer_text", "features"], profiles)
 insert("menu_items", ["organization_id", "section", "name", "description", "price", "is_veg", "is_bestseller", "sort_order"], menu)
 
-import json  # noqa: E402
 
 screen_rows, show_rows = [], []
 for i, (n, screen_name, layout, fmt) in enumerate(screens, start=1):
@@ -310,8 +325,43 @@ insert("cinema_screens", ["id", "branch_id", "name", "layout", "created_at"], sc
 for i in range(0, len(show_rows), 300):
     insert("showtimes", ["screen_id", "movie_id", "starts_at", "format", "language", "prices", "created_at"], show_rows[i:i + 300])
 
+# ----- photos: movie posters and a cover for every cinema and restaurant -----
+SEED_DIR = Path(__file__).parent
+file_rows, copy_plan, poster_of, cover_of = [], {}, {}, {}
+
+
+def add_photo(rel, key, purpose, owner):
+    data = (SEED_DIR / "photos" / rel).read_bytes()
+    n = len(file_rows) + 1
+    file_rows.append([f"@f + {n}", q(str(uuid.uuid5(uuid.NAMESPACE_URL, "bookeasy-demo:" + key))), q(key),
+                      q(Path(rel).name), "'image/jpeg'", str(len(data)), q(hashlib.sha256(data).hexdigest()), "'PUBLIC'",
+                      q(purpose), owner, "UTC_TIMESTAMP(6)"])
+    copy_plan[key] = "photos/" + rel
+    return n
+
+
+for i, m in enumerate(MOVIES + UPCOMING):
+    poster_of[i + 1] = add_photo(f"movies/{slugify(m[0])}.jpg", f"public/demo/venue-poster-{slugify(m[0])}.jpg",
+                                 "MOVIE_POSTER", "NULL")
+cinema_n = dining_n = 0
+for n, (kind, v) in enumerate(venues, start=1):
+    if kind == "CINEMA":
+        rel, cinema_n = f"venues/cinema-{cinema_n}.jpg", cinema_n + 1
+    else:
+        rel, dining_n = f"venues/dining-{dining_n}.jpg", dining_n + 1
+    cover_of[n] = add_photo(rel, f"public/demo/venue-cover-{n}-{slugify(v[0])}.jpg", "ORGANIZATION_COVER", f"@u + {n}")
+
+insert("uploaded_files", ["id", "public_id", "storage_key", "original_name", "content_type", "size_bytes", "sha256",
+                          "visibility", "purpose", "owner_user_id", "created_at"], file_rows)
+for m, f in poster_of.items():
+    w(f"UPDATE movies SET poster_file_id = @f + {f} WHERE id = @m + {m};")
+for o, f in cover_of.items():
+    w(f"UPDATE organizations SET cover_file_id = @f + {f} WHERE id = @o + {o};")
+w("")
+(SEED_DIR / "demo-venue-photo-files.json").write_text(json.dumps(copy_plan, indent=1), encoding="utf-8")
+
 w("COMMIT;")
 w(f"-- {len(MOVIES)} movies (+{len(UPCOMING)} coming soon), {len(CINEMAS)} cinemas, {len(screen_rows)} screens, {len(show_rows)} shows, "
-  f"{len(RESTAURANTS)} restaurants/cafés, {len(menu)} dishes")
+  f"{len(RESTAURANTS)} restaurants/cafés, {len(menu)} dishes, {len(file_rows)} photos")
 Path(__file__).with_name("demo-movies-dining.sql").write_text("\n".join(out) + "\n", encoding="utf-8")
 print(out[-1])

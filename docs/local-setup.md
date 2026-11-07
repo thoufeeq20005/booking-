@@ -98,9 +98,12 @@ four shows a day) and 12 restaurants and cafés with menus:
 
 ```bash
 mysql -uroot -p --default-character-set=utf8mb4 bookeasy < backend/seed/demo-movies-dining.sql
+python backend/seed/install_demo_photos.py   # copies all demo photos, including posters and venue covers
 ```
 
 Showtimes cover the 21 days after you load the file. Load it again for fresh shows (this also removes
 bookings made at the demo cinemas and restaurants). Demo owners sign in as `demo.venue.<name><n>@example.com`
-with password `Demo@1234`. Movie titles, plots, cast and venues are invented; posters are drawn from two
-colours, so no artwork is copied. To change the data, edit `backend/seed/generate_movies_dining.py` and run it.
+with password `Demo@1234`. Movie titles, plots, cast and venues are invented; posters without a photo are drawn from two
+colours, so no artwork is copied. Posters, cinema and restaurant covers are CC0 photos from Openverse
+(sources in `backend/seed/photos/CREDITS.json`, fetched once by `fetch_venue_photos.py`); the title is set over
+the photo by the app. Admins can upload a poster for any movie on Admin → Movies. To change the data, edit `backend/seed/generate_movies_dining.py` and run it.

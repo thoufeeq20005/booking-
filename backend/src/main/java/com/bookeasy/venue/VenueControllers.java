@@ -245,6 +245,13 @@ public final class VenueControllers {
             return ApiResponse.ok(setup.addMovie(req));
         }
 
+        @PostMapping(value = "/{id}/poster", consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
+        @Operation(summary = "Upload or replace a movie's poster photo (JPEG, PNG or WebP, up to 5 MB)")
+        public ApiResponse<VenueSetupService.CatalogMovie> poster(@PathVariable long id,
+                                                                 @org.springframework.web.bind.annotation.RequestPart("file") org.springframework.web.multipart.MultipartFile file) {
+            return ApiResponse.ok(setup.setPoster(CurrentUser.require().id(), id, file));
+        }
+
         @PostMapping("/{id}/active")
         @Operation(summary = "Show or retire a movie")
         public ApiResponse<VenueSetupService.CatalogMovie> active(@PathVariable long id, @Valid @RequestBody ActiveRequest req) {

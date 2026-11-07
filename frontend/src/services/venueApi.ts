@@ -1,4 +1,4 @@
-import { apiDelete, apiGet, apiPost, apiPut } from './apiClient';
+import { apiDelete, apiGet, apiPost, apiPut, apiUpload } from './apiClient';
 import type { Booking } from './bookingApi';
 
 export type Money = number | string;
@@ -15,6 +15,8 @@ export interface Movie {
   releaseDate: string;
   posterFrom: string;
   posterTo: string;
+  /** Poster photo; without one the app draws a poster from the two colours. */
+  posterUrl?: string;
 }
 
 export interface NowShowing {
@@ -186,7 +188,7 @@ export interface CatalogMovie extends Movie {
   active: boolean;
 }
 
-export type MovieInput = Omit<Movie, 'id'>;
+export type MovieInput = Omit<Movie, 'id' | 'posterUrl'>;
 
 type Area = { lat: number; lng: number; radiusKm?: number };
 
@@ -220,6 +222,7 @@ export const venueApi = {
 
   adminMovies: () => apiGet<CatalogMovie[]>('/admin/movies'),
   addMovie: (body: MovieInput) => apiPost<CatalogMovie>('/admin/movies', body),
+  setPoster: (id: number, file: File) => apiUpload<CatalogMovie>(`/admin/movies/${id}/poster`, file),
   setMovieActive: (id: number, active: boolean) => apiPost<CatalogMovie>(`/admin/movies/${id}/active`, { active }),
 };
 

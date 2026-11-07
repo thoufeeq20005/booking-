@@ -1166,6 +1166,8 @@
     },
     "selectSeats": "ಆಸನಗಳನ್ನು ಆಯ್ಕೆಮಾಡಿ",
     "pickMore": "ಇನ್ನೂ {{count}} ಆಸನಗಳನ್ನು ಆಯ್ಕೆಮಾಡಲು ಒಂದು ಆಸನವನ್ನು ಒತ್ತಿ.",
-    "payAmount": "{{amount}} ಪಾವತಿಸಿ"
+    "payAmount": "{{amount}} ಪಾವತಿಸಿ",
+    "addPoster": "ಪೋಸ್ಟರ್ ಸೇರಿಸಿ",
+    "changePoster": "ಪೋಸ್ಟರ್ ಬದಲಿಸಿ"
   }
 }

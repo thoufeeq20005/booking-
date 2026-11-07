@@ -8,9 +8,17 @@ START TRANSACTION;
 -- Remove earlier demo venues and movies
 CREATE TEMPORARY TABLE demo_venue_users AS SELECT id FROM users WHERE email LIKE 'demo.venue.%@example.com';
 CREATE TEMPORARY TABLE demo_venue_orgs AS SELECT o.id FROM organizations o JOIN organization_owners oo ON oo.organization_id = o.id WHERE oo.user_id IN (SELECT id FROM demo_venue_users);
+-- Bookings made at demo businesses: their payment records go first (they don't cascade).
+CREATE TEMPORARY TABLE demo_appts AS SELECT id FROM appointments WHERE organization_id IN (SELECT id FROM demo_venue_orgs);
+DELETE FROM refunds WHERE appointment_id IN (SELECT id FROM demo_appts);
+DELETE FROM commission_records WHERE appointment_id IN (SELECT id FROM demo_appts);
+DELETE FROM payments WHERE appointment_id IN (SELECT id FROM demo_appts);
+DELETE FROM reviews WHERE appointment_id IN (SELECT id FROM demo_appts);
+DROP TEMPORARY TABLE demo_appts;
 DELETE FROM appointments WHERE organization_id IN (SELECT id FROM demo_venue_orgs);
 DELETE FROM organizations WHERE id IN (SELECT id FROM demo_venue_orgs);
 DELETE FROM users WHERE id IN (SELECT id FROM demo_venue_users);
+DELETE FROM uploaded_files WHERE storage_key LIKE 'public/demo/venue-%';
 DELETE FROM movies WHERE title IN ('Signal Thirteen', 'Pearl City Nights', 'Rockfort Diaries', 'The Monsoon Ferry', 'Starling and the Kite', 'Midnight Toll Plaza', 'Boundary Line Boys', 'Orbit Café', 'Kaveri Kingdom', 'The Lighthouse Choir', 'Zero Hour Delta');
 DROP TEMPORARY TABLE demo_venue_users;
 DROP TEMPORARY TABLE demo_venue_orgs;
@@ -21,6 +29,7 @@ SET @b = (SELECT COALESCE(MAX(id), 0) FROM organization_branches);
 SET @s = (SELECT COALESCE(MAX(id), 0) FROM services);
 SET @m = (SELECT COALESCE(MAX(id), 0) FROM movies);
 SET @sc = (SELECT COALESCE(MAX(id), 0) FROM cinema_screens);
+SET @f = (SELECT COALESCE(MAX(id), 0) FROM uploaded_files);
 
 INSERT INTO movies (id, title, languages, certificate, genres, duration_minutes, synopsis, cast_names, release_date, poster_from, poster_to, is_active, created_at) VALUES
   (@m + 1, 'Signal Thirteen', 'Tamil, Telugu', 'UA', 'Thriller, Mystery', 142, 'A railway signalman in Tiruchirappalli notices a train that isn''t on any timetable.', 'Arjun Selvan, Meera Nandakumar', UTC_DATE() - INTERVAL 3 DAY, '#0f766e', '#022c22', TRUE, UTC_TIMESTAMP(6)),
@@ -111,15 +120,15 @@ INSERT INTO organizations (id, subcategory_id, name, slug, description, contact_
   (@o + 9, 13, 'Mylapore Tiffin Room', 'mylapore-tiffin-room-chennai', 'South Indian, Tiffin in Mylapore, Chennai. Book a table online - it''s free.', 'demo.contact.mylapore-tiffin-room-chennai@example.com', '+916250237597', 'APPROVED', 'INSTANT', UTC_TIMESTAMP(6) - INTERVAL 151 DAY, UTC_TIMESTAMP(6) - INTERVAL 149 DAY, @u + 9, UTC_TIMESTAMP(6) - INTERVAL 152 DAY, UTC_TIMESTAMP(6)),
   (@o + 10, 13, 'Anna Nagar Chettinad Kitchen', 'anna-nagar-chettinad-kitchen-chennai', 'Chettinad, South Indian in Anna Nagar, Chennai. Book a table online - it''s free.', 'demo.contact.anna-nagar-chettinad-kitchen-chennai@example.com', '+916853025483', 'APPROVED', 'INSTANT', UTC_TIMESTAMP(6) - INTERVAL 94 DAY, UTC_TIMESTAMP(6) - INTERVAL 92 DAY, @u + 10, UTC_TIMESTAMP(6) - INTERVAL 95 DAY, UTC_TIMESTAMP(6)),
   (@o + 11, 13, 'Velachery Biryani Point', 'velachery-biryani-point-chennai', 'Biryani, Mughlai in Velachery, Chennai. Book a table online - it''s free.', 'demo.contact.velachery-biryani-point-chennai@example.com', '+919455757411', 'APPROVED', 'INSTANT', UTC_TIMESTAMP(6) - INTERVAL 62 DAY, UTC_TIMESTAMP(6) - INTERVAL 60 DAY, @u + 11, UTC_TIMESTAMP(6) - INTERVAL 63 DAY, UTC_TIMESTAMP(6)),
-  (@o + 12, 14, 'Besant Brew Café', 'besant-brew-café-chennai', 'Café, Desserts, Coffee in Adyar, Chennai. Book a table online - it''s free.', 'demo.contact.besant-brew-café-chennai@example.com', '+917878931828', 'APPROVED', 'INSTANT', UTC_TIMESTAMP(6) - INTERVAL 69 DAY, UTC_TIMESTAMP(6) - INTERVAL 67 DAY, @u + 12, UTC_TIMESTAMP(6) - INTERVAL 70 DAY, UTC_TIMESTAMP(6)),
+  (@o + 12, 14, 'Besant Brew Café', 'besant-brew-cafe-chennai', 'Café, Desserts, Coffee in Adyar, Chennai. Book a table online - it''s free.', 'demo.contact.besant-brew-cafe-chennai@example.com', '+917878931828', 'APPROVED', 'INSTANT', UTC_TIMESTAMP(6) - INTERVAL 69 DAY, UTC_TIMESTAMP(6) - INTERVAL 67 DAY, @u + 12, UTC_TIMESTAMP(6) - INTERVAL 70 DAY, UTC_TIMESTAMP(6)),
   (@o + 13, 13, 'Kovai Kongunadu Mess', 'kovai-kongunadu-mess-coimbatore', 'Kongunadu, South Indian in R.S. Puram, Coimbatore. Book a table online - it''s free.', 'demo.contact.kovai-kongunadu-mess-coimbatore@example.com', '+918785109065', 'APPROVED', 'INSTANT', UTC_TIMESTAMP(6) - INTERVAL 56 DAY, UTC_TIMESTAMP(6) - INTERVAL 54 DAY, @u + 13, UTC_TIMESTAMP(6) - INTERVAL 57 DAY, UTC_TIMESTAMP(6)),
   (@o + 14, 14, 'Race Course Coffee House', 'race-course-coffee-house-coimbatore', 'Café, Bakery in Race Course, Coimbatore. Book a table online - it''s free.', 'demo.contact.race-course-coffee-house-coimbatore@example.com', '+917508951877', 'APPROVED', 'INSTANT', UTC_TIMESTAMP(6) - INTERVAL 47 DAY, UTC_TIMESTAMP(6) - INTERVAL 45 DAY, @u + 14, UTC_TIMESTAMP(6) - INTERVAL 48 DAY, UTC_TIMESTAMP(6)),
-  (@o + 15, 14, 'Koodal Jigarthanda Café', 'koodal-jigarthanda-café-madurai', 'Café, Desserts in Simmakkal, Madurai. Book a table online - it''s free.', 'demo.contact.koodal-jigarthanda-café-madurai@example.com', '+916526198994', 'APPROVED', 'INSTANT', UTC_TIMESTAMP(6) - INTERVAL 105 DAY, UTC_TIMESTAMP(6) - INTERVAL 103 DAY, @u + 15, UTC_TIMESTAMP(6) - INTERVAL 106 DAY, UTC_TIMESTAMP(6)),
+  (@o + 15, 14, 'Koodal Jigarthanda Café', 'koodal-jigarthanda-cafe-madurai', 'Café, Desserts in Simmakkal, Madurai. Book a table online - it''s free.', 'demo.contact.koodal-jigarthanda-cafe-madurai@example.com', '+916526198994', 'APPROVED', 'INSTANT', UTC_TIMESTAMP(6) - INTERVAL 105 DAY, UTC_TIMESTAMP(6) - INTERVAL 103 DAY, @u + 15, UTC_TIMESTAMP(6) - INTERVAL 106 DAY, UTC_TIMESTAMP(6)),
   (@o + 16, 13, 'Vaigai Parotta Hall', 'vaigai-parotta-hall-madurai', 'Madurai, Chettinad in Goripalayam, Madurai. Book a table online - it''s free.', 'demo.contact.vaigai-parotta-hall-madurai@example.com', '+916152555595', 'APPROVED', 'INSTANT', UTC_TIMESTAMP(6) - INTERVAL 176 DAY, UTC_TIMESTAMP(6) - INTERVAL 174 DAY, @u + 16, UTC_TIMESTAMP(6) - INTERVAL 177 DAY, UTC_TIMESTAMP(6)),
   (@o + 17, 13, 'Pearl City Seafood Kitchen', 'pearl-city-seafood-kitchen-thoothukudi', 'Seafood, South Indian in Bryant Nagar, Thoothukudi. Book a table online - it''s free.', 'demo.contact.pearl-city-seafood-kitchen-thoothukudi@example.com', '+917214416994', 'APPROVED', 'INSTANT', UTC_TIMESTAMP(6) - INTERVAL 88 DAY, UTC_TIMESTAMP(6) - INTERVAL 86 DAY, @u + 17, UTC_TIMESTAMP(6) - INTERVAL 89 DAY, UTC_TIMESTAMP(6)),
   (@o + 18, 13, 'Rockfort Tiffin Centre', 'rockfort-tiffin-centre-tiruchirappalli', 'South Indian, Tiffin in Cantonment, Tiruchirappalli. Book a table online - it''s free.', 'demo.contact.rockfort-tiffin-centre-tiruchirappalli@example.com', '+916972869483', 'APPROVED', 'INSTANT', UTC_TIMESTAMP(6) - INTERVAL 164 DAY, UTC_TIMESTAMP(6) - INTERVAL 162 DAY, @u + 18, UTC_TIMESTAMP(6) - INTERVAL 165 DAY, UTC_TIMESTAMP(6)),
   (@o + 19, 13, 'Mango City Biryani House', 'mango-city-biryani-house-salem', 'Biryani, Salem style in Hasthampatti, Salem. Book a table online - it''s free.', 'demo.contact.mango-city-biryani-house-salem@example.com', '+917660068586', 'APPROVED', 'INSTANT', UTC_TIMESTAMP(6) - INTERVAL 79 DAY, UTC_TIMESTAMP(6) - INTERVAL 77 DAY, @u + 19, UTC_TIMESTAMP(6) - INTERVAL 80 DAY, UTC_TIMESTAMP(6)),
-  (@o + 20, 14, 'Shevaroy Hills Café', 'shevaroy-hills-café-salem', 'Café, Coffee in Alagapuram, Salem. Book a table online - it''s free.', 'demo.contact.shevaroy-hills-café-salem@example.com', '+917747651030', 'APPROVED', 'INSTANT', UTC_TIMESTAMP(6) - INTERVAL 120 DAY, UTC_TIMESTAMP(6) - INTERVAL 118 DAY, @u + 20, UTC_TIMESTAMP(6) - INTERVAL 121 DAY, UTC_TIMESTAMP(6));
+  (@o + 20, 14, 'Shevaroy Hills Café', 'shevaroy-hills-cafe-salem', 'Café, Coffee in Alagapuram, Salem. Book a table online - it''s free.', 'demo.contact.shevaroy-hills-cafe-salem@example.com', '+917747651030', 'APPROVED', 'INSTANT', UTC_TIMESTAMP(6) - INTERVAL 120 DAY, UTC_TIMESTAMP(6) - INTERVAL 118 DAY, @u + 20, UTC_TIMESTAMP(6) - INTERVAL 121 DAY, UTC_TIMESTAMP(6));
 
 INSERT INTO organization_owners (organization_id, user_id, role, created_at) VALUES
   (@o + 1, @u + 1, 'PRIMARY', UTC_TIMESTAMP(6)),
@@ -1850,5 +1859,70 @@ INSERT INTO showtimes (screen_id, movie_id, starts_at, format, language, prices,
   (@sc + 16, @m + 6, TIMESTAMP(UTC_DATE() + INTERVAL 20 DAY, '12:30:00'), '2D', 'Tamil', '{"CLASSIC": 160, "PRIME": 220}', UTC_TIMESTAMP(6)),
   (@sc + 16, @m + 1, TIMESTAMP(UTC_DATE() + INTERVAL 20 DAY, '16:00:00'), '2D', 'Telugu', '{"CLASSIC": 160, "PRIME": 220}', UTC_TIMESTAMP(6));
 
+INSERT INTO uploaded_files (id, public_id, storage_key, original_name, content_type, size_bytes, sha256, visibility, purpose, owner_user_id, created_at) VALUES
+  (@f + 1, 'c98d227f-4f48-5d6b-b918-8fbb620ce8ed', 'public/demo/venue-poster-signal-thirteen.jpg', 'signal-thirteen.jpg', 'image/jpeg', 72734, 'f21766853a9e0e05a674e3e72093f93533734693e8795cc9aba5683e37559769', 'PUBLIC', 'MOVIE_POSTER', NULL, UTC_TIMESTAMP(6)),
+  (@f + 2, '25fe11b0-a188-52dd-930b-d83bc59d99ab', 'public/demo/venue-poster-pearl-city-nights.jpg', 'pearl-city-nights.jpg', 'image/jpeg', 63186, '1ba798d37354fd63875b701fd9cd961e5222e964ce7775e1e984ee3c41f366a1', 'PUBLIC', 'MOVIE_POSTER', NULL, UTC_TIMESTAMP(6)),
+  (@f + 3, 'da55b3df-71e6-53a9-b847-caa365b17f50', 'public/demo/venue-poster-rockfort-diaries.jpg', 'rockfort-diaries.jpg', 'image/jpeg', 48252, '408deab6250494bf4ffe9f2f129eb1589a4c0145ae48c3e3fe8c4b75f8844261', 'PUBLIC', 'MOVIE_POSTER', NULL, UTC_TIMESTAMP(6)),
+  (@f + 4, '251f6757-b12a-5af5-b469-f3595019ffed', 'public/demo/venue-poster-the-monsoon-ferry.jpg', 'the-monsoon-ferry.jpg', 'image/jpeg', 68898, 'd515052b6a009d7b06d3eb0805d96bd2f74d63e3338fc05ae8b8dd21defe6c58', 'PUBLIC', 'MOVIE_POSTER', NULL, UTC_TIMESTAMP(6)),
+  (@f + 5, '52775ab7-24db-59c0-8cea-11623194f6cc', 'public/demo/venue-poster-starling-and-the-kite.jpg', 'starling-and-the-kite.jpg', 'image/jpeg', 39467, '5c758d3a0a01e4326f7395603f17d5bd8f03150df76bed7fe02273f4024ac366', 'PUBLIC', 'MOVIE_POSTER', NULL, UTC_TIMESTAMP(6)),
+  (@f + 6, '745fbe82-adb4-5f56-92fd-22b07adccf70', 'public/demo/venue-poster-midnight-toll-plaza.jpg', 'midnight-toll-plaza.jpg', 'image/jpeg', 31862, '66530f56a09e2271fe35ed1aa7598bade8d7de4b9a89e554e9ce0ecff80c1282', 'PUBLIC', 'MOVIE_POSTER', NULL, UTC_TIMESTAMP(6)),
+  (@f + 7, 'dc41ed29-c88a-5adb-ac0f-36b74c424fcb', 'public/demo/venue-poster-boundary-line-boys.jpg', 'boundary-line-boys.jpg', 'image/jpeg', 70786, '5918fe40c7405f5b687f883b38510c2071340303741fbd637ac3eba3c59d9c50', 'PUBLIC', 'MOVIE_POSTER', NULL, UTC_TIMESTAMP(6)),
+  (@f + 8, 'c55691e2-8fe0-536f-b89f-7482815a1656', 'public/demo/venue-poster-orbit-cafe.jpg', 'orbit-cafe.jpg', 'image/jpeg', 138819, '1b7aff4ea8c08e066b42ee7a0d7a1295f2478ff6436b540ff277f01f79fc17e4', 'PUBLIC', 'MOVIE_POSTER', NULL, UTC_TIMESTAMP(6)),
+  (@f + 9, '317ba1d0-9bfb-5cff-a81c-6be065876164', 'public/demo/venue-poster-kaveri-kingdom.jpg', 'kaveri-kingdom.jpg', 'image/jpeg', 166457, 'ba4f0cea33f1495751c489afdc797630eb1e55ad7569e016a53d0219d6b38b19', 'PUBLIC', 'MOVIE_POSTER', NULL, UTC_TIMESTAMP(6)),
+  (@f + 10, 'e9f57b84-fe3d-5843-b41e-f0fe5a39e965', 'public/demo/venue-poster-the-lighthouse-choir.jpg', 'the-lighthouse-choir.jpg', 'image/jpeg', 103613, 'f6ae83546b7957f50af51e3a1f4725096a365c934595dd965085f1c3fa52a9f8', 'PUBLIC', 'MOVIE_POSTER', NULL, UTC_TIMESTAMP(6)),
+  (@f + 11, 'b970fc03-e846-53e0-9d0f-c233ada1b3a1', 'public/demo/venue-poster-zero-hour-delta.jpg', 'zero-hour-delta.jpg', 'image/jpeg', 69408, '0210a84d0cd94a97cbafc44295d4d468de8a38fdd8b869022400929243c7d6e2', 'PUBLIC', 'MOVIE_POSTER', NULL, UTC_TIMESTAMP(6)),
+  (@f + 12, '670425e1-f2ad-5429-ac44-3dbad1ee3471', 'public/demo/venue-cover-1-marina-screens.jpg', 'cinema-0.jpg', 'image/jpeg', 92506, '8b075b4885fb311e87bfadd7823230b96ce718d9131a2692b3ab3cc4a9b8fa08', 'PUBLIC', 'ORGANIZATION_COVER', @u + 1, UTC_TIMESTAMP(6)),
+  (@f + 13, 'a6bda0e6-dde1-5cce-a0c0-194da73d99e9', 'public/demo/venue-cover-2-adyar-talkies.jpg', 'cinema-1.jpg', 'image/jpeg', 87665, 'a19c6ca6f9f2c841328b7cea3bc0ed49d84efb0bee6606790b7c74e0e666665d', 'PUBLIC', 'ORGANIZATION_COVER', @u + 2, UTC_TIMESTAMP(6)),
+  (@f + 14, 'b8dc6b47-0bf4-57ad-8cb6-7397ed7d5de8', 'public/demo/venue-cover-3-anna-nagar-picture-house.jpg', 'cinema-2.jpg', 'image/jpeg', 139732, '3270783cb6ca78b0672efe554ba8c5cc00189590678fed54d366100ce46e59bd', 'PUBLIC', 'ORGANIZATION_COVER', @u + 3, UTC_TIMESTAMP(6)),
+  (@f + 15, '8c425967-63c5-5fde-b088-7a19c89bb1d9', 'public/demo/venue-cover-4-kovai-cinemas.jpg', 'cinema-3.jpg', 'image/jpeg', 99730, 'dc04a7093cc6438c655113912532f2f00f5d476c39adfdea436b47532d8d9e99', 'PUBLIC', 'ORGANIZATION_COVER', @u + 4, UTC_TIMESTAMP(6)),
+  (@f + 16, 'b3184f1b-3f1c-526c-8627-3b2d9fa53167', 'public/demo/venue-cover-5-vaigai-theatre.jpg', 'cinema-4.jpg', 'image/jpeg', 118173, '57262fc4a8e16f75e3d9d3bb1df85ecc0ddd157e0ad09ba09ca7f47334ebb96f', 'PUBLIC', 'ORGANIZATION_COVER', @u + 5, UTC_TIMESTAMP(6)),
+  (@f + 17, 'edd274a1-dbb8-53a4-9e3b-34130ec9ce45', 'public/demo/venue-cover-6-rockfort-cineplex.jpg', 'cinema-5.jpg', 'image/jpeg', 89477, '358e3d0aa9e06ad2ebc01fa52e2264a162a55430bc0738e7b763464627330c4b', 'PUBLIC', 'ORGANIZATION_COVER', @u + 6, UTC_TIMESTAMP(6)),
+  (@f + 18, 'c3ac4a0d-b5e1-5f29-b7b1-62a7c82a8897', 'public/demo/venue-cover-7-steel-city-screens.jpg', 'cinema-6.jpg', 'image/jpeg', 118761, 'd2f591a6b9fd44ec5468fee3ee708278e4d6413fa9b5dad32430678e601c0922', 'PUBLIC', 'ORGANIZATION_COVER', @u + 7, UTC_TIMESTAMP(6)),
+  (@f + 19, 'f0309558-c987-5965-bfea-12b00536d3da', 'public/demo/venue-cover-8-pearl-talkies.jpg', 'cinema-7.jpg', 'image/jpeg', 125056, '3e369ce529ff881163f19cf8c68312f0562f3b0dbbcb702d9239593dbe9936aa', 'PUBLIC', 'ORGANIZATION_COVER', @u + 8, UTC_TIMESTAMP(6)),
+  (@f + 20, '996d1a7f-b383-5973-a63e-dd7226738b8c', 'public/demo/venue-cover-9-mylapore-tiffin-room.jpg', 'dining-0.jpg', 'image/jpeg', 194290, '9748919ca2c678a6095ef9432d88c3139819e3d6ad08dfda2ad97c6f12ae4203', 'PUBLIC', 'ORGANIZATION_COVER', @u + 9, UTC_TIMESTAMP(6)),
+  (@f + 21, '607a36aa-67ec-531a-a6ac-ed2ae28ef5b6', 'public/demo/venue-cover-10-anna-nagar-chettinad-kitchen.jpg', 'dining-1.jpg', 'image/jpeg', 229269, '47646d83b32a1ef03fdcf75adbeb53b6575f56f68c2063596ebb86d86de41305', 'PUBLIC', 'ORGANIZATION_COVER', @u + 10, UTC_TIMESTAMP(6)),
+  (@f + 22, '821d2fb2-c8ac-53e3-868e-9003d345a532', 'public/demo/venue-cover-11-velachery-biryani-point.jpg', 'dining-2.jpg', 'image/jpeg', 183964, '01fc6d4d34d60f9dc5cd480ee4dfc06c6df117c155405d6cdb8f23fb618b4b2b', 'PUBLIC', 'ORGANIZATION_COVER', @u + 11, UTC_TIMESTAMP(6)),
+  (@f + 23, '680f4426-7b2f-5d11-b547-351a525c4a07', 'public/demo/venue-cover-12-besant-brew-cafe.jpg', 'dining-3.jpg', 'image/jpeg', 62993, 'ef9c71da6384102eaec653e5e7c4cf355af61adaf53e7d430bb1195fe57fe1b3', 'PUBLIC', 'ORGANIZATION_COVER', @u + 12, UTC_TIMESTAMP(6)),
+  (@f + 24, '4f42c34e-2932-5e4c-bacc-2da41189aa6a', 'public/demo/venue-cover-13-kovai-kongunadu-mess.jpg', 'dining-4.jpg', 'image/jpeg', 142276, 'd0aac1fb48137ce61fee42eb68f720e5c58e43aa97d9f7937c2c3fbec756717f', 'PUBLIC', 'ORGANIZATION_COVER', @u + 13, UTC_TIMESTAMP(6)),
+  (@f + 25, '27fd24a7-edfc-5207-a16f-54b060f38472', 'public/demo/venue-cover-14-race-course-coffee-house.jpg', 'dining-5.jpg', 'image/jpeg', 178913, '487ad907515da29a19918cf4d2600dacc4867e0d0b97025340bc9e37e5475206', 'PUBLIC', 'ORGANIZATION_COVER', @u + 14, UTC_TIMESTAMP(6)),
+  (@f + 26, 'eb51695e-1731-5346-84c0-3125ed756a13', 'public/demo/venue-cover-15-koodal-jigarthanda-cafe.jpg', 'dining-6.jpg', 'image/jpeg', 84286, '550d56b1658d16575b3291c886b248f2cfd20d48961f66fb8d0773e43b53b077', 'PUBLIC', 'ORGANIZATION_COVER', @u + 15, UTC_TIMESTAMP(6)),
+  (@f + 27, 'b4165890-a6d7-521a-902c-35d0ccbcd8ac', 'public/demo/venue-cover-16-vaigai-parotta-hall.jpg', 'dining-7.jpg', 'image/jpeg', 99615, '093a1d504b504dd4a70388b5dfd4b800746d5ea5de648b8dfc326deac315b031', 'PUBLIC', 'ORGANIZATION_COVER', @u + 16, UTC_TIMESTAMP(6)),
+  (@f + 28, 'e5073323-9d99-5f9f-a39e-20517b6905c4', 'public/demo/venue-cover-17-pearl-city-seafood-kitchen.jpg', 'dining-8.jpg', 'image/jpeg', 225656, '401618f9c04ce31fdc8dc9b73a4d878ce5d40bc70d518133929842c8163e4cc4', 'PUBLIC', 'ORGANIZATION_COVER', @u + 17, UTC_TIMESTAMP(6)),
+  (@f + 29, 'b1957064-f6f6-5af1-8e1c-e89f623a9ace', 'public/demo/venue-cover-18-rockfort-tiffin-centre.jpg', 'dining-9.jpg', 'image/jpeg', 117202, 'fd0c7b2ccfd09262ad979e5b7fe9cc8f8014a7648b477a4013436e0ac9dead4f', 'PUBLIC', 'ORGANIZATION_COVER', @u + 18, UTC_TIMESTAMP(6)),
+  (@f + 30, 'd27dcd6a-0329-5c51-8e8d-96984701094a', 'public/demo/venue-cover-19-mango-city-biryani-house.jpg', 'dining-10.jpg', 'image/jpeg', 253236, '907c2dc9184f1a48ed86fc87b3002b16d2c64f046cc132e19598fce51fb2a52d', 'PUBLIC', 'ORGANIZATION_COVER', @u + 19, UTC_TIMESTAMP(6)),
+  (@f + 31, 'ac1594bd-d223-57ee-83b4-4d810ecfe52f', 'public/demo/venue-cover-20-shevaroy-hills-cafe.jpg', 'dining-11.jpg', 'image/jpeg', 68549, 'd7b5786c9629c4a7da6374ad31984b80ed08283b94bfe699a48bcdfe3dfa8d46', 'PUBLIC', 'ORGANIZATION_COVER', @u + 20, UTC_TIMESTAMP(6));
+
+UPDATE movies SET poster_file_id = @f + 1 WHERE id = @m + 1;
+UPDATE movies SET poster_file_id = @f + 2 WHERE id = @m + 2;
+UPDATE movies SET poster_file_id = @f + 3 WHERE id = @m + 3;
+UPDATE movies SET poster_file_id = @f + 4 WHERE id = @m + 4;
+UPDATE movies SET poster_file_id = @f + 5 WHERE id = @m + 5;
+UPDATE movies SET poster_file_id = @f + 6 WHERE id = @m + 6;
+UPDATE movies SET poster_file_id = @f + 7 WHERE id = @m + 7;
+UPDATE movies SET poster_file_id = @f + 8 WHERE id = @m + 8;
+UPDATE movies SET poster_file_id = @f + 9 WHERE id = @m + 9;
+UPDATE movies SET poster_file_id = @f + 10 WHERE id = @m + 10;
+UPDATE movies SET poster_file_id = @f + 11 WHERE id = @m + 11;
+UPDATE organizations SET cover_file_id = @f + 12 WHERE id = @o + 1;
+UPDATE organizations SET cover_file_id = @f + 13 WHERE id = @o + 2;
+UPDATE organizations SET cover_file_id = @f + 14 WHERE id = @o + 3;
+UPDATE organizations SET cover_file_id = @f + 15 WHERE id = @o + 4;
+UPDATE organizations SET cover_file_id = @f + 16 WHERE id = @o + 5;
+UPDATE organizations SET cover_file_id = @f + 17 WHERE id = @o + 6;
+UPDATE organizations SET cover_file_id = @f + 18 WHERE id = @o + 7;
+UPDATE organizations SET cover_file_id = @f + 19 WHERE id = @o + 8;
+UPDATE organizations SET cover_file_id = @f + 20 WHERE id = @o + 9;
+UPDATE organizations SET cover_file_id = @f + 21 WHERE id = @o + 10;
+UPDATE organizations SET cover_file_id = @f + 22 WHERE id = @o + 11;
+UPDATE organizations SET cover_file_id = @f + 23 WHERE id = @o + 12;
+UPDATE organizations SET cover_file_id = @f + 24 WHERE id = @o + 13;
+UPDATE organizations SET cover_file_id = @f + 25 WHERE id = @o + 14;
+UPDATE organizations SET cover_file_id = @f + 26 WHERE id = @o + 15;
+UPDATE organizations SET cover_file_id = @f + 27 WHERE id = @o + 16;
+UPDATE organizations SET cover_file_id = @f + 28 WHERE id = @o + 17;
+UPDATE organizations SET cover_file_id = @f + 29 WHERE id = @o + 18;
+UPDATE organizations SET cover_file_id = @f + 30 WHERE id = @o + 19;
+UPDATE organizations SET cover_file_id = @f + 31 WHERE id = @o + 20;
+
 COMMIT;
--- 8 movies (+3 coming soon), 8 cinemas, 16 screens, 1344 shows, 12 restaurants/cafés, 83 dishes
+-- 8 movies (+3 coming soon), 8 cinemas, 16 screens, 1344 shows, 12 restaurants/cafés, 83 dishes, 31 photos

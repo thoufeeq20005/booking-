@@ -9,6 +9,13 @@ START TRANSACTION;
 CREATE TEMPORARY TABLE demo_users AS SELECT id FROM users WHERE email LIKE 'demo.%@example.com';
 CREATE TEMPORARY TABLE demo_orgs AS SELECT o.id FROM organizations o JOIN organization_owners oo ON oo.organization_id = o.id WHERE oo.user_id IN (SELECT id FROM demo_users);
 DELETE FROM reviews WHERE organization_id IN (SELECT id FROM demo_orgs) OR customer_id IN (SELECT id FROM demo_users);
+-- Bookings made at demo businesses: their payment records go first (they don't cascade).
+CREATE TEMPORARY TABLE demo_appts AS SELECT id FROM appointments WHERE organization_id IN (SELECT id FROM demo_orgs) OR customer_id IN (SELECT id FROM demo_users);
+DELETE FROM refunds WHERE appointment_id IN (SELECT id FROM demo_appts);
+DELETE FROM commission_records WHERE appointment_id IN (SELECT id FROM demo_appts);
+DELETE FROM payments WHERE appointment_id IN (SELECT id FROM demo_appts);
+DELETE FROM reviews WHERE appointment_id IN (SELECT id FROM demo_appts);
+DROP TEMPORARY TABLE demo_appts;
 DELETE FROM appointments WHERE organization_id IN (SELECT id FROM demo_orgs) OR customer_id IN (SELECT id FROM demo_users);
 DELETE FROM organizations WHERE id IN (SELECT id FROM demo_orgs);
 DELETE FROM users WHERE id IN (SELECT id FROM demo_users);
