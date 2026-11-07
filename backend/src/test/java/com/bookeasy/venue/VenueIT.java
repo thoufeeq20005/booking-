@@ -107,7 +107,16 @@ class VenueIT extends BookingTestBase {
 
         JsonNode movies = data(mvc.perform(get("/api/v1/public/movies?" + NEAR)));
         assertThat(movies.findValues("id").stream().map(JsonNode::asLong).toList()).contains(c.movieId());
+        JsonNode mine = null;
+        for (JsonNode m : movies) {
+            if (m.path("movie").path("id").asLong() == c.movieId()) {
+                mine = m;
+            }
+        }
+        assertThat(mine.path("formats").toString()).isEqualTo("[\"2D\"]");
+        assertThat(mine.path("languages").toString()).isEqualTo("[\"Tamil\"]");
         JsonNode page = data(mvc.perform(get("/api/v1/public/movies/" + c.movieId() + "?" + NEAR)));
+        assertThat(page.path("languages").get(0).asText()).isEqualTo("Tamil");
         assertThat(page.path("theatres").get(0).path("organizationId").asLong()).isEqualTo(c.orgId());
         assertThat(page.path("theatres").get(0).path("shows").get(0).path("seatsLeft").asInt()).isEqualTo(18);
         assertThat(page.path("theatres").get(0).path("shows").get(0).path("fromPrice").decimalValue()).isEqualByComparingTo("150");
@@ -144,6 +153,20 @@ class VenueIT extends BookingTestBase {
                 .andExpect(status().isOk());
         assertThat(seatMap(c.showId()).path("taken").size()).isZero();
         buyTickets(ben, c.showId(), List.of("A2")).andExpect(status().isOk());
+    }
+
+    @Test
+    void comingSoonListsOnlyFutureReleases() throws Exception {
+        long soon = data(mvc.perform(jsonRequest(post("/api/v1/admin/movies"), admin().token(), Map.of("title", "Soon " + System.nanoTime(),
+                "languages", "Tamil", "certificate", "U", "genres", "Family", "durationMinutes", 120,
+                "releaseDate", LocalDate.now(IST).plusDays(10).toString())))).path("id").asLong();
+        long released = addMovie("Out now " + System.nanoTime());
+        List<Long> ids = new ArrayList<>();
+        data(mvc.perform(get("/api/v1/public/movies/upcoming"))).forEach(m -> ids.add(m.path("id").asLong()));
+        assertThat(ids).contains(soon).doesNotContain(released);
+        // A coming-soon movie still has its details page, with no shows yet.
+        JsonNode page = data(mvc.perform(get("/api/v1/public/movies/" + soon + "?" + NEAR)));
+        assertThat(page.path("theatres").size()).isZero();
     }
 
     @Test

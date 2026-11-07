@@ -11,7 +11,7 @@ CREATE TEMPORARY TABLE demo_venue_orgs AS SELECT o.id FROM organizations o JOIN 
 DELETE FROM appointments WHERE organization_id IN (SELECT id FROM demo_venue_orgs);
 DELETE FROM organizations WHERE id IN (SELECT id FROM demo_venue_orgs);
 DELETE FROM users WHERE id IN (SELECT id FROM demo_venue_users);
-DELETE FROM movies WHERE title IN ('Signal Thirteen', 'Pearl City Nights', 'Rockfort Diaries', 'The Monsoon Ferry', 'Starling and the Kite', 'Midnight Toll Plaza', 'Boundary Line Boys', 'Orbit Café');
+DELETE FROM movies WHERE title IN ('Signal Thirteen', 'Pearl City Nights', 'Rockfort Diaries', 'The Monsoon Ferry', 'Starling and the Kite', 'Midnight Toll Plaza', 'Boundary Line Boys', 'Orbit Café', 'Kaveri Kingdom', 'The Lighthouse Choir', 'Zero Hour Delta');
 DROP TEMPORARY TABLE demo_venue_users;
 DROP TEMPORARY TABLE demo_venue_orgs;
 
@@ -30,7 +30,10 @@ INSERT INTO movies (id, title, languages, certificate, genres, duration_minutes,
   (@m + 5, 'Starling and the Kite', 'Tamil, Telugu, Hindi', 'U', 'Animation, Adventure', 104, 'A young starling teams up with a runaway kite to find its way home before Pongal.', 'Voice cast: Nila Arun, Hari Kumar', UTC_DATE() - INTERVAL 8 DAY, '#7c3aed', '#2e1065', TRUE, UTC_TIMESTAMP(6)),
   (@m + 6, 'Midnight Toll Plaza', 'Tamil, Telugu', 'A', 'Action, Crime', 158, 'One night at a highway toll plaza, a booth operator becomes the only witness to a heist.', 'Dhruv Shankar, Anaya Pillai', UTC_DATE() - INTERVAL 13 DAY, '#b91c1c', '#1c1917', TRUE, UTC_TIMESTAMP(6)),
   (@m + 7, 'Boundary Line Boys', 'Tamil', 'U', 'Sports, Drama', 145, 'A village cricket team from Salem gets one shot at the state tournament.', 'Mithran Das, Keerthi Ravi', UTC_DATE() - INTERVAL 1 DAY, '#15803d', '#052e16', TRUE, UTC_TIMESTAMP(6)),
-  (@m + 8, 'Orbit Café', 'English, Tamil, Hindi', 'UA', 'Sci-fi, Comedy', 118, 'A Chennai café accidentally starts serving coffee to visitors from the future.', 'Rohan Varma, Sana Iqbal', UTC_DATE() - INTERVAL 18 DAY, '#0369a1', '#082f49', TRUE, UTC_TIMESTAMP(6));
+  (@m + 8, 'Orbit Café', 'English, Tamil, Hindi', 'UA', 'Sci-fi, Comedy', 118, 'A Chennai café accidentally starts serving coffee to visitors from the future.', 'Rohan Varma, Sana Iqbal', UTC_DATE() - INTERVAL 18 DAY, '#0369a1', '#082f49', TRUE, UTC_TIMESTAMP(6)),
+  (@m + 9, 'Kaveri Kingdom', 'Tamil, Telugu, Hindi', 'UA', 'Historical, Action', 168, 'A river-port queen defends her kingdom when traders arrive with an army.', 'Nandhini Varma, Adhitya Ram', UTC_DATE() + INTERVAL 12 DAY, '#a16207', '#1c1917', TRUE, UTC_TIMESTAMP(6)),
+  (@m + 10, 'The Lighthouse Choir', 'Tamil, English', 'U', 'Musical, Family', 126, 'A lighthouse keeper in Rameswaram trains a choir of fishermen for a national contest.', 'Selvi Arun, Joseph Mathew', UTC_DATE() + INTERVAL 19 DAY, '#0e7490', '#083344', TRUE, UTC_TIMESTAMP(6)),
+  (@m + 11, 'Zero Hour Delta', 'Tamil, Hindi', 'UA', 'Thriller, Heist', 139, 'A Coimbatore bank''s night shift becomes a hostage negotiation.', 'Karthik Raja, Pooja Venkat', UTC_DATE() + INTERVAL 26 DAY, '#4d7c0f', '#1a2e05', TRUE, UTC_TIMESTAMP(6));
 
 INSERT INTO users (id, full_name, email, phone_e164, password_hash, status, email_verified_at, phone_verified_at, preferred_language, created_at, updated_at) VALUES
   (@u + 1, 'Karthik Pillai', 'demo.venue.karthik1@example.com', '+918324935843', '$2a$12$.hqQmqoWu/3C6Q8L8h8cDuJcOinee8qIFn/Yu2qkPufDIGFSzx62K', 'ACTIVE', UTC_TIMESTAMP(6), UTC_TIMESTAMP(6), 'en', UTC_TIMESTAMP(6), UTC_TIMESTAMP(6)),
@@ -1848,4 +1851,4 @@ INSERT INTO showtimes (screen_id, movie_id, starts_at, format, language, prices,
   (@sc + 16, @m + 1, TIMESTAMP(UTC_DATE() + INTERVAL 20 DAY, '16:00:00'), '2D', 'Telugu', '{"CLASSIC": 160, "PRIME": 220}', UTC_TIMESTAMP(6));
 
 COMMIT;
--- 8 movies, 8 cinemas, 16 screens, 1344 shows, 12 restaurants/cafés, 83 dishes
+-- 8 movies (+3 coming soon), 8 cinemas, 16 screens, 1344 shows, 12 restaurants/cafés, 83 dishes

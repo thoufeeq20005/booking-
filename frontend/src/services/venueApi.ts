@@ -21,6 +21,9 @@ export interface NowShowing {
   movie: Movie;
   theatres: number;
   nextShow: string;
+  /** What it plays in nearby this week. */
+  formats: string[];
+  languages: string[];
 }
 
 export interface Show {
@@ -51,6 +54,8 @@ export interface MoviePage {
   date: string;
   dates: string[];
   theatres: TheatreShows[];
+  formats: string[];
+  languages: string[];
 }
 
 export interface SeatRow {
@@ -187,6 +192,7 @@ type Area = { lat: number; lng: number; radiusKm?: number };
 
 export const venueApi = {
   movies: (a: Area) => apiGet<NowShowing[]>('/public/movies', { params: a }),
+  upcoming: () => apiGet<Movie[]>('/public/movies/upcoming'),
   movie: (id: number, a: Area & { date?: string }) => apiGet<MoviePage>(`/public/movies/${id}`, { params: a }),
   seats: (showtimeId: number) => apiGet<SeatMap>(`/public/showtimes/${showtimeId}`),
   theatreSchedule: (orgId: number) => apiGet<TheatreShow[]>(`/public/theatres/${orgId}/schedule`),

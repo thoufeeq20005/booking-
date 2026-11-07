@@ -38,6 +38,16 @@ MOVIES = [
      "A Chennai café accidentally starts serving coffee to visitors from the future.", "Rohan Varma, Sana Iqbal"),
 ]
 
+# Releasing after the file is loaded: listed under "Coming soon", no shows yet. (title, ..., days until release)
+UPCOMING = [
+    ("Kaveri Kingdom", "Tamil, Telugu, Hindi", "UA", "Historical, Action", 168, "#a16207", "#1c1917",
+     "A river-port queen defends her kingdom when traders arrive with an army.", "Nandhini Varma, Adhitya Ram", 12),
+    ("The Lighthouse Choir", "Tamil, English", "U", "Musical, Family", 126, "#0e7490", "#083344",
+     "A lighthouse keeper in Rameswaram trains a choir of fishermen for a national contest.", "Selvi Arun, Joseph Mathew", 19),
+    ("Zero Hour Delta", "Tamil, Hindi", "UA", "Thriller, Heist", 139, "#4d7c0f", "#1a2e05",
+     "A Coimbatore bank's night shift becomes a hostage negotiation.", "Karthik Raja, Pooja Venkat", 26),
+]
+
 LAYOUTS = {
     "large": [*({"row": r, "tier": "CLASSIC", "seats": 18, "gapsAfter": [4, 14]} for r in "ABCDEFG"),
               *({"row": r, "tier": "PRIME", "seats": 18, "gapsAfter": [4, 14]} for r in "HIJK"),
@@ -190,7 +200,7 @@ w("CREATE TEMPORARY TABLE demo_venue_orgs AS SELECT o.id FROM organizations o JO
 w("DELETE FROM appointments WHERE organization_id IN (SELECT id FROM demo_venue_orgs);")
 w("DELETE FROM organizations WHERE id IN (SELECT id FROM demo_venue_orgs);")
 w("DELETE FROM users WHERE id IN (SELECT id FROM demo_venue_users);")
-w("DELETE FROM movies WHERE title IN (" + ", ".join(q(m[0]) for m in MOVIES) + ");")
+w("DELETE FROM movies WHERE title IN (" + ", ".join(q(m[0]) for m in MOVIES + UPCOMING) + ");")
 w("DROP TEMPORARY TABLE demo_venue_users;")
 w("DROP TEMPORARY TABLE demo_venue_orgs;")
 w("")
@@ -203,7 +213,10 @@ insert("movies", ["id", "title", "languages", "certificate", "genres", "duration
                   "release_date", "poster_from", "poster_to", "is_active", "created_at"],
        [[f"@m + {i + 1}", q(t), q(lang), q(cert), q(gen), str(dur), q(syn), q(cast),
          f"UTC_DATE() - INTERVAL {random.randint(1, 20)} DAY", q(c1), q(c2), "TRUE", "UTC_TIMESTAMP(6)"]
-        for i, (t, lang, cert, gen, dur, c1, c2, syn, cast) in enumerate(MOVIES)])
+        for i, (t, lang, cert, gen, dur, c1, c2, syn, cast) in enumerate(MOVIES)]
+       + [[f"@m + {len(MOVIES) + i + 1}", q(t), q(lang), q(cert), q(gen), str(dur), q(syn), q(cast),
+           f"UTC_DATE() + INTERVAL {days} DAY", q(c1), q(c2), "TRUE", "UTC_TIMESTAMP(6)"]
+          for i, (t, lang, cert, gen, dur, c1, c2, syn, cast, days) in enumerate(UPCOMING)])
 
 users, roles, orgs, owners, verifs, branches, hours, services, profiles, screens, shows, menu = ([] for _ in range(12))
 venues = [("CINEMA", c) for c in CINEMAS] + [("DINING", r) for r in RESTAURANTS]
@@ -298,7 +311,7 @@ for i in range(0, len(show_rows), 300):
     insert("showtimes", ["screen_id", "movie_id", "starts_at", "format", "language", "prices", "created_at"], show_rows[i:i + 300])
 
 w("COMMIT;")
-w(f"-- {len(MOVIES)} movies, {len(CINEMAS)} cinemas, {len(screen_rows)} screens, {len(show_rows)} shows, "
+w(f"-- {len(MOVIES)} movies (+{len(UPCOMING)} coming soon), {len(CINEMAS)} cinemas, {len(screen_rows)} screens, {len(show_rows)} shows, "
   f"{len(RESTAURANTS)} restaurants/cafés, {len(menu)} dishes")
 Path(__file__).with_name("demo-movies-dining.sql").write_text("\n".join(out) + "\n", encoding="utf-8")
 print(out[-1])

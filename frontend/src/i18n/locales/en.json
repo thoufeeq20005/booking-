@@ -1039,7 +1039,6 @@
       "RECLINER": "Recliner"
     },
     "moviesTitle": "Movies",
-    "moviesSubtitle": "Pick a movie, a show and your seats.",
     "noMovies": "No shows nearby this week",
     "noMoviesHint": "Try another city.",
     "theatresNear": "Playing in {{count}} theatres nearby",
@@ -1054,11 +1053,7 @@
     "legendSold": "Sold",
     "row": "Row {{row}}",
     "screenThisWay": "Screen this way",
-    "yourSeats": "Your seats",
-    "pickSeats": "Tap seats on the map (up to {{max}}).",
     "tickets": "Tickets ({{count}})",
-    "proceedToPay": "Book and pay",
-    "holdNote": "Seats are held for you while you pay; unpaid seats go back on sale after a few minutes.",
     "showsHere": "Shows today and tomorrow",
     "noShowsHere": "No shows scheduled yet.",
     "diningTitle": "Dining",
@@ -1141,6 +1136,36 @@
     "posterBottom": "Bottom colour",
     "synopsis": "Synopsis",
     "retire": "Retire",
-    "restore": "Show again"
+    "restore": "Show again",
+    "moviesIn": "Movies in {{city}}",
+    "filters": "Filters",
+    "filter": {
+      "languages": "Languages",
+      "genres": "Genres",
+      "formats": "Format"
+    },
+    "clear": "Clear",
+    "comingSoon": "Coming soon",
+    "releasesOn": "Releases {{date}}",
+    "noMatches": "No movies match these filters",
+    "noMatchesHint": "Clear a filter to see more.",
+    "inCinemas": "In cinemas",
+    "bookTickets": "Book tickets",
+    "noShowsNearby": "No shows near you this week.",
+    "notReleasedYet": "Bookings open closer to release.",
+    "aboutMovie": "About the movie",
+    "actor": "Actor",
+    "movieDetails": "Movie details",
+    "runtime": "Runtime",
+    "cancellable": "Cancellation available",
+    "howManySeats": "How many seats?",
+    "tierStatus": {
+      "AVAILABLE": "Available",
+      "ALMOST_FULL": "Almost full",
+      "SOLD_OUT": "Sold out"
+    },
+    "selectSeats": "Select seats",
+    "pickMore": "Tap a seat to pick {{count}} more.",
+    "payAmount": "Pay {{amount}}"
   }
 }

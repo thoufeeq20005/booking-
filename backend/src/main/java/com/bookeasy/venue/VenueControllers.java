@@ -62,6 +62,12 @@ public final class VenueControllers {
             return ApiResponse.ok(cinema.nowShowing(lat, lng, radiusKm));
         }
 
+        @GetMapping("/movies/upcoming")
+        @Operation(summary = "Movies releasing soon")
+        public ApiResponse<List<CinemaService.Movie>> upcoming() {
+            return ApiResponse.ok(cinema.upcoming());
+        }
+
         @GetMapping("/movies/{id}")
         @Operation(summary = "A movie, the days it plays nearby and each theatre's shows on one day")
         public ApiResponse<CinemaService.MoviePage> movie(@PathVariable long id, @RequestParam double lat, @RequestParam double lng,

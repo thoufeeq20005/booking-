@@ -1039,7 +1039,6 @@
       "RECLINER": "रिक्लाइनर"
     },
     "moviesTitle": "फ़िल्में",
-    "moviesSubtitle": "फ़िल्म, शो और अपनी सीटें चुनें।",
     "noMovies": "इस हफ़्ते आस-पास कोई शो नहीं",
     "noMoviesHint": "कोई दूसरा शहर आज़माएँ।",
     "theatresNear": "आस-पास {{count}} सिनेमाघरों में",
@@ -1054,11 +1053,7 @@
     "legendSold": "बिक गई",
     "row": "पंक्ति {{row}}",
     "screenThisWay": "स्क्रीन इस तरफ़",
-    "yourSeats": "आपकी सीटें",
-    "pickSeats": "नक्शे पर सीटें चुनें ({{max}} तक)।",
     "tickets": "टिकट ({{count}})",
-    "proceedToPay": "बुक करें और भुगतान करें",
-    "holdNote": "भुगतान के दौरान सीटें आपके लिए रोकी जाती हैं; भुगतान न होने पर कुछ मिनट बाद फिर बिक्री पर आ जाती हैं।",
     "showsHere": "आज और कल के शो",
     "noShowsHere": "अभी कोई शो तय नहीं है।",
     "diningTitle": "डाइनिंग",
@@ -1141,6 +1136,36 @@
     "posterBottom": "नीचे का रंग",
     "synopsis": "कहानी",
     "retire": "हटाएँ",
-    "restore": "फिर दिखाएँ"
+    "restore": "फिर दिखाएँ",
+    "moviesIn": "{{city}} में फ़िल्में",
+    "filters": "फ़िल्टर",
+    "filter": {
+      "languages": "भाषाएँ",
+      "genres": "शैलियाँ",
+      "formats": "फ़ॉर्मैट"
+    },
+    "clear": "हटाएँ",
+    "comingSoon": "जल्द आ रही हैं",
+    "releasesOn": "{{date}} को रिलीज़",
+    "noMatches": "इन फ़िल्टर से कोई फ़िल्म नहीं मिली",
+    "noMatchesHint": "और देखने के लिए कोई फ़िल्टर हटाएँ।",
+    "inCinemas": "सिनेमाघरों में",
+    "bookTickets": "टिकट बुक करें",
+    "noShowsNearby": "इस हफ़्ते आपके पास कोई शो नहीं।",
+    "notReleasedYet": "रिलीज़ के क़रीब बुकिंग खुलेगी।",
+    "aboutMovie": "फ़िल्म के बारे में",
+    "actor": "कलाकार",
+    "movieDetails": "फ़िल्म का विवरण",
+    "runtime": "अवधि",
+    "cancellable": "रद्द कर सकते हैं",
+    "howManySeats": "कितनी सीटें?",
+    "tierStatus": {
+      "AVAILABLE": "उपलब्ध",
+      "ALMOST_FULL": "लगभग भर गया",
+      "SOLD_OUT": "बिक गया"
+    },
+    "selectSeats": "सीटें चुनें",
+    "pickMore": "{{count}} और सीटें चुनने के लिए किसी सीट पर टैप करें।",
+    "payAmount": "{{amount}} भुगतान करें"
   }
 }

@@ -92,6 +92,12 @@ export function useVenueFormat() {
       new Intl.DateTimeFormat(locale, { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' }).format(new Date(`${d}T00:00:00Z`)),
     longDay: (iso: string) =>
       new Intl.DateTimeFormat(locale, { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'Asia/Kolkata' }).format(new Date(iso)),
+    /** Weekday, day number and month of a yyyy-mm-dd date, for the date strip. */
+    dayParts: (d: string) => {
+      const date = new Date(`${d}T00:00:00Z`);
+      const part = (o: Intl.DateTimeFormatOptions) => new Intl.DateTimeFormat(locale, { ...o, timeZone: 'UTC' }).format(date);
+      return { weekday: part({ weekday: 'short' }), day: part({ day: 'numeric' }), month: part({ month: 'short' }) };
+    },
     runtime: (minutes: number) => `${Math.floor(minutes / 60)}h ${minutes % 60}m`,
   };
 }

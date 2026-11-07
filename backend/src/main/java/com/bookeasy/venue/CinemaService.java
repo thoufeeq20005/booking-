@@ -57,7 +57,8 @@ public class CinemaService {
                         String synopsis, String cast, LocalDate releaseDate, String posterFrom, String posterTo) {
     }
 
-    public record NowShowing(Movie movie, int theatres, Instant nextShow) {
+    /** formats and languages: what this movie plays in nearby this week (for filters). */
+    public record NowShowing(Movie movie, int theatres, Instant nextShow, List<String> formats, List<String> languages) {
     }
 
     public record Show(long id, Instant startsAt, String format, String language, String screenName, int seatsLeft,
@@ -68,7 +69,8 @@ public class CinemaService {
                                String locality, String city, double distanceKm, List<Show> shows) {
     }
 
-    public record MoviePage(Movie movie, LocalDate date, List<LocalDate> dates, List<TheatreShows> theatres) {
+    public record MoviePage(Movie movie, LocalDate date, List<LocalDate> dates, List<TheatreShows> theatres,
+                            List<String> formats, List<String> languages) {
     }
 
     public record SeatRow(String row, String tier, int seats, List<Integer> gapsAfter) {
@@ -102,9 +104,23 @@ public class CinemaService {
         Instant now = clock.instant();
         MapSqlParameterSource p = area(lat, lng, radiusKm).addValue("from", Timestamp.from(now.plus(CLOSES_BEFORE)))
                 .addValue("until", Timestamp.from(now.plus(Duration.ofDays(8))));
-        return jdbc.query("SELECT m.*, COUNT(DISTINCT b.id) AS theatres, MIN(st.starts_at) AS next_show " + NEARBY
+        return jdbc.query("SELECT m.*, COUNT(DISTINCT b.id) AS theatres, MIN(st.starts_at) AS next_show, "
+                        + "GROUP_CONCAT(DISTINCT st.format ORDER BY st.format) AS formats, "
+                        + "GROUP_CONCAT(DISTINCT st.language ORDER BY st.language) AS show_languages " + NEARBY
                         + " GROUP BY m.id ORDER BY m.release_date DESC, m.title",
-                p, (rs, i) -> new NowShowing(movie(rs), rs.getInt("theatres"), rs.getTimestamp("next_show").toInstant()));
+                p, (rs, i) -> new NowShowing(movie(rs), rs.getInt("theatres"), rs.getTimestamp("next_show").toInstant(),
+                        split(rs.getString("formats")), split(rs.getString("show_languages"))));
+    }
+
+    /** Active movies releasing after today, for "Coming soon". */
+    @Transactional(readOnly = true)
+    public List<Movie> upcoming() {
+        return jdbc.query("SELECT * FROM movies WHERE is_active AND release_date > :today ORDER BY release_date, title LIMIT 20",
+                Map.of("today", java.sql.Date.valueOf(LocalDate.ofInstant(clock.instant(), IST))), (rs, i) -> movie(rs));
+    }
+
+    private static List<String> split(String csv) {
+        return csv == null || csv.isBlank() ? List.of() : List.of(csv.split(","));
     }
 
     @Transactional(readOnly = true)
@@ -114,8 +130,14 @@ public class CinemaService {
         Instant now = clock.instant();
         MapSqlParameterSource week = area(lat, lng, radiusKm).addValue("from", Timestamp.from(now.plus(CLOSES_BEFORE)))
                 .addValue("until", Timestamp.from(now.plus(Duration.ofDays(8)))).addValue("movie", movieId);
-        List<LocalDate> dates = jdbc.query("SELECT st.starts_at " + NEARBY + " AND m.id = :movie ORDER BY st.starts_at", week,
-                        (rs, i) -> rs.getTimestamp(1).toInstant().atZone(IST).toLocalDate())
+        java.util.Set<String> formats = new java.util.TreeSet<>();
+        java.util.Set<String> languages = new java.util.TreeSet<>();
+        List<LocalDate> dates = jdbc.query("SELECT st.starts_at, st.format, st.language " + NEARBY + " AND m.id = :movie ORDER BY st.starts_at", week,
+                        (rs, i) -> {
+                            formats.add(rs.getString(2));
+                            languages.add(rs.getString(3));
+                            return rs.getTimestamp(1).toInstant().atZone(IST).toLocalDate();
+                        })
                 .stream().distinct().toList();
         LocalDate day = date != null && dates.contains(date) ? date : dates.isEmpty() ? LocalDate.now(clock.withZone(IST)) : dates.get(0);
 
@@ -152,7 +174,7 @@ public class CinemaService {
                 .map(t -> new TheatreShows(t.organizationId(), t.theatreName(), t.slug(), t.branchId(), t.branchName(),
                         t.locality(), t.city(), t.distanceKm(), shows.getOrDefault(t.branchId(), List.of())))
                 .toList();
-        return new MoviePage(movie, day, dates, theatres);
+        return new MoviePage(movie, day, dates, theatres, List.copyOf(formats), List.copyOf(languages));
     }
 
     public record TheatreShow(long id, Instant startsAt, String format, String language, String screen, long movieId,

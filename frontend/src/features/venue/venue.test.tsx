@@ -5,6 +5,7 @@ import { AppRoutes } from '@/routes/AppRoutes';
 import { authenticated, installFakeApi, reply, sampleUser, type FakeRequest, type FakeResponse } from '@/test/fakeApi';
 import { renderWithProviders } from '@/test/renderWithProviders';
 import { expandRows } from './VenueSection';
+import { pickSeats } from '@/pages/venue/SeatsPage';
 
 const movie = { id: 5, title: 'Signal Thirteen', languages: 'Tamil, Telugu', certificate: 'UA', genres: 'Thriller', durationMinutes: 142,
   synopsis: 'A train that is not on any timetable.', releaseDate: '2026-11-01', posterFrom: '#0f766e', posterTo: '#022c22' };
@@ -26,7 +27,19 @@ function api(user: object | null, handler: (r: FakeRequest) => FakeResponse | un
   return installFakeApi((r) => {
     if (r.url === '/auth/refresh') return user ? reply.ok(authenticated('tok', user)) : reply.fail(401, 'SESSION_EXPIRED');
     if (r.url === '/public/config') return reply.ok({ commissionPercent: 5, support: null });
-    if (r.url === '/public/movies') return reply.ok([{ movie, theatres: 3, nextShow: '2026-11-10T12:30:00Z' }]);
+    if (r.url === '/public/movies') {
+      return reply.ok([{ movie, theatres: 3, nextShow: '2026-11-10T12:30:00Z', formats: ['2D'], languages: ['Tamil', 'Telugu'] },
+        { movie: { ...movie, id: 6, title: 'Orbit Cafe', genres: 'Comedy' }, theatres: 1, nextShow: '2026-11-10T12:30:00Z', formats: ['IMAX'], languages: ['English'] }]);
+    }
+    if (r.url === '/public/movies/upcoming') return reply.ok([{ ...movie, id: 9, title: 'Kaveri Kingdom', releaseDate: '2030-01-20' }]);
+    if (r.url === '/public/movies/5') {
+      return reply.ok({ movie: { ...movie, cast: 'Arjun Selvan, Meera Nandakumar' }, date: '2026-11-10', dates: ['2026-11-10', '2026-11-11'],
+        formats: ['2D'], languages: ['Tamil', 'Telugu'],
+        theatres: [{ organizationId: 2, theatreName: 'Marina Screens', slug: 'marina', branchId: 3, branchName: 'Main', locality: 'T. Nagar',
+          city: 'Chennai', distanceKm: 1.2, shows: [
+            { id: 40, startsAt: '2026-11-10T12:30:00Z', format: '2D', language: 'Tamil', screenName: 'Screen 1', seatsLeft: 7, totalSeats: 8, fromPrice: 150 },
+            { id: 41, startsAt: '2026-11-10T16:00:00Z', format: '2D', language: 'Telugu', screenName: 'Screen 2', seatsLeft: 1, totalSeats: 8, fromPrice: 150 }] }] });
+    }
     if (r.url === '/public/showtimes/40') return reply.ok(seatMap);
     if (r.url === '/public/organizations/dosa-corner') return reply.ok(dining);
     if (r.url === '/public/dining/dosa-corner') {
@@ -43,12 +56,30 @@ function api(user: object | null, handler: (r: FakeRequest) => FakeResponse | un
 }
 
 describe('movies', () => {
-  it('lists what is playing nearby', async () => {
+  it('lists what is playing nearby, filters by language and shows what is coming', async () => {
     api(null);
     renderWithProviders(<AppRoutes />, { route: '/movies?city=chennai' });
     const link = await screen.findByRole('link', { name: /Signal Thirteen/ });
     expect(link).toHaveAttribute('href', '/movies/5');
     expect(within(link).getByText('Playing in 3 theatres nearby')).toBeInTheDocument();
+    expect(await screen.findByRole('link', { name: /Kaveri Kingdom/ })).toHaveAttribute('href', '/movies/9');
+    await userEvent.click(within(screen.getByRole('complementary', { name: 'Filters' })).getByRole('button', { name: 'English' }));
+    expect(screen.queryByRole('link', { name: /Signal Thirteen/ })).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Orbit Cafe/ })).toBeInTheDocument();
+  });
+
+  it('shows the movie and its cast, then theatres and screens after Book tickets', async () => {
+    api(null);
+    renderWithProviders(<AppRoutes />, { route: '/movies/5' });
+    expect(await screen.findByRole('heading', { name: 'Signal Thirteen' })).toBeInTheDocument();
+    expect(screen.getByText('Meera Nandakumar')).toBeInTheDocument();
+    expect(screen.getByText('A train that is not on any timetable.')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('link', { name: 'Book tickets' }));
+    expect(await screen.findByRole('link', { name: 'Marina Screens: T. Nagar' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Screen 1 · 2D · Tamil/ })).toHaveAttribute('href', '/shows/40');
+    await userEvent.selectOptions(within(screen.getByRole('main')).getByLabelText('Language'), 'Telugu');
+    expect(screen.queryByRole('link', { name: /Screen 1 · 2D · Tamil/ })).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Screen 2 · 2D · Telugu/ })).toHaveAttribute('href', '/shows/41');
   });
 
   it('books the chosen seats and goes to payment', async () => {
@@ -63,12 +94,15 @@ describe('movies', () => {
       return undefined;
     });
     renderWithProviders(<AppRoutes />, { route: '/shows/40' });
-    expect(await screen.findByRole('button', { name: 'A2, Sold' })).toBeDisabled();
-    await userEvent.click(screen.getByRole('button', { name: 'A1' }));
+    const dialog = await screen.findByRole('dialog', { name: 'How many seats?' });
+    expect(within(dialog).getByText('₹220')).toBeInTheDocument();
+    await userEvent.click(within(dialog).getByRole('radio', { name: '2' }));
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Select seats' }));
+    expect(screen.getByRole('button', { name: 'A2, Sold' })).toBeDisabled();
+    await userEvent.click(screen.getByRole('button', { name: 'A1' })); // A2 is sold, so only A1
+    expect(screen.getByText('Tap a seat to pick 1 more.')).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: 'B1' }));
-    expect(screen.getByText('Tickets (2)')).toBeInTheDocument();
-    expect(screen.getByText('₹388.5')).toBeInTheDocument(); // 150 + 220 + 5% fee
-    await userEvent.click(screen.getByRole('button', { name: 'Book and pay' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Pay ₹388.5' })); // 150 + 220 + 5% fee
     await waitFor(() => expect(requests.find((r) => r.url === '/customer/tickets')?.body).toEqual({ showtimeId: 40, seats: ['A1', 'B1'] }));
     expect(await screen.findByRole('heading', { name: 'Payment' })).toBeInTheDocument();
   });
@@ -76,8 +110,11 @@ describe('movies', () => {
   it('shows a clear message when seats were just taken', async () => {
     api(sampleUser, (r) => (r.url === '/customer/tickets' ? reply.fail(409, 'SEATS_UNAVAILABLE') : undefined));
     renderWithProviders(<AppRoutes />, { route: '/shows/40' });
-    await userEvent.click(await screen.findByRole('button', { name: 'A1' }));
-    await userEvent.click(screen.getByRole('button', { name: 'Book and pay' }));
+    const dialog = await screen.findByRole('dialog');
+    await userEvent.click(within(dialog).getByRole('radio', { name: '1' }));
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Select seats' }));
+    await userEvent.click(screen.getByRole('button', { name: 'A1' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Pay ₹157.5' }));
     expect(await screen.findByText('Some of those seats were just taken. Please choose again.')).toBeInTheDocument();
   });
 
@@ -131,5 +168,16 @@ describe('screen layout builder', () => {
     expect(rows.map((r) => r.row)).toEqual(['A', 'B', 'C', 'D']);
     expect(rows[0]).toEqual({ row: 'A', tier: 'CLASSIC', seats: 10, gapsAfter: [3, 7] });
     expect(rows[3]!.tier).toBe('RECLINER');
+  });
+});
+
+describe('seat picking', () => {
+  const map = { ...seatMap, taken: ['B3'], rows: [{ row: 'B', tier: 'PRIME', seats: 8, gapsAfter: [4] }] } as never;
+  it('fills the chosen number of seats to the right, stopping at an aisle or a sold seat', () => {
+    expect(pickSeats(map, 'B1', 4, [])).toEqual(['B1', 'B2']); // B3 sold
+    expect(pickSeats(map, 'B4', 3, [])).toEqual(['B4']); // aisle after 4
+    expect(pickSeats(map, 'B5', 3, ['B4'])).toEqual(['B4', 'B5', 'B6']);
+    expect(pickSeats(map, 'B5', 2, ['B1', 'B2'])).toEqual(['B5', 'B6']); // full: start again
+    expect(pickSeats(map, 'B2', 2, ['B1', 'B2'])).toEqual(['B1']); // tap a picked seat to drop it
   });
 });
