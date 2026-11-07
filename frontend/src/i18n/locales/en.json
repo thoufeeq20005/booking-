@@ -1350,5 +1350,26 @@
     "fromLabel": "Starts (optional)",
     "untilLabel": "Ends (optional)",
     "add": "Publish offer"
+  },
+  "quickSearch": {
+    "open": "Search",
+    "close": "Close search",
+    "buttonHint": "Search  Ctrl K",
+    "placeholder": "Search for '{{term}}'",
+    "examples": "biryani|dentist|gym|haircut|coaching|coffee|yoga",
+    "tabs": "Categories",
+    "all": "All",
+    "trendingIn": "Trending in {{city}}",
+    "trendingNearYou": "Trending near you",
+    "results": "Results for '{{q}}'",
+    "noResults": "Nothing found for '{{q}}'. Try another word or tab.",
+    "nothingNearby": "Nothing to show nearby yet.",
+    "failed": "Search isn't available right now. Please try again.",
+    "seeAll": "See all results for '{{q}}'",
+    "eventUntil": "Event · till {{date}}",
+    "kind": {
+      "movie": "Movie",
+      "event": "Event"
+    }
   }
 }

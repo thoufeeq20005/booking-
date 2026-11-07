@@ -32,9 +32,20 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 public class DiscoveryController {
 
     private final DiscoveryService service;
+    private final QuickSearchService quickSearch;
 
-    public DiscoveryController(DiscoveryService service) {
+    public DiscoveryController(DiscoveryService service, QuickSearchService quickSearch) {
         this.service = service;
+        this.quickSearch = quickSearch;
+    }
+
+    @GetMapping("/quick-search")
+    @Operation(summary = "Search window: trending near a point when q is empty, otherwise movies, businesses and events matching q")
+    public ApiResponse<QuickSearchService.Result> quickSearch(@RequestParam @DecimalMin("6.0") @DecimalMax("37.6") double lat,
+                                                              @RequestParam @DecimalMin("68.0") @DecimalMax("97.5") double lng,
+                                                              @RequestParam(required = false) String q,
+                                                              @RequestParam(defaultValue = "all") String tab) {
+        return ApiResponse.ok(quickSearch.search(q, tab.length() > 40 ? "all" : tab, lat, lng));
     }
 
     @GetMapping("/search")
