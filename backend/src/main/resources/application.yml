@@ -115,6 +115,12 @@ bookeasy:
     # Claude API key for AI recommendations (console.anthropic.com -> API keys). Empty: offers are ranked by simple rules.
     api-key: ${ANTHROPIC_API_KEY:}
     model: ${AI_MODEL:claude-opus-5-5}
+    # Google Gemini (aistudio.google.com -> Get API key). Used when there is no Claude key, or with AI_PROVIDER=gemini.
+    gemini-api-key: ${GEMINI_API_KEY:}
+    gemini-model: ${GEMINI_MODEL:gemini-3.5-flash-lite}
+    gemini-thinking-level: ${GEMINI_THINKING_LEVEL:low}
+    # auto (Claude if its key is set, else Gemini), claude or gemini
+    provider: ${AI_PROVIDER:auto}
   payments:
     # Minutes an unpaid booking holds its slot before it expires.
     hold-minutes: ${PAYMENT_HOLD_MINUTES:15}
