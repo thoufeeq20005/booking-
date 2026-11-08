@@ -6,14 +6,17 @@ services:
     runtime: docker
     rootDir: backend
     dockerfilePath: ./Dockerfile
-    plan: starter            # persistent disks require a paid instance
+    # free: sleeps after 15 idle minutes (the first visit then takes about a minute) and has no persistent disk, so
+    # files people upload are lost on each restart or deploy; the demo photos are built into the image and always
+    # present. For real use switch to "starter" and uncomment the disk below.
+    plan: free
     region: singapore        # closest Render region to India
     healthCheckPath: /actuator/health/readiness
     autoDeploy: true
-    disk:
-      name: bookeasy-uploads
-      mountPath: /var/data
-      sizeGB: 5
+    # disk:
+    #   name: bookeasy-uploads
+    #   mountPath: /var/data
+    #   sizeGB: 5
     envVars:
       - key: SPRING_PROFILES_ACTIVE
         value: prod
@@ -31,6 +34,8 @@ services:
         sync: false
       - key: DB_PASSWORD
         sync: false
+      - key: DB_SSL_MODE
+        value: REQUIRED
       - key: FRONTEND_URL
         sync: false
       - key: BACKEND_URL
@@ -51,6 +56,8 @@ services:
         sync: false
       - key: SMTP_USERNAME
         sync: false
+      - key: SMTP_PORT
+        value: "587"
       - key: SMTP_PASSWORD
         sync: false
       - key: EMAIL_FROM_ADDRESS
@@ -71,3 +78,10 @@ services:
         value: "false"
       - key: PAYMENT_HOLD_MINUTES
         value: "15"
+      # AI recommendations (docs/integrations/ai-recommendations.md); leave the keys empty for rule-based picks.
+      - key: AI_PROVIDER
+        value: auto
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false

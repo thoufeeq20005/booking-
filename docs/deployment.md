@@ -1,5 +1,20 @@
 # Deployment
 
+## Free quick start (demo)
+
+For showing the site on other devices at no cost: the API on Render's free plan, MySQL on Aiven's free plan, and the
+site on Vercel's free plan.
+
+- **Render free:** the API sleeps after 15 idle minutes, so the first visit after that takes about a minute. There is no
+  persistent disk: files people upload are lost on each restart or deploy. The demo photos are built into the Docker
+  image and copied into storage at start-up, so they are always present.
+- **Database:** create a free Aiven MySQL service and copy the dev database into it with `mysqldump` (use
+  `--result-file`, not `>`, on Windows) and `mysql -e "source ..."`. `DB_NAME` is the Aiven database (`defaultdb`) and
+  `DB_SSL_MODE=REQUIRED`. Reuse the dev `DATA_ENCRYPTION_KEY`, since the copied rows were encrypted with it.
+- **Payments:** the `prod` profile turns off the simulated gateway, so ticket and table payments need Razorpay test-mode
+  keys. No real money is charged.
+- **Moving to real use:** switch `plan` to `starter` in `render.yaml`, uncomment the disk, and follow the sections below.
+
 ## Topology
 
 ```
