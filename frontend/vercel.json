@@ -6,7 +6,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://bookeasy-api.onrender.com/api/:path*"
+      "destination": "https://bookeasy-api-tn9p.onrender.com*"
     },
     {
       "source": "/((?!assets/|api/|favicon.svg).*)",
