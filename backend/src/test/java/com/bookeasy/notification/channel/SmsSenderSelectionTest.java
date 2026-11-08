@@ -10,7 +10,7 @@ class SmsSenderSelectionTest {
 
     private static NotificationProperties props(boolean devLog, String provider) {
         return new NotificationProperties(devLog,
-                new NotificationProperties.Email("", null, 587, null, null, true, "no-reply@example.test", "BookEasy"),
+                new NotificationProperties.Email("", null, 587, null, null, true, "no-reply@example.test", "BookEasy", null),
                 new NotificationProperties.Sms(provider, "key", "https://control.msg91.com", "tpl", "otp"));
     }
 
@@ -28,8 +28,8 @@ class SmsSenderSelectionTest {
 
     @Test
     void emailCodesAreOnlyVisibleWithTheDevLogger() {
-        assertThat(config.emailSender(props(true, "")).deliversToInbox()).isFalse();
-        assertThat(config.emailSender(props(false, "")).deliversToInbox()).isTrue();
+        assertThat(config.emailSender(props(true, ""), RestClient.builder()).deliversToInbox()).isFalse();
+        assertThat(config.emailSender(props(false, ""), RestClient.builder()).deliversToInbox()).isTrue();
     }
 
     @Test

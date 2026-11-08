@@ -145,6 +145,8 @@ bookeasy:
       smtp-starttls: ${SMTP_STARTTLS:true}
       from-address: ${EMAIL_FROM_ADDRESS:}
       from-name: ${EMAIL_FROM_NAME:BookEasy}
+      # EMAIL_PROVIDER=brevo: Brevo API key (HTTPS; works where SMTP ports are blocked, e.g. Render's free plan).
+      api-key: ${EMAIL_API_KEY:}
     sms:
       provider: ${SMS_PROVIDER:}
       api-key: ${SMS_API_KEY:}

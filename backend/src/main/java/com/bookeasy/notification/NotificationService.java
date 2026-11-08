@@ -44,6 +44,12 @@ public class NotificationService {
     private final BookEasyProperties properties;
     private final TransactionTemplate tx;
     private final Clock clock;
+    private final java.util.concurrent.ExecutorService dispatcher = java.util.concurrent.Executors.newSingleThreadExecutor(r -> {
+        Thread t = new Thread(r, "notification-dispatch");
+        t.setDaemon(true);
+        return t;
+    });
+    private final java.util.concurrent.atomic.AtomicBoolean dispatchQueued = new java.util.concurrent.atomic.AtomicBoolean();
 
     public NotificationService(JdbcTemplate jdbc, UserRepository users, MessageSource messages, EmailSender email,
                                BookEasyProperties properties, TransactionTemplate tx, Clock clock) {
@@ -88,7 +94,7 @@ public class NotificationService {
             TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
                 @Override
                 public void afterCommit() {
-                    dispatch();
+                    dispatchSoon();
                 }
             });
         }
@@ -151,6 +157,33 @@ public class NotificationService {
     }
 
     /** Sends due outbox rows; a failure is retried after 1, 2, 4, 8 minutes, then marked FAILED. */
+    /**
+     * Sends pending messages on a background thread, so the request that queued them never waits for the email
+     * provider (a slow or unreachable mail server used to hold bookings for 10 s per message). Requests made while a
+     * run is queued share it; the scheduled run retries anything left.
+     */
+    void dispatchSoon() {
+        if (dispatchQueued.compareAndSet(false, true)) {
+            try {
+                dispatcher.execute(() -> {
+                    dispatchQueued.set(false);
+                    try {
+                        dispatch();
+                    } catch (RuntimeException e) {
+                        log.warn("Background notification dispatch failed", e);
+                    }
+                });
+            } catch (java.util.concurrent.RejectedExecutionException e) {
+                dispatchQueued.set(false);
+            }
+        }
+    }
+
+    @jakarta.annotation.PreDestroy
+    void stopDispatcher() {
+        dispatcher.shutdown();
+    }
+
     public int dispatch() {
         Integer sent = tx.execute(s -> {
             Instant now = clock.instant();

@@ -71,3 +71,25 @@ code (stored hashed, valid 5 minutes, 5 tries, a new one at most every 60 second
 it is entered. Accounts with an authenticator app get that step instead. Signing in with only an emailed code, or with
 Google, already proves the inbox and skips it. Set the variable to `false` to turn the step off.
 
+## Brevo API (for hosts that block SMTP, e.g. Render's free plan)
+
+Render's free instances can't open outbound SMTP connections (ports 25, 465 and 587), so Gmail SMTP fails there.
+Brevo's HTTPS API works instead. Its free plan allows 300 emails a day.
+
+1. Sign up at brevo.com.
+2. Go to **Senders, domains & dedicated IPs → Senders** and add the address you send from (your Gmail works). Click the
+   link in the verification email Brevo sends.
+3. Go to **SMTP & API → API keys** and create a key.
+4. In Render, set:
+
+| Variable | Value |
+|---|---|
+| `EMAIL_PROVIDER` | `brevo` |
+| `EMAIL_API_KEY` | the Brevo API key |
+| `EMAIL_FROM_ADDRESS` | the verified sender address |
+
+The `SMTP_*` variables are not used with `brevo`.
+
+Booking and reminder emails are sent on a background thread, so a slow or unreachable mail provider never holds up a
+page. Sign-in codes are sent while the user waits, with a 10-second timeout.
+
