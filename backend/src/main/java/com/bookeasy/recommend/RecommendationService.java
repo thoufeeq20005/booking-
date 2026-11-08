@@ -58,27 +58,57 @@ public class RecommendationService {
     public record Pick(String id, String headline, String reason) {
     }
 
-    /** source: AI when Claude chose the picks, RULES when the fallback ranking did. */
     public record Recommendation(Candidate offer, String headline, String reason) {
     }
 
-    public record Recommendations(String source, String intro, List<Recommendation> items) {
+    /**
+     * source: AI when a model chose the picks, RULES when the fallback ranking did. basedOn: the recent searches used to
+     * personalise the picks (empty when the person asked for something specific or sent none).
+     */
+    public record Recommendations(String source, String intro, List<Recommendation> items, List<String> basedOn) {
+        Recommendations(String source, String intro, List<Recommendation> items) {
+            this(source, intro, items, List.of());
+        }
+    }
+
+    static final int MAX_INTERESTS = 5;
+
+    /** Up to five distinct recent searches, each at most 40 characters. */
+    static List<String> cleanInterests(List<String> interests) {
+        if (interests == null) {
+            return List.of();
+        }
+        java.util.LinkedHashSet<String> out = new java.util.LinkedHashSet<>();
+        for (String i : interests) {
+            String t = i == null ? "" : i.trim().replaceAll("\\s+", " ");
+            if (t.length() >= 2) {
+                out.add((t.length() > 40 ? t.substring(0, 40) : t).toLowerCase(Locale.ROOT));
+            }
+            if (out.size() == MAX_INTERESTS) {
+                break;
+            }
+        }
+        return List.copyOf(out);
     }
 
     private record Cached(Recommendations value, Instant at) {
     }
 
     @Transactional(readOnly = true)
-    public Recommendations recommend(double lat, double lng, double radiusKm, String query, String language, String ip) {
+    public Recommendations recommend(double lat, double lng, double radiusKm, String query, List<String> recentSearches, String language,
+                                     String ip) {
         String q = query == null ? "" : query.trim();
         if (q.length() > 100) {
             q = q.substring(0, 100);
         }
+        // What they ask for now wins; otherwise their recent searches personalise the picks.
+        List<String> interests = q.isEmpty() ? cleanInterests(recentSearches) : List.of();
         String lang = language == null || language.isBlank() ? "en" : language.toLowerCase(Locale.ROOT);
         double radius = Math.min(Math.max(radiusKm, 1), MAX_RADIUS_KM);
         Instant now = clock.instant();
         // Same area (about 1 km), request, language and hour: reuse the answer instead of paying for another call.
-        String key = String.format(Locale.ROOT, "%.2f|%.2f|%.0f|%s|%s|%d", lat, lng, radius, q.toLowerCase(Locale.ROOT), lang,
+        String key = String.format(Locale.ROOT, "%.2f|%.2f|%.0f|%s|%s|%s|%d", lat, lng, radius, q.toLowerCase(Locale.ROOT),
+                String.join(",", interests), lang,
                 now.atZone(PromotionService.IST).getHour());
         Cached hit = cache.get(key);
         if (hit != null && hit.at().plus(CACHE_TTL).isAfter(now)) {
@@ -94,7 +124,7 @@ public class RecommendationService {
                 // AI calls cost money: at most 30 fresh answers an hour per visitor; the rules take over beyond that.
                 try {
                     rateLimiter.hit("recommend:ip:" + ip, 30, Duration.ofHours(1));
-                    ai = ranker.rank(candidates, q, lang, now);
+                    ai = ranker.rank(candidates, q, interests, lang, now);
                 } catch (com.bookeasy.common.exception.ApiException limited) {
                     ai = Optional.empty();
                 }
@@ -102,7 +132,10 @@ public class RecommendationService {
             String request = q;
             result = ai.map(r -> fromPicks("AI", r.intro(), r.picks(), candidates))
                     .filter(r -> !r.items().isEmpty())
-                    .orElseGet(() -> byRules(candidates, request));
+                    .orElseGet(() -> byRules(candidates, request, interests));
+            if (!interests.isEmpty()) {
+                result = new Recommendations(result.source(), result.intro(), result.items(), interests);
+            }
         }
         if (cache.size() > 500) {
             cache.clear();
@@ -127,9 +160,17 @@ public class RecommendationService {
 
     /** Free things and big savings first, then rating, minus distance; at most two picks per category. */
     static Recommendations byRules(List<Candidate> candidates, String query) {
+        return byRules(candidates, query, List.of());
+    }
+
+    static Recommendations byRules(List<Candidate> candidates, String query, List<String> interests) {
         String[] words = query == null ? new String[0] : query.toLowerCase(Locale.ROOT).split("\\W+");
+        Map<String, Double> scores = new HashMap<>();
+        for (Candidate c : candidates) {
+            scores.put(c.id(), score(c, words) + interestScore(c, interests));
+        }
         List<Candidate> sorted = new ArrayList<>(candidates);
-        sorted.sort(Comparator.comparingDouble((Candidate c) -> -score(c, words)));
+        sorted.sort(Comparator.comparingDouble((Candidate c) -> -scores.get(c.id())));
         Map<String, Integer> perCategory = new HashMap<>();
         List<Recommendation> items = new ArrayList<>();
         for (Candidate c : sorted) {
@@ -165,6 +206,22 @@ public class RecommendationService {
         for (String w : words) {
             if (w.length() > 2 && text.contains(w)) {
                 s += 3;
+            }
+        }
+        return s;
+    }
+
+    /** +2 for each recent search with a word that matches the offer (a softer pull than an explicit request). */
+    static double interestScore(Candidate c, List<String> interests) {
+        String text = (c.businessName() + " " + c.category() + " " + c.title() + " " + (c.details() == null ? "" : c.details()))
+                .toLowerCase(Locale.ROOT);
+        double s = 0;
+        for (String interest : interests) {
+            for (String w : interest.split("\\W+")) {
+                if (w.length() > 2 && text.contains(w)) {
+                    s += 2;
+                    break;
+                }
             }
         }
         return s;

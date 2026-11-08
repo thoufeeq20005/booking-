@@ -54,12 +54,13 @@ public class ClaudeRanker {
         return client != null;
     }
 
-    public Optional<AiRanker.Ranked> rank(List<RecommendationService.Candidate> candidates, String query, String language, Instant now) {
+    public Optional<AiRanker.Ranked> rank(List<RecommendationService.Candidate> candidates, String query, List<String> interests,
+                                          String language, Instant now) {
         if (client == null) {
             return Optional.empty();
         }
         try {
-            Map<String, Object> input = RankingPrompt.input(candidates, query, now);
+            Map<String, Object> input = RankingPrompt.input(candidates, query, interests, now);
 
             MessageCreateParams.Builder builder = MessageCreateParams.builder()
                     .model(model)

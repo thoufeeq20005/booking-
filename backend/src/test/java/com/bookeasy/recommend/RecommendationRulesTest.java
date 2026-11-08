@@ -44,4 +44,16 @@ class RecommendationRulesTest {
         RecommendationService.Recommendations gym = RecommendationService.byRules(candidates, "gym membership");
         assertThat(gym.items().get(0).offer().id()).isEqualTo("p1");
     }
+
+    @Test
+    void recentSearchesPullMatchingOffersUpButKeepVariety() {
+        RecommendationService.Recommendations plain = RecommendationService.byRules(candidates, "");
+        RecommendationService.Recommendations health = RecommendationService.byRules(candidates, "", List.of("health check"));
+        assertThat(plain.items().get(0).offer().id()).isNotEqualTo("p2");
+        assertThat(health.items().get(0).offer().id()).isEqualTo("p2");
+        assertThat(health.items()).hasSize(plain.items().size()); // others still listed
+
+        assertThat(RecommendationService.cleanInterests(java.util.Arrays.asList("  Gym ", "gym", "x", null, "Biryani   near me",
+                "a".repeat(60), "yoga", "salon", "dentist"))).containsExactly("gym", "biryani near me", "a".repeat(40), "yoga", "salon");
+    }
 }

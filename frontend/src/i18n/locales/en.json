@@ -1322,7 +1322,8 @@
       "PACKAGE": "Package deal",
       "EVENT": "Event",
       "DISCOUNT": "Discount"
-    }
+    },
+    "basedOn": "Based on your recent searches: {{terms}}"
   },
   "promo": {
     "title": "Offers",
@@ -1370,6 +1371,10 @@
     "kind": {
       "movie": "Movie",
       "event": "Event"
-    }
+    },
+    "recent": "Recent searches",
+    "recentTitle": "Your recent searches",
+    "recentlyViewed": "Recently viewed",
+    "clearRecent": "Clear"
   }
 }

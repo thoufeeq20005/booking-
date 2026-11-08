@@ -1,16 +1,18 @@
-import { useState, type FormEvent, type ReactNode } from 'react';
-import { Link, useNavigate } from 'react-router';
+import { type ReactNode } from 'react';
+import { Link } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useQueries, useQuery } from '@tanstack/react-query';
 import { BadgeCheck, CalendarClock, ChevronRight, IndianRupee, MapPin, QrCode, Search } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
-import { Button, buttonClasses } from '@/components/ui/Button';
+import { buttonClasses } from '@/components/ui/Button';
 import { fileUrl, useLocalized } from '@/features/organization/shared';
 import { usePublicConfig } from '@/services/platformApi';
 import { usePublicCategories } from '@/services/organizationApi';
 import { CITIES, discoveryApi, type SearchHit } from '@/services/discoveryApi';
 import { formatINR } from '@/utils/format';
-import { Poster } from '@/features/venue/shared';
+import { Poster, useVenueLocation } from '@/features/venue/shared';
+import { RecentSearches } from '@/features/search/RecentSearches';
+import { SearchBar } from '@/features/search/SearchOverlay';
 import { ForYouSection } from '@/features/recommend/ForYouSection';
 import { venueApi } from '@/services/venueApi';
 import { illustratePlatformFee, paiseToRupees } from '@/utils/money';
@@ -31,35 +33,26 @@ const CATEGORY_PHOTOS: Record<string, string> = {
 const CATEGORY_LINKS: Record<string, string> = { movies: '/movies', dining: '/dining' };
 const cityOf = (key: string) => CITIES.find((c) => c.key === key)!;
 
+/** The main search bar (opens the search window) and the city it searches around. */
 function HeroSearch() {
   const { t } = useTranslation();
-  const navigate = useNavigate();
-  const [what, setWhat] = useState('');
-  const [city, setCity] = useState<string>('chennai');
-  const submit = (e: FormEvent) => {
-    e.preventDefault();
-    const p = new URLSearchParams({ city });
-    if (what.trim()) p.set('q', what.trim());
-    navigate(`/search?${p.toString()}`);
-  };
+  const [loc, setLoc] = useVenueLocation();
   return (
-    <form onSubmit={submit} role="search"
-      className="grid gap-2 rounded-2xl border-2 border-brand-500 bg-surface p-2 shadow-card sm:grid-cols-[1fr_14rem_auto]">
-      <label className="flex items-center gap-2 rounded-xl px-3">
-        <Search className="h-5 w-5 shrink-0 text-fg-muted" aria-hidden="true" />
-        <span className="sr-only">{t('home.searchWhat')}</span>
-        <input value={what} onChange={(e) => setWhat(e.target.value)} placeholder={t('home.searchWhatPlaceholder')}
-          className="h-12 w-full bg-transparent text-base outline-none placeholder:text-fg-muted" />
-      </label>
+    <div className="grid gap-2 rounded-2xl border-2 border-brand-500 bg-surface p-2 shadow-card sm:grid-cols-[1fr_14rem]">
+      <SearchBar className="border-0 shadow-none" />
       <label className="flex items-center gap-2 rounded-xl px-3 sm:border-l sm:border-border">
         <MapPin className="h-5 w-5 shrink-0 text-fg-muted" aria-hidden="true" />
         <span className="sr-only">{t('home.searchCity')}</span>
-        <select value={city} onChange={(e) => setCity(e.target.value)} className="h-12 w-full bg-transparent text-base outline-none">
+        <select value={loc.label === 'gps' ? '' : loc.label} className="h-12 w-full bg-transparent text-base outline-none"
+          onChange={(e) => {
+            const c = CITIES.find((x) => x.key === e.target.value);
+            if (c) setLoc({ lat: c.lat, lng: c.lng, label: c.key });
+          }}>
+          {loc.label === 'gps' && <option value="">{t('search.myLocation')}</option>}
           {CITIES.map((c) => <option key={c.key} value={c.key}>{t(`search.city.${c.key}`)}</option>)}
         </select>
       </label>
-      <Button type="submit" size="lg" className="h-12 px-8">{t('home.searchButton')}</Button>
-    </form>
+    </div>
   );
 }
 
@@ -171,6 +164,8 @@ export function HomePage() {
           <div className="mt-8"><HeroSearch /></div>
         </div>
       </section>
+
+      <RecentSearches />
 
       <ForYouSection />
 

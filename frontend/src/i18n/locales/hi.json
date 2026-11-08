@@ -1322,7 +1322,8 @@
       "PACKAGE": "पैकेज डील",
       "EVENT": "इवेंट",
       "DISCOUNT": "छूट"
-    }
+    },
+    "basedOn": "आपकी हाल की खोजों के आधार पर: {{terms}}"
   },
   "promo": {
     "title": "ऑफ़र",
@@ -1370,6 +1371,10 @@
     "kind": {
       "movie": "फ़िल्म",
       "event": "इवेंट"
-    }
+    },
+    "recent": "हाल की खोजें",
+    "recentTitle": "आपकी हाल की खोजें",
+    "recentlyViewed": "हाल ही में देखे गए",
+    "clearRecent": "हटाएँ"
   }
 }

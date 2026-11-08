@@ -54,15 +54,16 @@ public class GeminiRanker {
         return model;
     }
 
-    public Optional<AiRanker.Ranked> rank(List<RecommendationService.Candidate> candidates, String query, String language, Instant now) {
+    public Optional<AiRanker.Ranked> rank(List<RecommendationService.Candidate> candidates, String query, List<String> interests,
+                                          String language, Instant now) {
         if (!enabled()) {
             return Optional.empty();
         }
         try {
-            HttpResponse<String> res = call(body(candidates, query, language, now, true));
+            HttpResponse<String> res = call(body(candidates, query, interests, language, now, true));
             if (res.statusCode() == 400 && res.body().contains("hinking")) {
                 // This model doesn't accept the thinking setting: ask again without it.
-                res = call(body(candidates, query, language, now, false));
+                res = call(body(candidates, query, interests, language, now, false));
             }
             if (res.statusCode() != 200) {
                 log.warn("Gemini recommendations failed (HTTP {}: {}); using rule-based ranking", res.statusCode(), errorMessage(res.body()));
@@ -91,7 +92,7 @@ public class GeminiRanker {
         return http.send(req, HttpResponse.BodyHandlers.ofString());
     }
 
-    private String body(List<RecommendationService.Candidate> candidates, String query, String language, Instant now,
+    private String body(List<RecommendationService.Candidate> candidates, String query, List<String> interests, String language, Instant now,
                         boolean withThinking) throws com.fasterxml.jackson.core.JsonProcessingException {
         Map<String, Object> generation = new LinkedHashMap<>();
         generation.put("responseMimeType", "application/json");
@@ -111,7 +112,7 @@ public class GeminiRanker {
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("systemInstruction", Map.of("parts", List.of(Map.of("text", RankingPrompt.system(language)))));
         body.put("contents", List.of(Map.of("role", "user",
-                "parts", List.of(Map.of("text", json.writeValueAsString(RankingPrompt.input(candidates, query, now)))))));
+                "parts", List.of(Map.of("text", json.writeValueAsString(RankingPrompt.input(candidates, query, interests, now)))))));
         body.put("generationConfig", generation);
         return json.writeValueAsString(body);
     }

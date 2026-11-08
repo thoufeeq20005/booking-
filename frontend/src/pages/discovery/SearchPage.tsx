@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
-import { LocateFixed, MapPin, Search, Star } from 'lucide-react';
+import { LocateFixed, MapPin, Star } from 'lucide-react';
+import { SearchBar } from '@/features/search/SearchOverlay';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { SelectField } from '@/components/ui/FormFields';
@@ -39,7 +40,6 @@ export function SearchPage() {
     return c ? { lat: c.lat, lng: c.lng, label: c.key } : savedLocation();
   });
   const [locating, setLocating] = useState(false);
-  const [text, setText] = useState(params.get('q') ?? '');
   const { status } = useAuth();
   const saved = useQuery({ queryKey: ['saved-locations'], queryFn: extrasApi.locations, enabled: status === 'authenticated' });
   const [compare, setCompare] = useState<string[]>(compareList.get);
@@ -75,11 +75,11 @@ export function SearchPage() {
   return (
     <div className="mx-auto max-w-6xl space-y-6 px-4 py-10 sm:px-6">
       <h1 className="text-3xl font-bold tracking-tight">{t('search.title')}</h1>
-      <form className="flex flex-wrap gap-2" onSubmit={(e) => { e.preventDefault(); update({ q: text.trim() }); }} role="search">
-        <input aria-label={t('search.placeholder')} placeholder={t('search.placeholder')} value={text} onChange={(e) => setText(e.target.value)}
-          className="h-11 min-w-0 flex-1 rounded-xl border border-border bg-surface px-3.5 text-sm" />
-        <Button type="submit"><Search className="h-4 w-4" aria-hidden="true" />{t('admin.search')}</Button>
-      </form>
+      <SearchBar value={q} size="md" seeAllHref={(term: string) => {
+        const next = new URLSearchParams(params);
+        next.set('q', term);
+        return `/search?${next.toString()}`;
+      }} />
       <div className="flex flex-wrap items-end gap-3">
         <SelectField label={t('search.location')} className="w-48" value={loc.label === 'gps' ? '' : loc.label}
           onChange={(e) => {
