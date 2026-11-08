@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { BadgePercent, CalendarCheck, ChevronRight, Leaf, ReceiptIndianRupee, Search, Sparkles } from 'lucide-react';
+import { SearchBar } from '@/features/search/SearchOverlay';
 import clsx from 'clsx';
 import { EmptyState, ErrorState, LoadingState } from '@/components/ui/StateMessage';
 import { RestaurantCard } from '@/features/venue/RestaurantCard';
@@ -52,7 +53,6 @@ export function DiningPage() {
   const [params, setParams] = useSearchParams();
   const [loc, setLoc] = useVenueLocation(params.get('city'));
   const q = params.get('q') ?? '';
-  const [text, setText] = useState(q);
   const mood = (params.get('mood') as Mood | null) ?? null;
   const [vegOnly, setVegOnly] = useState(false);
   const [offersOnly, setOffersOnly] = useState(false);
@@ -93,13 +93,7 @@ export function DiningPage() {
           <h1 className="mt-5 max-w-2xl text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl">
             {t('venue.diningHeadline')} <span className="bg-gradient-to-r from-amber-200 to-amber-400 bg-clip-text italic text-transparent">{t('venue.diningHeadlineAccent')}</span>
           </h1>
-          <form role="search" className="mt-8 flex max-w-xl items-center gap-2 rounded-full bg-white p-1.5 pl-5 text-fg shadow-lift"
-            onSubmit={(e) => { e.preventDefault(); setParam('q', text.trim() || undefined); scrollToList(); }}>
-            <Search className="h-5 w-5 shrink-0 text-fg-muted" aria-hidden="true" />
-            <input aria-label={t('venue.diningSearch')} placeholder={t('venue.diningSearch')} value={text} onChange={(e) => setText(e.target.value)}
-              className="h-11 min-w-0 flex-1 bg-transparent text-sm outline-none" />
-            <button type="submit" className="rounded-full bg-brand-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-brand-700">{t('admin.search')}</button>
-          </form>
+          <SearchBar tab="dining" value={q} className="mt-8 max-w-xl rounded-full shadow-lift" />
           <ul className="mt-10 grid max-w-3xl gap-3 sm:grid-cols-3">
             {[{ icon: Search, k: 'discover' }, { icon: CalendarCheck, k: 'book' }, { icon: ReceiptIndianRupee, k: 'pay' }].map(({ icon: Icon, k }) => (
               <li key={k} className="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur">
@@ -125,7 +119,7 @@ export function DiningPage() {
             <BadgePercent className="mr-1 inline h-4 w-4" aria-hidden="true" />{t('venue.withOffers')}
           </button>
           {(mood || q) && (
-            <button type="button" onClick={() => { setParam('mood'); setParam('q'); setText(''); }} className="h-11 rounded-full px-3 text-sm text-fg-muted hover:text-fg">
+            <button type="button" onClick={() => { setParam('mood'); setParam('q'); }} className="h-11 rounded-full px-3 text-sm text-fg-muted hover:text-fg">
               {t('venue.clear')}
             </button>
           )}

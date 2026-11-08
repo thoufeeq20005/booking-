@@ -48,9 +48,10 @@ public final class RecommendationControllers {
         public ApiResponse<RecommendationService.Recommendations> recommend(@RequestParam double lat, @RequestParam double lng,
                                                                          @RequestParam(defaultValue = "8") double radiusKm,
                                                                          @RequestParam(required = false) String q,
+                                                                         @RequestParam(required = false) java.util.List<String> interests,
                                                                          HttpServletRequest http) {
             String language = http.getLocale() == null ? "en" : http.getLocale().getLanguage();
-            return ApiResponse.ok(recommendations.recommend(lat, lng, radiusKm, q, language, ip.resolve(http)));
+            return ApiResponse.ok(recommendations.recommend(lat, lng, radiusKm, q, interests, language, ip.resolve(http)));
         }
 
         @GetMapping("/organizations/{slug}/promotions")

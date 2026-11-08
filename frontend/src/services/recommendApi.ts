@@ -43,10 +43,15 @@ export interface Recommendations {
   source: 'AI' | 'RULES';
   intro?: string;
   items: { offer: RecommendedOffer; headline: string; reason?: string }[];
+  /** The recent searches the picks were personalised with (empty when none were used). */
+  basedOn?: string[];
 }
 
 export const recommendApi = {
-  nearby: (p: { lat: number; lng: number; q?: string; radiusKm?: number }) => apiGet<Recommendations>('/public/recommendations', { params: p }),
+  nearby: ({ interests, ...p }: { lat: number; lng: number; q?: string; radiusKm?: number; interests?: string[] }) =>
+    apiGet<Recommendations>('/public/recommendations', {
+      params: { ...p, ...(interests && interests.length > 0 ? { interests: interests.join(',') } : {}) },
+    }),
   forBusiness: (slug: string) => apiGet<Promotion[]>(`/public/organizations/${encodeURIComponent(slug)}/promotions`),
   ownerList: (orgId: number) => apiGet<Promotion[]>(`/owner/organizations/${orgId}/promotions`),
   ownerAdd: (orgId: number, body: PromotionInput) => apiPost<Promotion[]>(`/owner/organizations/${orgId}/promotions`, body),

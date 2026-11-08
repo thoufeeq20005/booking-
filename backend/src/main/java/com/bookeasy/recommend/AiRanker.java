@@ -49,10 +49,11 @@ public class AiRanker {
         return !provider.equals("none");
     }
 
-    public Optional<Ranked> rank(List<RecommendationService.Candidate> candidates, String query, String language, Instant now) {
+    public Optional<Ranked> rank(List<RecommendationService.Candidate> candidates, String query, List<String> interests, String language,
+                                 Instant now) {
         return switch (provider) {
-            case "claude" -> claude.rank(candidates, query, language, now);
-            case "gemini" -> gemini.rank(candidates, query, language, now);
+            case "claude" -> claude.rank(candidates, query, interests, language, now);
+            case "gemini" -> gemini.rank(candidates, query, interests, language, now);
             default -> Optional.empty();
         };
     }

@@ -49,7 +49,8 @@ public abstract class BookingTestBase extends OrganizationTestBase {
         mvc.perform(authed(post(base + "/submit"), owner.token())).andExpect(status().isOk());
         mvc.perform(authed(post("/api/v1/admin/organizations/" + orgId + "/approve"), admin().token())).andExpect(status().isOk());
         return new Biz(owner, orgId, branchId, serviceId, staffId,
-                LocalDate.now(IST).with(TemporalAdjusters.next(DayOfWeek.MONDAY)));
+                // At least two days ahead, so cancelling always gets the full refund (more than 24 hours before), even on a Sunday.
+                LocalDate.now(IST).plusDays(2).with(TemporalAdjusters.nextOrSame(DayOfWeek.MONDAY)));
     }
 
     protected org.springframework.test.web.servlet.ResultActions book(Person customer, Biz b, String time) throws Exception {

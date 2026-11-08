@@ -2,13 +2,14 @@ import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
-import { ArrowRight, CalendarDays, Film, Search, Store, X } from 'lucide-react';
+import { ArrowRight, CalendarDays, Clock, Film, Search, Store, X } from 'lucide-react';
 import clsx from 'clsx';
 import { Spinner } from '@/components/ui/Spinner';
 import { fileUrl, useLocalized } from '@/features/organization/shared';
 import { useVenueLocation, useVenueFormat } from '@/features/venue/shared';
 import { usePublicCategories } from '@/services/organizationApi';
 import { discoveryApi, type QuickItem } from '@/services/discoveryApi';
+import { recent, useRecent } from './recent';
 
 /** Waits until typing pauses, so each keystroke doesn't start a request. */
 function useDebounced<T>(value: T, ms: number) {
@@ -50,7 +51,7 @@ function Thumb({ item }: { item: QuickItem }) {
   );
 }
 
-function Row({ item, onPick }: { item: QuickItem; onPick: () => void }) {
+function Row({ item, onPick }: { item: QuickItem; onPick: (item: QuickItem) => void }) {
   const { t } = useTranslation();
   const pick = useLocalized();
   const { day } = useVenueFormat();
@@ -64,7 +65,7 @@ function Row({ item, onPick }: { item: QuickItem; onPick: () => void }) {
     <li>
       <Link
         to={item.href}
-        onClick={onPick}
+        onClick={() => onPick(item)}
         className="flex items-center gap-3 rounded-xl p-2 outline-none transition hover:bg-surface-muted focus-visible:bg-surface-muted focus-visible:ring-2 focus-visible:ring-brand-500"
       >
         <Thumb item={item} />
@@ -80,18 +81,31 @@ function Row({ item, onPick }: { item: QuickItem; onPick: () => void }) {
   );
 }
 
+/** Where "See all results" goes: the full search page, or the page the search bar sits on (e.g. Dining). */
+export type SeeAll = (q: string, tab: string) => string;
+const defaultSeeAll: SeeAll = (q, tab) => (tab === 'dining' ? `/dining?q=${encodeURIComponent(q)}` : `/search?q=${encodeURIComponent(q)}`);
+
+export interface SearchOverlayProps {
+  onClose: () => void;
+  initialText?: string;
+  initialTab?: string;
+  seeAllHref?: SeeAll;
+}
+
 /**
- * The search window opened from the header: rotating examples in the box, category tabs, "Trending in <city>" while the
- * box is empty, and movies, businesses and events as you type.
+ * The search window opened from the header and from every search bar: rotating examples in the box, category tabs,
+ * recent searches and recently opened places, "Trending in <city>" while the box is empty, and movies, businesses and
+ * events as you type.
  */
-export function SearchOverlay({ onClose }: { onClose: () => void }) {
+export function SearchOverlay({ onClose, initialText = '', initialTab = 'all', seeAllHref = defaultSeeAll }: SearchOverlayProps) {
   const { t } = useTranslation();
   const pick = useLocalized();
   const navigate = useNavigate();
   const [loc] = useVenueLocation();
   const categories = usePublicCategories();
-  const [text, setText] = useState('');
-  const [tab, setTab] = useState('all');
+  const [text, setText] = useState(initialText);
+  const [tab, setTab] = useState(initialTab);
+  const history = useRecent();
   const inputRef = useRef<HTMLInputElement>(null);
   const q = useDebounced(text.trim(), 250);
   const example = useRotatingExample(text === '');
@@ -104,7 +118,9 @@ export function SearchOverlay({ onClose }: { onClose: () => void }) {
   });
 
   useEffect(() => {
-    inputRef.current?.focus();
+    const input = inputRef.current;
+    input?.focus();
+    input?.setSelectionRange(input.value.length, input.value.length); // keep typing after what was carried over
     const overflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     return () => {
@@ -115,10 +131,17 @@ export function SearchOverlay({ onClose }: { onClose: () => void }) {
   const onKey = (e: KeyboardEvent) => {
     if (e.key === 'Escape') onClose();
   };
-  const seeAll = () => {
+  const seeAll = (term = text.trim()) => {
+    recent.addTerm(term);
     onClose();
-    navigate(`/search?q=${encodeURIComponent(text.trim())}`);
+    navigate(seeAllHref(term, tab));
   };
+  const opened = (item: QuickItem) => {
+    if (text.trim().length >= 2) recent.addTerm(text.trim());
+    recent.addViewed(item);
+    onClose();
+  };
+  const showHistory = text.trim() === '' && (history.terms.length > 0 || history.viewed.length > 0);
 
   const city = loc.label === 'gps' ? null : t(`search.city.${loc.label}`, { defaultValue: loc.label });
   const data = results.data;
@@ -185,6 +208,38 @@ export function SearchOverlay({ onClose }: { onClose: () => void }) {
         </div>
 
         <div className="flex-1 overflow-y-auto px-3 py-4">
+          {showHistory && (
+            <div className="mb-5 space-y-4">
+              {history.terms.length > 0 && (
+                <div>
+                  <div className="flex items-center justify-between px-2">
+                    <h2 className="text-xs font-bold uppercase tracking-wider text-fg-muted">{t('quickSearch.recent')}</h2>
+                    <button type="button" onClick={() => recent.clear()} className="text-xs font-semibold text-brand-700 hover:underline">
+                      {t('quickSearch.clearRecent')}
+                    </button>
+                  </div>
+                  <ul className="mt-2 flex flex-wrap gap-2 px-2">
+                    {history.terms.map((term) => (
+                      <li key={term}>
+                        <button type="button" onClick={() => setText(term)}
+                          className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-sm text-fg hover:border-brand-300 hover:bg-surface-muted">
+                          <Clock className="h-3.5 w-3.5 text-fg-muted" aria-hidden="true" />{term}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {history.viewed.length > 0 && (
+                <div>
+                  <h2 className="px-2 text-xs font-bold uppercase tracking-wider text-fg-muted">{t('quickSearch.recentlyViewed')}</h2>
+                  <ul className="mt-2 grid gap-x-4 gap-y-1 sm:grid-cols-2">
+                    {history.viewed.map((item) => <Row key={`v:${item.href}`} item={item} onPick={opened} />)}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
           <h2 className="px-2 text-xs font-bold uppercase tracking-wider text-fg-muted">{heading}</h2>
           {results.isPending ? (
             <div className="flex justify-center py-10"><Spinner className="text-brand-600" /></div>
@@ -197,7 +252,7 @@ export function SearchOverlay({ onClose }: { onClose: () => void }) {
           ) : (
             <ul className="mt-2 grid gap-x-4 gap-y-1 sm:grid-cols-2">
               {items.map((item) => (
-                <Row key={`${item.kind}:${item.href}:${item.title}`} item={item} onPick={onClose} />
+                <Row key={`${item.kind}:${item.href}:${item.title}`} item={item} onPick={opened} />
               ))}
             </ul>
           )}
@@ -206,7 +261,7 @@ export function SearchOverlay({ onClose }: { onClose: () => void }) {
         {text.trim().length >= 2 && (
           <button
             type="button"
-            onClick={seeAll}
+            onClick={() => seeAll()}
             className="flex items-center justify-between border-t border-border px-5 py-3 text-sm font-semibold text-brand-700 hover:bg-surface-muted"
           >
             {t('quickSearch.seeAll', { q: text.trim() })}
@@ -215,6 +270,53 @@ export function SearchOverlay({ onClose }: { onClose: () => void }) {
         )}
       </div>
     </div>
+  );
+}
+
+/**
+ * A search bar for a page (home, Find services, Dining). It looks like a text box with rotating examples; clicking or
+ * typing in it opens the same search window as the header, starting on the given tab.
+ */
+export function SearchBar({ tab = 'all', value = '', seeAllHref, className, size = 'lg' }: {
+  tab?: string;
+  value?: string;
+  seeAllHref?: SeeAll;
+  className?: string;
+  size?: 'md' | 'lg';
+}) {
+  const { t } = useTranslation();
+  const [open, setOpen] = useState<string | null>(null);
+  const example = useRotatingExample(open === null && value === '');
+  return (
+    <>
+      <div
+        role="search"
+        className={clsx('flex items-center gap-3 rounded-2xl border border-border bg-surface text-fg shadow-card transition focus-within:border-brand-500 hover:border-brand-300',
+          size === 'lg' ? 'px-4 py-1' : 'px-3', className)}
+      >
+        <Search className="h-5 w-5 shrink-0 text-fg-muted" aria-hidden="true" />
+        <input
+          type="search"
+          readOnly
+          value={value}
+          onClick={() => setOpen(value)}
+          onKeyDown={(e) => {
+            if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+              e.preventDefault();
+              setOpen(value + e.key);
+            } else if (e.key === 'Enter' || e.key === 'ArrowDown') {
+              e.preventDefault();
+              setOpen(value);
+            }
+          }}
+          placeholder={t('quickSearch.placeholder', { term: example })}
+          aria-label={t('quickSearch.open')}
+          aria-haspopup="dialog"
+          className={clsx('min-w-0 flex-1 cursor-pointer bg-transparent outline-none placeholder:text-fg-muted', size === 'lg' ? 'h-12 text-base' : 'h-11 text-sm')}
+        />
+      </div>
+      {open !== null && <SearchOverlay onClose={() => setOpen(null)} initialText={open} initialTab={tab} seeAllHref={seeAllHref} />}
+    </>
   );
 }
 

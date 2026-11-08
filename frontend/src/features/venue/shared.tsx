@@ -12,6 +12,8 @@ import { storage } from '@/utils/storage';
 
 /** Same key as the search page, so the city follows the customer across Find services, Movies and Dining. */
 const LOCATION_KEY = 'bookeasy.location';
+/** Fired when one section changes the city, so the others on the page follow. */
+const LOCATION_EVENT = 'bookeasy:location';
 export type Loc = { lat: number; lng: number; label: string };
 
 function saved(): Loc {
@@ -30,8 +32,20 @@ export function useVenueLocation(cityParam?: string | null) {
     return c ? { lat: c.lat, lng: c.lng, label: c.key } : saved();
   });
   useEffect(() => {
-    storage.set(LOCATION_KEY, JSON.stringify(loc));
+    const json = JSON.stringify(loc);
+    if (storage.get(LOCATION_KEY) !== json) {
+      storage.set(LOCATION_KEY, json);
+      window.dispatchEvent(new CustomEvent<Loc>(LOCATION_EVENT, { detail: loc }));
+    }
   }, [loc]);
+  useEffect(() => {
+    const follow = (e: Event) => {
+      const next = (e as CustomEvent<Loc>).detail;
+      setLoc((cur) => (cur.lat === next.lat && cur.lng === next.lng && cur.label === next.label ? cur : next));
+    };
+    window.addEventListener(LOCATION_EVENT, follow);
+    return () => window.removeEventListener(LOCATION_EVENT, follow);
+  }, []);
   return [loc, setLoc] as const;
 }
 

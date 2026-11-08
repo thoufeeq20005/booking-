@@ -2,7 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { Link } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
-import { BadgePercent, CalendarDays, Gift, LocateFixed, MapPin, Package, Search, Sparkles } from 'lucide-react';
+import { BadgePercent, CalendarDays, Gift, History, LocateFixed, MapPin, Package, Search, Sparkles } from 'lucide-react';
 import clsx from 'clsx';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -11,6 +11,7 @@ import { fileUrl } from '@/features/organization/shared';
 import { useVenueLocation } from '@/features/venue/shared';
 import { CITIES } from '@/services/discoveryApi';
 import { recommendApi, type RecommendedOffer } from '@/services/recommendApi';
+import { interestsOf, useRecent } from '@/features/search/recent';
 
 const KIND_ICON = { FREE: Gift, FREE_SERVICE: Gift, PACKAGE: Package, EVENT: CalendarDays, DISCOUNT: BadgePercent } as const;
 const CHIPS = ['cafe', 'health', 'gym', 'learning', 'beauty'] as const;
@@ -40,9 +41,11 @@ export function ForYouSection() {
   const [q, setQ] = useState('');
   const [locating, setLocating] = useState(false);
   const [denied, setDenied] = useState(false);
+  // Their recent searches personalise the picks when they haven't asked for something specific.
+  const interests = interestsOf(useRecent());
   const query = useQuery({
-    queryKey: ['recommendations', loc.lat.toFixed(3), loc.lng.toFixed(3), q],
-    queryFn: () => recommendApi.nearby({ lat: loc.lat, lng: loc.lng, q: q || undefined }),
+    queryKey: ['recommendations', loc.lat.toFixed(3), loc.lng.toFixed(3), q, q ? '' : interests.join('|')],
+    queryFn: () => recommendApi.nearby({ lat: loc.lat, lng: loc.lng, q: q || undefined, interests: q ? undefined : interests }),
     placeholderData: keepPreviousData,
     staleTime: 5 * 60 * 1000,
   });
@@ -99,6 +102,11 @@ export function ForYouSection() {
           {data && data.items.length === 0 && <p className="text-sm text-fg-muted">{t('reco.none')}</p>}
           {data && data.items.length > 0 && (
             <>
+              {data.basedOn && data.basedOn.length > 0 && (
+                <p className="mb-3 inline-flex items-center gap-1.5 rounded-full bg-violet-50 px-3 py-1 text-xs font-medium text-violet-800">
+                  <History className="h-3.5 w-3.5" aria-hidden="true" />{t('reco.basedOn', { terms: data.basedOn.join(', ') })}
+                </p>
+              )}
               {data.source === 'AI' && data.intro && <p className="mb-4 text-sm">{data.intro}</p>}
               <ul className={clsx('grid gap-4 sm:grid-cols-2 lg:grid-cols-3', query.isFetching && 'opacity-60')}>
                 {data.items.map(({ offer, headline, reason }) => (
