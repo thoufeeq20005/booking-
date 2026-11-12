@@ -32,10 +32,18 @@ public class BrevoEmailSender implements EmailSender {
     @Override
     public void send(EmailMessage message) {
         try {
+            Map<String, Object> body = new java.util.LinkedHashMap<>();
+            body.put("sender", sender);
+            body.put("to", List.of(Map.of("email", message.to())));
+            body.put("subject", message.subject());
+            body.put("textContent", message.textBody());
+            if (message.htmlBody() != null) {
+                // The API can't attach inline images, so the QR is loaded from the site instead.
+                body.put("htmlContent", message.qrUrl() == null ? message.htmlBody()
+                        : message.htmlBody().replace("cid:" + QR_CID, message.qrUrl()));
+            }
             client.post().uri("/v3/smtp/email").contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON)
-                    .body(Map.of("sender", sender, "to", List.of(Map.of("email", message.to())), "subject", message.subject(),
-                            "textContent", message.textBody()))
-                    .retrieve().toBodilessEntity();
+                    .body(body).retrieve().toBodilessEntity();
         } catch (RestClientException e) {
             throw new DeliveryException("Brevo delivery failed", e);
         }

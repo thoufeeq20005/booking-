@@ -7,6 +7,7 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -30,11 +31,20 @@ public class SmtpEmailSender implements EmailSender {
     public void send(EmailMessage message) {
         try {
             MimeMessage mime = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(mime, StandardCharsets.UTF_8.name());
+            boolean rich = message.htmlBody() != null;
+            MimeMessageHelper helper = new MimeMessageHelper(mime, rich, StandardCharsets.UTF_8.name());
             helper.setFrom(from);
             helper.setTo(message.to());
             helper.setSubject(message.subject());
-            helper.setText(message.textBody(), false);
+            if (rich) {
+                helper.setText(message.textBody(), message.htmlBody());
+                if (message.qrPng() != null) {
+                    // Inline (cid:) image: shows in Gmail, Outlook and phone mail apps without loading anything remote.
+                    helper.addInline(QR_CID, new ByteArrayResource(message.qrPng()), "image/png");
+                }
+            } else {
+                helper.setText(message.textBody(), false);
+            }
             mailSender.send(mime);
         } catch (MessagingException | MailException e) {
             throw new DeliveryException("SMTP delivery failed", e);

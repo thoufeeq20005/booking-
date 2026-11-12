@@ -71,6 +71,16 @@ public class NotificationService {
      */
     @Transactional(propagation = Propagation.MANDATORY)
     public void notify(long userId, String type, Object[] args, String link) {
+        notify(userId, type, args, link, null);
+    }
+
+    /**
+     * As {@link #notify(long, String, Object[], String)}, with an e-ticket email: {@code ticket} renders it in the
+     * recipient's language (HTML, text and the booking pass whose QR is attached when sent).
+     */
+    @Transactional(propagation = Propagation.MANDATORY)
+    public void notify(long userId, String type, Object[] args, String link,
+                       java.util.function.Function<Locale, TicketEmail.Ticket> ticket) {
         User user = users.findById(userId).orElse(null);
         if (user == null) {
             return;
@@ -86,11 +96,14 @@ public class NotificationService {
             return;
         }
         if (prefs.emailEnabled() && user.getEmail() != null) {
-            String text = body + (link == null ? "" : "\n\n" + properties.frontendUrl() + link) + "\n\n– BookEasy";
+            TicketEmail.Ticket t = ticket == null ? null : ticket.apply(locale);
+            String text = t != null ? t.text()
+                    : body + (link == null ? "" : "\n\n" + properties.frontendUrl() + link) + "\n\n– BookEasy";
             jdbc.update("""
-                    INSERT INTO notification_outbox (user_id, channel, destination, type, subject, body, next_attempt_at, created_at)
-                    VALUES (?, 'EMAIL', ?, ?, ?, ?, ?, ?)""", userId, user.getEmail(), type, title, text, Timestamp.from(now),
-                    Timestamp.from(now));
+                    INSERT INTO notification_outbox (user_id, channel, destination, type, subject, body, html_body, qr_payload,
+                                                     next_attempt_at, created_at)
+                    VALUES (?, 'EMAIL', ?, ?, ?, ?, ?, ?, ?, ?)""", userId, user.getEmail(), type, title, text,
+                    t == null ? null : t.html(), t == null ? null : t.qrPayload(), Timestamp.from(now), Timestamp.from(now));
             TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
                 @Override
                 public void afterCommit() {
@@ -184,11 +197,30 @@ public class NotificationService {
         dispatcher.shutdown();
     }
 
+    /** The outbox row as an email; a ticket gets its booking pass QR drawn now (inline image, plus its web address). */
+    private EmailMessage message(Map<String, Object> row) {
+        String to = (String) row.get("destination");
+        String subject = (String) row.get("subject");
+        String text = (String) row.get("body");
+        String html = (String) row.get("html_body");
+        String pass = (String) row.get("qr_payload");
+        if (html == null) {
+            return new EmailMessage(to, subject, text);
+        }
+        if (pass == null) {
+            return new EmailMessage(to, subject, text, html, null, null);
+        }
+        String site = properties.frontendUrl() == null ? "" : properties.frontendUrl().replaceAll("/+$", "");
+        byte[] png = com.bookeasy.appointment.QrImages.png(com.bookeasy.appointment.QrImages.passLink(site, pass), 360);
+        String url = site + "/api/v1/public/passes/" + java.net.URLEncoder.encode(pass, java.nio.charset.StandardCharsets.UTF_8) + "/qr.png";
+        return new EmailMessage(to, subject, text, html, png, url);
+    }
+
     public int dispatch() {
         Integer sent = tx.execute(s -> {
             Instant now = clock.instant();
             List<Map<String, Object>> due = jdbc.queryForList("""
-                    SELECT id, channel, destination, subject, body, attempts FROM notification_outbox
+                    SELECT id, channel, destination, subject, body, html_body, qr_payload, attempts FROM notification_outbox
                     WHERE status = 'PENDING' AND next_attempt_at <= ? ORDER BY id LIMIT 50 FOR UPDATE SKIP LOCKED""",
                     Timestamp.from(now));
             int ok = 0;
@@ -197,7 +229,7 @@ public class NotificationService {
                 int attempts = ((Number) row.get("attempts")).intValue() + 1;
                 try {
                     if ("EMAIL".equals(row.get("channel"))) {
-                        email.send(new EmailMessage((String) row.get("destination"), (String) row.get("subject"), (String) row.get("body")));
+                        email.send(message(row));
                     }
                     jdbc.update("UPDATE notification_outbox SET status = 'SENT', attempts = ?, sent_at = ?, last_error = NULL WHERE id = ?",
                             attempts, Timestamp.from(now), id);

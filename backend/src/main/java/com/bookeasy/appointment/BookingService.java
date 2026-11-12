@@ -251,7 +251,7 @@ public class BookingService {
 
     // ----- views (shared with the business side) -----
 
-    AppointmentView view(Appointment a, boolean withQr) {
+    public AppointmentView view(Appointment a, boolean withQr) {
         return views(List.of(a), withQr).get(0);
     }
 

@@ -41,6 +41,18 @@ public class BookingNotifications {
     private final JdbcTemplate jdbc;
     private final TransactionTemplate tx;
     private final Clock clock;
+    private org.springframework.beans.factory.ObjectProvider<com.bookeasy.appointment.BookingService> bookingService;
+    private org.springframework.context.MessageSource messages;
+    private String frontendUrl;
+
+    /** Ticket emails need the booking view, the label texts and the site address (set by Spring after construction). */
+    @org.springframework.beans.factory.annotation.Autowired
+    void ticketSupport(org.springframework.beans.factory.ObjectProvider<com.bookeasy.appointment.BookingService> bookingService,
+                       org.springframework.context.MessageSource messages, com.bookeasy.common.config.BookEasyProperties properties) {
+        this.bookingService = bookingService;
+        this.messages = messages;
+        this.frontendUrl = properties.frontendUrl();
+    }
 
     public BookingNotifications(NotificationService notifications, AppointmentRepository appointments,
                                 OrganizationRepository organizations, StaffProfileRepository staff, UserRepository users,
@@ -85,6 +97,13 @@ public class BookingNotifications {
     }
 
     private void toCustomer(Appointment a, String type, String link) {
+        if (type.equals("BOOKING_CONFIRMED") && a.getStatus() == Appointment.Status.CONFIRMED) {
+            // The e-ticket: details, amounts and the booking pass QR, in the customer's language.
+            com.bookeasy.appointment.AppointmentView view = bookingService.getObject().view(a, true);
+            notifications.notify(a.getCustomerId(), type, args(a, a.getCustomerId()), link,
+                    locale -> TicketEmail.render(view, locale, messages, frontendUrl, link));
+            return;
+        }
         notifications.notify(a.getCustomerId(), type, args(a, a.getCustomerId()), link);
     }
 
