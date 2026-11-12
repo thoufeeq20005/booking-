@@ -23,6 +23,17 @@ class EngagementIT extends BookingTestBase {
 
     @Autowired
     BookingNotifications bookingNotifications;
+    @Autowired
+    com.bookeasy.notification.NotificationService notifications;
+
+    /** Emails go out on a background thread: send what's due now and wait briefly for it to be recorded. */
+    private java.util.List<com.bookeasy.notification.channel.EmailSender.EmailMessage> emailsTo(String to) throws InterruptedException {
+        for (int i = 0; i < 50 && channels.emailsTo(to).isEmpty(); i++) {
+            notifications.dispatch();
+            Thread.sleep(100);
+        }
+        return channels.emailsTo(to);
+    }
 
     @AfterEach
     void resetClock() {
@@ -39,7 +50,7 @@ class EngagementIT extends BookingTestBase {
         mvc.perform(authed(get("/api/v1/account/notifications"), c.token()))
                 .andExpect(jsonPath("$.data[0].type").value("BOOKING_CONFIRMED"))
                 .andExpect(jsonPath("$.data[0].title").value("Booking confirmed: Consultation"));
-        assertThat(channels.emailsTo(c.email())).singleElement()
+        assertThat(emailsTo(c.email())).singleElement()
                 .satisfies(m -> assertThat(m.textBody()).contains("Consultation", "/customer/bookings/"));
         mvc.perform(authed(get("/api/v1/account/notifications"), b.owner().token()))
                 .andExpect(jsonPath("$.data[0].type").value("BOOKING_NEW"))
@@ -54,6 +65,7 @@ class EngagementIT extends BookingTestBase {
                 "smsEnabled", true, "whatsappEnabled", false, "remindersEnabled", true))).andExpect(jsonPath("$.data.emailEnabled").value(false));
         channels.clear();
         book(c, b, "10:00").andExpect(status().isOk());
+        notifications.dispatch();
         assertThat(channels.emailsTo(c.email())).isEmpty();
         mvc.perform(authed(get("/api/v1/account/notifications/unread-count"), c.token())).andExpect(jsonPath("$.data").value(1));
     }

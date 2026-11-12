@@ -28,6 +28,12 @@
             <artifactId>spring-boot-configuration-processor</artifactId>
             <optional>true</optional>
         </dependency>
+        <!-- QR codes drawn on the server for e-ticket emails -->
+        <dependency>
+            <groupId>com.google.zxing</groupId>
+            <artifactId>core</artifactId>
+            <version>3.5.3</version>
+        </dependency>
         <!-- Web / API -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
