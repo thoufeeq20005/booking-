@@ -62,6 +62,9 @@ services:
         sync: false
       - key: EMAIL_FROM_ADDRESS
         sync: false
+      # Render's free plan blocks SMTP: use EMAIL_PROVIDER=brevo with a Brevo API key (docs/integrations/email.md).
+      - key: EMAIL_API_KEY
+        sync: false
       - key: SMS_PROVIDER
         sync: false
       - key: SMS_API_KEY

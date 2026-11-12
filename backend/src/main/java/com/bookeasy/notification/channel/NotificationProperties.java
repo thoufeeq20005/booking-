@@ -9,8 +9,9 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "bookeasy.notifications")
 public record NotificationProperties(boolean devLogDelivery, Email email, Sms sms) {
 
+    /** provider: "smtp" or "brevo" (HTTPS API, needs apiKey); empty for none. */
     public record Email(String provider, String smtpHost, int smtpPort, String smtpUsername, String smtpPassword,
-                        boolean smtpStarttls, String fromAddress, String fromName) {
+                        boolean smtpStarttls, String fromAddress, String fromName, String apiKey) {
     }
 
     /**

@@ -21,8 +21,15 @@ public class NotificationChannelConfig {
     private static final Logger log = LoggerFactory.getLogger(NotificationChannelConfig.class);
 
     @Bean
-    EmailSender emailSender(NotificationProperties props) {
+    EmailSender emailSender(NotificationProperties props, RestClient.Builder restClientBuilder) {
         NotificationProperties.Email cfg = props.email();
+        if ("brevo".equalsIgnoreCase(cfg.provider())) {
+            require(cfg.apiKey(), "EMAIL_API_KEY");
+            require(cfg.fromAddress(), "EMAIL_FROM_ADDRESS");
+            log.info("Email channel: Brevo API");
+            return new BrevoEmailSender(restClientBuilder, BrevoEmailSender.DEFAULT_BASE_URL, cfg.apiKey(), cfg.fromAddress(),
+                    cfg.fromName());
+        }
         if ("smtp".equalsIgnoreCase(cfg.provider())) {
             require(cfg.smtpHost(), "SMTP_HOST");
             require(cfg.fromAddress(), "EMAIL_FROM_ADDRESS");
@@ -43,7 +50,7 @@ public class NotificationChannelConfig {
             return new SmtpEmailSender(mail, cfg.fromAddress(), cfg.fromName());
         }
         if (StringUtils.hasText(cfg.provider())) {
-            throw new IllegalStateException("Unsupported EMAIL_PROVIDER '" + cfg.provider() + "' (supported: smtp)");
+            throw new IllegalStateException("Unsupported EMAIL_PROVIDER '" + cfg.provider() + "' (supported: smtp, brevo)");
         }
         if (props.devLogDelivery()) {
             log.info("Email channel: no provider configured – messages are LOGGED, not sent (development only)");
